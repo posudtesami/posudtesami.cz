@@ -2,6 +2,7 @@
 typ: kauza
 nazev: Reklama na Čapím hnízdě
 shrnuti: Firmy Agrofertu zaplatily v letech 2010–2013 Farmě Čapí hnízdo 272 mil. Kč za reklamu. Policie prověřovala podezření z daňových úniků a v roce 2024 věc definitivně odložila. Finanční správa firmám doměřila daň, protože rozsah reklamy neprokázaly, a soudy doměření potvrdily. Agrofert pochybení odmítal.
+oCoJde: Firmy Agrofertu zaplatily Čapímu hnízdu 272 milionů za reklamu. Musely doplatit daň, protože její rozsah neprokázaly.
 od: 2010
 do: 2025
 stav: uredni-zjisteni

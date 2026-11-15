@@ -2,6 +2,7 @@
 typ: kauza
 nazev: Postřik osevu u Velkého Karlova
 shrnuti: Agro Jevišovice z Agrofertu v květnu 2015 postříkalo totálním herbicidem osev, který u Velkého Karlova zasela firma zemědělce Bohumíra Rady. Agrofert tvrdí, že Rada pozemky užíval neoprávněně. Rada vyčíslil ztrátu na přes 4 mil. Kč a podal trestní oznámení, policie věc odložila. Škodu žádný úřad nestanovil.
+oCoJde: Firma z Agrofertu postříkala herbicidem cizí osev. Podle ní pole užíval neoprávněně. Policie nikoho neobvinila.
 od: 2015
 do: 2018
 stav: odlozeno

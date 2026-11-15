@@ -2,6 +2,7 @@
 typ: kauza
 nazev: Dotace na toastovou linku
 shrnuti: Pekárna z holdingu Agrofert získala dotaci 100 mil. Kč na linku na toastový chléb (rozhodnutí 2017, výplata 2018). Evropská komise ji po auditu odmítla proplatit, protože podobná linka už v Agrofertu fungovala. EPPO v červnu 2026 obžalovalo Pekárnu Zelená louka a dvě osoby z dotačního podvodu. A. Babiš obviněn není.
+oCoJde: Pekárna z Agrofertu dostala 100 milionů na toastovou linku. Je obžalována z dotačního podvodu, Babiš obviněn není.
 od: 2016
 do: null
 stav: obzaloba

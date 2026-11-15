@@ -2,6 +2,7 @@
 typ: kauza
 nazev: Agrofert a dotace pro malé podniky
 shrnuti: Firmy z Agrofertu čerpaly zemědělské podpory určené jen malým a středním podnikům, na pojištění plodin a zvířat a na ovocné sady a závlahy. PGRLF je od nich soudně vymohl, firmy v roce 2023 vrátily přes 2,6 mil. Kč. Podporu na sady vrátily v dubnu 2024 po rozhodnutí Evropské komise. Agrofert pochybení odmítal.
+oCoJde: Firmy z Agrofertu braly zemědělské podpory určené jen menším podnikům. Státní fond je po nich vymohl a firmy je vrátily.
 od: 2010
 do: 2024
 stav: uredni-zjisteni

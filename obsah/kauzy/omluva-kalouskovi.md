@@ -2,9 +2,11 @@
 typ: kauza
 nazev: Spor s Kalouskem o výrok o padácích
 shrnuti: A. Babiš v červenci 2018 ve Sněmovně řekl, že Miroslav Kalousek „rozkrádal Ministerstvo obrany a zabil lidi cez padáky“. Nejvyšší soud mu v září 2023 pravomocně uložil omluvu ve Sněmovně i písemnou. Babiš se v říjnu 2023 omluvil, Ústavní soud jeho stížnost v březnu 2025 zamítl.
+oCoJde: Babiš ve Sněmovně řekl, že Kalousek „rozkrádal Ministerstvo obrany a zabil lidi cez padáky“. Soud mu nařídil omluvu.
 od: 2018
 do: 2025
 stav: jine
+stavKratce: Soud nařídil omluvu
 stavPoznamka: Občanskoprávní spor o ochranu osobnosti, nikoli trestní řízení. Rozsudek Nejvyššího soudu z 5. 9. 2023 (č. j. 25 Cdo 1637/2022-287), kterým byla A. Babišovi uložena omluva, je pravomocný. Babiš povinnost splnil v říjnu 2023. Ústavní soud jeho ústavní stížnost nálezem z 5. 3. 2025 (sp. zn. III. ÚS 3264/23) zamítl.
 stitky: [vyroky]
 overeno: 2026-11-12

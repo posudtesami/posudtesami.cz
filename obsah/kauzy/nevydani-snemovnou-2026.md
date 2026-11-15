@@ -2,9 +2,11 @@
 typ: kauza
 nazev: Nevydání Babiše Sněmovnou 2026
 shrnuti: Městský soud v Praze v říjnu 2025 požádal Sněmovnu o souhlas se stíháním A. Babiše v kauze Čapí hnízdo. Imunitní výbor vydání nedoporučil a Sněmovna 5. 3. 2026 Babiše nevydala, pro nesouhlas hlasovalo 104 ze 186 přítomných. Řízení proti němu nelze po dobu mandátu vést. Babiš stíhání označuje za politicky motivované.
+oCoJde: Soud chtěl Babiše dál soudit v kauze Čapí hnízdo. Sněmovna to v březnu 2026 nedovolila, soud čeká do konce mandátu.
 od: 2025
 do: 2026
 stav: jine
+stavKratce: Sněmovna Babiše nevydala
 stavPoznamka: Sněmovna usnesením č. 96 z 5. 3. 2026 vyslovila nesouhlas s trestním stíháním obžalovaného poslance A. Babiše. Trestní stíhání tím nekončí, ale po dobu trvání mandátu je nelze vést. Městský soud v Praze 12. 3. 2026 vyloučil věc A. Babiše k samostatnému řízení a pokračoval jen s J. Nagyovou. Po zániku mandátu může řízení pokračovat. Podle trestního právníka T. Gřivny promlčecí doba po dobu imunity neběží. U A. Babiše platí presumpce neviny.
 stitky: [imunita, dotace, eu-fondy]
 overeno: 2026-11-12

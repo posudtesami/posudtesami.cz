@@ -2,9 +2,11 @@
 typ: kauza
 nazev: "Kauza FAU: zajišťovací příkazy"
 shrnuti: Finanční a celní správa vydaly v září 2016 proti FAU se skladem v areálu Prechezy z Agrofertu zajišťovací příkazy za stovky milionů Kč a firma skončila v konkurzu. Soudy příkazy zrušily jako nezákonné, doměření DPH ale potvrdily. Žádný úřad nezjistil, že by A. Babiš postup úřadů ovlivnil; Babiš to popírá.
+oCoJde: Úřady chtěly po firmě FAU okamžitě stovky milionů na daních a firma zkrachovala. Soudy to zrušily, daň ale potvrdily.
 od: 2014
 do: null
 stav: jine
+stavKratce: Více řízení najednou
 stavPoznamka: Zajišťovací příkazy Specializovaného finančního úřadu z 23. 9. 2016 zrušil Krajský soud v Ostravě 14. 6. 2017 a Nejvyšší správní soud to v listopadu 2017 potvrdil. Krajský soud zrušil v září 2017 i zajišťovací příkazy celníků. Doměření DPH asi 218 mil. Kč naopak soudy potvrdily (NSS v červnu 2024) a spor o ručení za firmu Verami vrátil NSS v srpnu 2025 krajskému soudu. V trestní věci olomoucký krajský soud v červnu 2026 nepravomocně zprostil FAU, jejího jednatele a další obžalované, státní zástupce se odvolal. Uvedené zdroje neobsahují úřední zjištění, že by A. Babiš postup úřadů řídil.
 stitky: [dane]
 overeno: 2026-11-12
