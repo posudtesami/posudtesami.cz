@@ -55,114 +55,44 @@ const CILE_44 = `@media (max-width:760px){
   body .v4-karta button, body .v4-karta a { min-height:44px; display:inline-flex; align-items:center; }
 }`;
 
+const MER_PRAVIDLA = () => {
+  const v = n => { const e = document.querySelector(n); return e && e.getClientRects().length ? Math.round(e.getBoundingClientRect().height) : 0; };
+  const obsah = document.querySelector('.pravidla-obal');
+  const vTextu = e => !!e.closest('p, li, sup, small, figcaption, .lead, .met-hlava, .legenda, .paticka-met, .s-vazba');
+  let pod44 = 0;
+  for (const e of document.querySelectorAll('a[href], button, [role="button"], input, select, summary')) {
+    if (!e.getClientRects().length || e.closest('[hidden]') || e.disabled || vTextu(e)) continue;
+    let r = e.getBoundingClientRect();
+    if (e instanceof HTMLInputElement && (e.type === 'checkbox' || e.type === 'radio')) { const l = e.closest('label'); if (l) r = l.getBoundingClientRect(); }
+    if (r.width < 2 || r.height < 2) continue;
+    if (r.width < 44 || r.height < 44) pod44++;
+  }
+  return { 'obal nad obsahem': obsah ? Math.round(obsah.getBoundingClientRect().top + scrollY) : 0,
+           'z toho hlavička': v('.top'), 'z toho úvod': v('.hero'), 'z toho filtry': v('.filtry'),
+           'cílů pod 44 px': pod44 };
+};
+
 const NAVRHY = [
-  {
-    id: 1,
-    nazev: 'Vyhledávací pole na 16 px',
-    proc: 'Safari na iPhonu při klepnutí do pole pod 16 px přiblíží celou stránku — a nevrátí ji zpět. Rozdíl ve velikosti písma je skoro neznatelný, rozdíl v chování zásadní.',
-    cesta: '/',
-    predPopisek: 'Dnes: po klepnutí do pole (simulace přiblížení Safari)',
-    poPopisek: 'S 16 px: po klepnutí se nestane nic',
-    pred: { css: `html { zoom: 1.45; }` },
-    po: { css: `body .filtry.f4 .f-hledat input { font-size: 16px; }` },
-    mer: () => ({ 'písmo pole': Math.round(parseFloat(getComputedStyle(document.querySelector('.f-hledat input')).fontSize)) + ' px' }),
-  },
-  {
-    id: 2,
-    nazev: 'Dotykové cíle na 44 px',
-    proc: 'Dnes splňujeme povinných 24 px (WCAG 2.5.8). Pohodlné je 44 px — shodně Apple i Google. Červeně obtažené prvky jsou pod hranicí, zeleně nad ní. Cena: hlavička a řádek filtrů povyrostou.',
-    cesta: '/',
-    predPopisek: 'Dnes: červené jsou pod 44 px',
-    poPopisek: 'Po úpravě: všechno zelené',
-    pred: { uprav: OBTAHNI },
-    po: { css: CILE_44, uprav: OBTAHNI },
-    mer: () => {
-      const vTextu = e => !!e.closest('p, li, sup, small, figcaption, .lead, .met-hlava, .legenda, .paticka-met, .s-vazba');
-      let pod = 0;
-      for (const e of document.querySelectorAll('a[href], button, [role="button"], input, select, summary')) {
-        if (!e.getClientRects().length || e.closest('[hidden]') || e.disabled || vTextu(e)) continue;
-        let r = e.getBoundingClientRect();
-        if (e instanceof HTMLInputElement && (e.type === 'checkbox' || e.type === 'radio')) { const s = e.closest('label'); if (s) r = s.getBoundingClientRect(); }
-        if (r.width < 2 || r.height < 2) continue;
-        if (r.width < 44 || r.height < 44) pod++;
-      }
-      const f = document.querySelector('.filtry');
-      return { 'cílů pod 44 px': pod, 'výška hlavičky': Math.round(document.querySelector('.top').getBoundingClientRect().height) + ' px',
-               'výška filtrů': f ? Math.round(f.getBoundingClientRect().height) + ' px' : '—' };
-    },
-  },
-  {
-    id: 3,
-    nazev: 'Strop na dvě částky v hlavičce',
-    proc: 'Kauza se čtyřmi částkami má hlavičku 385 px, ostatní 252–294. Zůstanou dvě, zbytek otevře stejné tlačítko jako popisy. Pozor: ubere to jeden řádek, ne celý rozdíl — čtyři částky se dnes lámou do dvou řádků, ne do čtyř.',
-    cesta: '/kauzy/vymahani-zemedelskych-dotaci/',
-    predPopisek: 'Dnes: čtyři částky na tři řádky',
-    poPopisek: 'Po úpravě: dvě a zbytek pod tlačítkem',
-    pred: {},
-    po: {
-      css: `@media (max-width:760px){ html.js body .m2-hlava:not(.castky-rozbalene) .castky li:nth-of-type(n+3):not(.castky-metodika){ display:none; } }`,
-      uprav: () => { const b = document.querySelector('.castky-vice'); if (b) b.textContent = 'další 2 částky a k čemu jsou'; },
-    },
-    mer: () => {
-      const dlg = document.querySelector('dialog#detail');
-      const panel = document.querySelector('.m2-panel[data-p]:not([hidden])');
-      return { 'obal nad obsahem': Math.round(panel.getBoundingClientRect().top - dlg.getBoundingClientRect().top) + ' px',
-               'hlavička': Math.round(document.querySelector('.m2-hlava').getBoundingClientRect().height) + ' px' };
-    },
-  },
-  {
-    id: 4,
-    nazev: 'U hlasování přepíná rovnou nadpis',
-    proc: '„Ukázat jména“ se opakuje pětkrát pod sebou. Když přepíná rovnou nadpis skupiny, ubude pět řádků a cíl bude větší, ne menší.',
-    cesta: '/hlasovani/psp-10-34-311/',
-    vyrez: '.hl-vsichni',
-    predPopisek: 'Dnes: nadpis a pod ním odkaz',
-    poPopisek: 'Po úpravě: přepíná nadpis',
-    pred: {},
-    po: {
-      css: `@media (max-width:760px){
-        body .hl-vice { display:none; }
-        body .hl-skupina h3 { cursor:pointer; display:flex; justify-content:space-between; align-items:center; min-height:44px; margin:0; border-bottom:1px solid var(--linka); }
-        body .hl-skupina h3::after { content:"rozbalit ▾"; font:italic 13px var(--f-text); color:var(--modra); }
-      }`,
-    },
-    mer: () => ({ 'výška seznamu': Math.round(document.querySelector('.hl-vsichni').getBoundingClientRect().height) + ' px' }),
-  },
-  {
-    id: 5,
-    nazev: 'Nízké okno počítače: modal se posouvá dolů',
-    proc: 'Na okně vysokém 528 px zbyde na obsah záložky 60 px a text se ořízne — přesah 105 px. Hlavička je prostě vyšší než okno. Řešení je stejné, jaké má telefon: na nízkém okně se celý modal posouvá dolů, místo aby se obsah ořezal. (Zkoušel jsem i sbalit popisy částek — přesah klesl jen ze 105 na 83 px, což nestačí.)',
-    cesta: '/kauzy/capi-hnizdo/',
-    viewport: { width: 1256, height: 528 },
-    predPopisek: 'Dnes: text končí uprostřed věty',
-    poPopisek: 'Po úpravě: dá se dorolovat',
-    pred: {},
-    po: {
-      css: `@media (min-width:761px) and (max-height:620px){
-        html.js body dialog.m2[open] { display:block; overflow-y:auto; }
-        html.js body dialog.m2 .m2-panel[data-p]:not([hidden]) { overflow:visible; columns:auto; }
-      }`,
-    },
-    mer: () => {
-      // stejné počítání jako presahPanelu() v testech: obsah uvnitř boxu s vlastním posuvníkem
-      // oříznutý není, jen se posouvá
-      const panel = document.querySelector('#detail .m2-panel:not([hidden])');
-      const spodek = panel.getBoundingClientRect().bottom;
-      const vPosuvniku = el => {
-        for (let q = el.parentElement; q && q !== panel; q = q.parentElement) {
-          const oy = getComputedStyle(q).overflowY;
-          if ((oy === 'auto' || oy === 'scroll') && q.getBoundingClientRect().bottom <= spodek + 1) return true;
-        }
-        return false;
-      };
-      let max = 0;
-      for (const el of panel.querySelectorAll('*')) {
-        if (!el.getClientRects().length || el.closest('[hidden]') || vPosuvniku(el)) continue;
-        for (const r of el.getClientRects()) max = Math.max(max, r.bottom - spodek);
-      }
-      return { 'oříznutý text': Math.round(max) + ' px', 'místo na obsah': Math.round(panel.getBoundingClientRect().height) + ' px' };
-    },
-  },
+  { id: 1, nazev: 'Menu zpět na jeden řádek',
+    proc: 'Hlavička má na pravidlech 105 px, na úvodu 79 — zalomila se na dva řádky. Aktivní položka „Zákony“ je tučná, a tím širší; s výplní dotykového cíle, kterou jsem přidal včera, se řádek přestal vejít. Užší výplň a menší odsazení to vrátí na jeden řádek, cíle zůstanou nad 44 px.',
+    cesta: '/pravidla/', predPopisek: 'Dnes: značka a menu pod sebou', poPopisek: 'Po úpravě: na jednom řádku', pred: {},
+    po: { css: '@media (max-width:760px){ body .top.top-4 nav a { padding-inline: 6px; margin-left: 0; } body .top.top-4 .brand { padding-inline: 0; font-size: clamp(12px,3.1vw,15px); } body .top.top-4 .brand::before { width: 7px; margin-right: 5px; } }' },
+    mer: MER_PRAVIDLA },
+  { id: 2, nazev: 'Přepínač pohledu vedle počítadla',
+    proc: 'Seznam / Časová osa zabírá celý řádek (46 px), přestože jsou to dvě slova. Vedle počítadla „4 změny“ je místa dost.',
+    cesta: '/pravidla/', predPopisek: 'Dnes: přepínač přes celou šířku', poPopisek: 'Po úpravě: na řádku s počtem', pred: {},
+    po: { css: '@media (max-width:760px){ body .filtry.f4.pr-filtry .pr-pohled { order: 4; flex: none; } body .filtry.f4.pr-filtry .pr-pohled button { flex: none; } }' },
+    mer: MER_PRAVIDLA },
+  { id: 3, nazev: '„Upřesnit výběr“ vedle čipů',
+    proc: 'Odkaz stojí na vlastním řádku, přestože je krátký. Na řádku s čipy a počítadlem bývá místo. POZOR: s návrhem 2 se to nesčítá — oba uklízejí tentýž řádek. Změřeno: 2 samotný dá 343 px, 2 i 3 dohromady taky 343 px. Má smysl jen tehdy, když si návrh 2 nevybereš.',
+    cesta: '/pravidla/', predPopisek: 'Dnes: vlastní řádek', poPopisek: 'Po úpravě: vedle čipů', pred: {},
+    po: { css: '@media (max-width:760px){ html.js body .filtry.f4.pr-filtry .f-upresnit { flex: none; order: 3; } }' },
+    mer: MER_PRAVIDLA },
+  { id: 4, nazev: 'Úvod bez nadřádku',
+    proc: 'Nad otázkou „Komu prospívají nová pravidla?“ stojí ještě „Zákony a nařízení od prosince 2025“. U kauz jsi obdobný nadřádek nechal; tady ho nabízím znovu, protože pravidla jsou nejhustší stránka webu.',
+    cesta: '/pravidla/', predPopisek: 'Dnes: nadřádek i otázka', poPopisek: 'Po úpravě: jen otázka', pred: {},
+    po: { css: '@media (max-width:760px){ body .hero.u2 .u2-nad { display:none; } }' },
+    mer: MER_PRAVIDLA },
 ];
 
 // ───────────────────────────────────────────────────────────────────────────────────────────────
@@ -215,8 +145,13 @@ try {
     const a = await vyfot(prohlizec, n, n.pred, `navrh-${n.id}-pred.png`);
     const b = await vyfot(prohlizec, n, n.po, `navrh-${n.id}-po.png`);
     const cisla = Object.keys(a.cisla).map(k => `<tr><th>${esc(k)}</th><td class="pred">${esc(a.cisla[k])}</td><td class="po">${esc(b.cisla[k])}</td></tr>`).join('');
+    // První změřená hodnota je ta hlavní: kolik návrh ušetří, patří hned k názvu.
+    const prvni = Object.keys(a.cisla)[0];
+    const rozdil = prvni && typeof a.cisla[prvni] === 'number' ? a.cisla[prvni] - b.cisla[prvni] : 0;
+    const znacka = rozdil > 0 ? `<span class="usetri">−${rozdil} px</span>`
+      : rozdil < 0 ? `<span class="pridava">+${-rozdil} px</span>` : '<span class="nic">beze změny</span>';
     karty.push(`<section class="navrh">
-  <label class="hlava"><input type="checkbox" data-navrh="${n.id}"><span class="cislo">${n.id}</span><span class="nazev">${esc(n.nazev)}</span></label>
+  <label class="hlava"><input type="checkbox" data-navrh="${n.id}"><span class="cislo">${n.id}</span><span class="nazev">${esc(n.nazev)}</span>${znacka}</label>
   <p class="proc">${esc(n.proc)}</p>
   <div class="dvojice">
     <figure><img src="navrh-${n.id}-pred.png" alt="před" style="max-width:${a.sirka}px"><figcaption><b class="pred">PŘED</b> ${esc(n.predPopisek)}</figcaption></figure>
@@ -241,6 +176,8 @@ try {
  .hlava input{width:24px;height:24px;accent-color:var(--po);flex:none;cursor:pointer}
  .cislo{font:700 13px ui-monospace,monospace;background:#16153a;color:#fff;border-radius:50%;width:26px;height:26px;display:grid;place-items:center;flex:none}
  .nazev{font-size:18px;font-weight:700}
+ .usetri,.pridava,.nic{margin-left:auto;font:700 14px ui-monospace,monospace;padding:4px 10px;border-radius:999px;flex:none}
+ .usetri{background:#e3f4ea;color:var(--po)} .pridava{background:#fdeaec;color:var(--pred)} .nic{background:#ececf3;color:#5b5a7a}
  .proc{color:#3a3960;margin:10px 0 16px;max-width:62em}
  .dvojice{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
  figure{margin:0;flex:0 1 auto} img{display:block;width:100%;height:auto;border:1px solid #d3d3e2;border-radius:6px}
