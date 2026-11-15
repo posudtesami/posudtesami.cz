@@ -256,6 +256,13 @@ a čitelný byl jen popisek. Rok začátku teď stojí ve sloupci vlevo jen u pr
 nad názvem je `konecText` („do 2021 · 16 let“, „dosud · 12 let“ — bez „a dál“). Lišta s roky, pruhy
 a legenda pruhů na telefonu odpadly, seznam začíná o 41 px výš. Počítač je shodný na pixel.
 
+Z dílů vybraných 15. 11. večer (volba C · B): **kluby u hlasování stojí v řádcích PRO a PROTI** podle
+toho, čeho měly víc (`rozdelKluby`; klub 0 : 0 v rozdělení není, nerozhodný stojí v obou řádcích) — platí
+i na počítači, barvy ne (spec hlasování, oddíl 7). **Vybraná záložka je na telefonu podtržená**: žádné karty,
+pod lištou jedna linka. Audit i testy dřív přeskakovaly odkaz, který je v položce seznamu sám (bral ho jako
+odkaz ve větě); po opravě vyplavaly čipy klubů (26 px), „Co částky znamenají“ (15 px) a kroky průběhu
+zákona (14 px), všechny jsou teď na 44 px.
+
 Nejdelší stránka webu mimo seznam zdrojů je 1,3 obrazovky a nic se nikde neposouvá do strany.
 
 ## Časté chyby

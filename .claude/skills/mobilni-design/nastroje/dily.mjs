@@ -278,6 +278,8 @@ try {
   console.log('stavím web ze skutečného obsahu…');
   rmSync(VYSTUP, { recursive: true, force: true });
   await spust('npx astro build', { NV_VYSTUP: VYSTUP });
+  // Na obsazeném portu by se nový server nespustil a skript by tiše měřil cizí (třeba starý) build.
+  if (await fetch(ADRESA + '/').then(() => true, () => false)) throw new Error(`port ${PORT} je obsazený jiným serverem — změň PORT`);
   server = spawn(`npx serve ${VYSTUP} -l ${PORT} --no-clipboard`, { shell: true, stdio: 'ignore' });
   await pockejNaServer();
 

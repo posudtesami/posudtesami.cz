@@ -69,7 +69,11 @@ export async function maleDotykoveCile(page: Page, min = 44) {
     // .pr-oblasti: odkazy na oblasti stojí v řádku textu nad názvem zákona („… · Oblasti: A, B“).
     // Platí pro ně výjimka pro odkaz uvnitř věty (WCAG 2.5.8); zvětšit je na 44 px by hlavičce
     // přidalo přes 50 px kvůli jednomu řádku doprovodného textu.
-    const vTextu = (el: Element) => !!el.closest('p, li, sup, small, figcaption, .lead, .met-hlava, .legenda, .paticka-met, .s-vazba, .pr-oblasti');
+    // výjimka platí pro odkaz ve větě; položka seznamu, ve které je jen ten odkaz (čip klubu), větou není
+    const vTextu = (el: Element) => {
+      const b = el.closest('p, li, sup, small, figcaption, .lead, .met-hlava, .legenda, .paticka-met, .s-vazba, .pr-oblasti');
+      return !!b && (b.textContent ?? '').replace(el.textContent ?? '', '').trim().length > 0;
+    };
     const nalezene: string[] = [];
     for (const el of document.querySelectorAll<HTMLElement>('a[href], button, [role="button"], input, select, summary')) {
       if (!el.getClientRects().length || el.closest('[hidden]') || (el as HTMLInputElement).disabled || vTextu(el)) continue;

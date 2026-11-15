@@ -40,6 +40,8 @@ try {
     ...kauzy.slice(0, 3).flatMap(k => [[`/kauzy/${k}/`, null], [`/kauzy/${k}/`, 'chrono'], [`/kauzy/${k}/`, 'zdroje']]),
     ...pravidla.slice(0, 2).flatMap(p => [[`/pravidla/${p}/`, null], [`/pravidla/${p}/`, 'chrono']]),
     ...hlasovani.slice(0, 1).map(h => [`/hlasovani/${h}/`, null]),
+    // zákon s hlasováním: záložka Hlasy (u zákona bez hlasování se klik nestane a snímek je stejný jako výchozí)
+    ['/pravidla/novela-stretu-zajmu-2026/', 'hlasovani'],
   ];
   const OKNA = [{ width: 1280, height: 800 }, { width: 1280, height: 560 }];
   const prohlizec = await chromium.launch();

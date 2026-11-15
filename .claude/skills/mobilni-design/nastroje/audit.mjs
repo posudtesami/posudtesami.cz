@@ -25,7 +25,7 @@ const zastav = p => { if (!p) return; if (process.platform === 'win32') spawnSyn
 import path from 'node:path';
 
 const VYSTUP = 'dist-mobil-audit';
-const PORT = 4461;
+const PORT = 4561;
 const ADRESA = `http://localhost:${PORT}`;
 const NASTOJATO = { width: 390, height: 844 };
 const NALEZATO = { width: 844, height: 390 };
@@ -58,7 +58,9 @@ const ZMER = () => {
   const okno = innerWidth;
   const skryteProOci = e => !!e.closest('.jen-ctecka, [aria-hidden="true"]');
   // .pr-oblasti: odkazy na oblasti v řádku textu nad názvem zákona — výjimka pro odkaz uvnitř věty
-  const vTextu = e => !!e.closest('p, li, sup, small, figcaption, .lead, .met-hlava, .legenda, .paticka-met, .s-vazba, .pr-oblasti');
+  // Výjimka WCAG platí pro odkaz uvnitř věty. Položka seznamu, ve které je jen ten odkaz (čip klubu), větou není:
+  // do 15. 11. ji audit přeskakoval a čipy klubů s 26 px prošly bez povšimnutí.
+  const vTextu = e => { const b = e.closest('p, li, sup, small, figcaption, .lead, .met-hlava, .legenda, .paticka-met, .s-vazba, .pr-oblasti'); return !!b && b.textContent.replace(e.textContent, '').trim().length > 0; };
   const popis = e => {
     const t = e.tagName.toLowerCase();
     const tridy = typeof e.className === 'string' && e.className.trim() ? '.' + e.className.trim().split(/\s+/).slice(0, 2).join('.') : '';
@@ -169,6 +171,8 @@ try {
   console.log('stavím web ze skutečného obsahu…');
   rmSync(VYSTUP, { recursive: true, force: true });
   await spust('npx astro build', { NV_VYSTUP: VYSTUP });
+  // Na obsazeném portu by se nový server nespustil a skript by tiše měřil cizí (třeba starý) build.
+  if (await fetch(ADRESA + '/').then(() => true, () => false)) throw new Error(`port ${PORT} je obsazený jiným serverem — změň PORT`);
   server = spawn(`npx serve ${VYSTUP} -l ${PORT} --no-clipboard`, { shell: true, stdio: 'ignore' });
   await pockejNaServer();
 
