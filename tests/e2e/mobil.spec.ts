@@ -138,6 +138,31 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
     await overBezPosouvaniDoStrany(page);
   });
 
+  // Jmenný seznam celé sněmovny byl na telefonu 4 409 px z 4 824 — pět a půl obrazovky jmen.
+  test('hlasování: jmenné seznamy jsou sbalené a tlačítko je rozbalí', async ({ page }) => {
+    await otevri(page, '/hlasovani/psp-10-5-12/');
+    const skupina = page.locator('.hl-vsichni .hl-skupina').first();
+    const jmena = skupina.locator('ul');
+    const vice = skupina.locator('.hl-vice');
+    await expect(skupina.locator('h3'), 'počet poslanců zůstává vidět i sbalený').toContainText(/\(\d+\)/);
+    await expect(jmena, 'jména jsou na telefonu sbalená').toBeHidden();
+    await expect(vice).toBeVisible();
+    await vice.click();
+    await expect(jmena, 'po klepnutí jsou jména vidět').toBeVisible();
+    await expect(vice).toHaveAttribute('aria-expanded', 'true');
+    await vyfot(page, 'stav-hlasovani-jmena', 'Hlasování — rozbalená jména v jedné skupině');
+    await overBezPosouvaniDoStrany(page);
+  });
+
+  test('hlasování: souhrn i volba klubu zůstávají na první obrazovce', async ({ page }) => {
+    await otevri(page, '/hlasovani/psp-10-5-12/');
+    // To podstatné — jak hlasování dopadlo a kudy se dostat ke klubům — musí být vidět hned.
+    // Tabulka klubů se na telefonu neukazuje odjakživa (hlasovani.css), místo ní jsou čipy.
+    await expect(page.locator('.hl-vysledek')).toBeInViewport();
+    await expect(page.locator('.hl-cipy')).toBeInViewport();
+    await expect(page.locator('.hl-tabulka-obal'), 'tabulka klubů je na telefonu nahrazená čipy').toBeHidden();
+  });
+
   for (const pohled of ['Seznam', 'Časová osa']) {
     test(`zákony a nařízení: pohled ${pohled}`, async ({ page }) => {
       await otevri(page, '/pravidla/');

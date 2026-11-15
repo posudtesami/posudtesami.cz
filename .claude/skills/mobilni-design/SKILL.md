@@ -113,12 +113,15 @@ jednu stránku se snímky a čísly, ze které si uživatel vybere.
 
 | věc | stav |
 |---|---|
-| hlasování: jmenný seznam 9 klubů je 4 409 px z celkových 4 824 (5,7 obrazovky) | **nejhorší místo webu** |
-| vyhledávací pole a selecty filtrů mají 15 px → iOS při klepnutí přiblíží | ověřeno, neopraveno |
+| vyhledávací pole má 15 px → Safari na iOS při klepnutí přiblíží a nevrátí zpět | **ověřeno, neopraveno** |
 | 12–26 ovládacích prvků na stránku je mezi 24 a 44 px | splňuje povinné, ne pohodlné |
 | čtyři částky v hlavičce detailu ji vytáhnou na 385 px (jinde 252–294) | rozptyl, dal by se zastropovat |
 | text 12–13 px na pravidlech a hlasování | na hraně, jinde 14–15 px |
 | nízké okno počítače (1256 × 528) + částky → obsah přeteče o 26 px | **desktopová vada**, ne mobilní |
+| u hlasování se „ukázat jména“ opakuje pětkrát pod sebou | funguje, dalo by se zhustit |
+
+Hotovo (ať se k tomu nevrací): hlavička detailu 518 → 294 px, úvod 417 → 323 px, dotykové cíle na
+povinných 24 px, hlasování 5,7 → 1,1 obrazovky. Nejdelší stránka webu je dnes 1,3 obrazovky.
 
 ## Časté chyby
 

@@ -547,3 +547,18 @@ body .f-upresnit { display: none; flex: 1 0 100%; order: 5; margin: 0; padding: 
      nemá poskočit), proto mizí na obou stránkách zároveň. */
   body .hero.u2 .u2-pod { display: none; }
 }
+
+/* ===== Hlasování na telefonu: jmenné seznamy sbalené =====
+   Seznam celé sněmovny zabral 4 409 px z 4 824 — pět a půl obrazovky jmen pod sebou, než čtenář
+   dojde na konec. Skupiny se sbalí na nadpis, který i tak nese počet („Pro (86)“), jména otevře
+   tlačítko. Souhrn hlasování i tabulka klubů zůstávají nahoře vidět.
+   Proměnná --sbalit-skupiny říká skriptu, jestli se sbaluje: zlom tak zůstává jen tady v CSS. */
+:root { --sbalit-skupiny: 0; }
+
+body .hl-vice { display: inline-block; margin: 0 0 8px; padding: 4px 0; border: 0; background: none; font: italic 14px var(--f-text); color: var(--modra); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+body .hl-vice[hidden] { display: none; }
+
+@media (max-width: 760px) {
+  :root { --sbalit-skupiny: 1; }
+  html.js body .hl-skupina:not(.rozbalene) > ul { display: none; }
+}
