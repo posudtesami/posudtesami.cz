@@ -18,9 +18,18 @@ patří — ne tím, že zmizí. Když návrh něco odstraňuje, je špatně.
 zabere obal, než začne obsah; kolik obrazovek je stránka vysoká; kolik se jich vejde bez posunutí.
 Nástroje jsou níž, používej je.
 
-**3. Varianty předkládej k výběru, nerozhoduj za uživatele.** Dej 3–5 očíslovaných variant, které se
-sčítají (B obsahuje A, C obsahuje B), u každé číslo úspory a cenu, kterou to stojí. Doporuč jednu
-a řekni proč. **Pak se zastav a počkej na výběr.** Teprve pak se staví.
+**3. Varianty předkládej k výběru, nerozhoduj za uživatele.** Rozhodnutí rozlož na **díly** — každý díl
+je jedna otázka („Kde stojí listování?“) — a u každého dej vedle sebe varianty A/B/C se snímkem,
+změřenými čísly a seznamy „Proč ano“ / „Proč ne“. Jednu označ „doporučuji“ a řekni proč.
+**Pak se zastav a počkej na výběr.** Teprve pak se staví. Formát je převzatý z Akcionu
+(`docs/design/modely-vedle-marka-atomy.html`) a dělá ho `nastroje/dily.mjs`.
+
+**4. Nepředkládej variantu, jejíž snímek a číslo jsi neviděl.** Náhled je CSS nasazené na živou
+stránku a rád udělá něco jiného, než si myslíš. Za jediný den to chytilo šest návrhů:
+rozprostřené body osy měly terč 11 px (hůř než předtím), rozšířená osa nechala 22 bodů přes sebe,
+strop na částky ušetřil 32 px místo slibovaných 95, sbalení popisů nespravilo nízké okno,
+tlačítko „na řádku s částkami“ v náhledu jen zmizelo, a šipka s `nowrap` přetekla u jedné kauzy
+o 7 px do strany. Měř na **všech** kauzách, ne na té jedné, na které to vyšlo.
 
 ## Čísla, která platí
 
@@ -60,7 +69,9 @@ iOS zoomu a zároveň vážná chyba přístupnosti — správné řešení je p
 ```
 node .claude/skills/mobilni-design/nastroje/prehled.mjs      # změří všechny stránky na telefonu
 node .claude/skills/mobilni-design/nastroje/varianty.mjs     # stupňované varianty jedné obrazovky
+node .claude/skills/mobilni-design/nastroje/dily.mjs         # díly k výběru: varianty A/B/C vedle sebe
 node .claude/skills/mobilni-design/nastroje/vyber.mjs        # návrhy před/po se zaškrtávátky
+node .claude/skills/mobilni-design/nastroje/audit.mjs        # celkový audit všech stránek, i naležato
 npm run e2e:mobil                                            # testy + snímek každé stránky
 ```
 
@@ -123,12 +134,14 @@ jehož „po" jsi neviděl.
 
 | věc | stav |
 |---|---|
-| vyhledávací pole má 15 px → Safari na iOS při klepnutí přiblíží a nevrátí zpět | **ověřeno, neopraveno** — nabídnuto, uživatel zatím nevybral |
+| listování je po zrušení osy jediné ovládání chronologie: kde stojí, jak skočit doprostřed | **díly předložené 15. 11., čeká se na volbu** |
+| dva rozbalovací odkazy v hlavičce detailu berou každý 44 px | díly předložené, čeká se na volbu |
 | text 12–13 px na pravidlech a hlasování | na hraně, jinde 14–15 px |
 
 Hotovo (ať se k tomu nevrací): hlavička detailu 518 → 294 px, úvod 417 → 323 px,
 hlasování 5,7 → 1,1 obrazovky, dotykové cíle na **44 px**, strop na dvě částky v hlavičce,
-u hlasování přepíná nadpis, a na nízkém okně počítače se modal posouvá dolů místo ořezávání.
+u hlasování přepíná nadpis, na nízkém okně počítače se modal posouvá dolů místo ořezávání,
+vyhledávací pole má 16 px a mini-osa se na telefonu neukazuje (událostmi se listuje tlačítky).
 Nejdelší stránka webu je 1,3 obrazovky a nic se nikde neposouvá do strany.
 
 ## Časté chyby
