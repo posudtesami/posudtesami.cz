@@ -199,6 +199,12 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
       await otevri(page, cesta);
       const pismo = await page.locator('.filtry .f-hledat input').evaluate(e => parseFloat(getComputedStyle(e).fontSize));
       expect(pismo, `${cesta}: písmo vyhledávacího pole`).toBeGreaterThanOrEqual(16);
+      // totéž platí pro výběry ve větě dalších filtrů — ty jsou schované za „Upřesnit výběr“,
+      // takže je měření stránky, jak se načte, nikdy nevidělo
+      await page.locator('.filtry .f-upresnit').click();
+      const vybery = await page.locator('.filtry .f-dalsi select').evaluateAll(l => l.map(e => parseFloat(getComputedStyle(e).fontSize)));
+      expect(vybery.length, `${cesta}: věta filtrů má výběry`).toBeGreaterThan(0);
+      expect(Math.min(...vybery), `${cesta}: písmo výběrů ve větě filtrů`).toBeGreaterThanOrEqual(16);
     }
     // a přibližování samo zůstává povolené — vypnout ho by byla chyba přístupnosti
     const viewport = await page.locator('meta[name="viewport"]').getAttribute('content');
@@ -371,6 +377,66 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
       expect(await maleDotykoveCile(page, 44), 'dotykové cíle menší než pohodlných 44 px').toEqual([]);
     });
   }
+
+  // Měření stránky, jak se načte, nevidí nic, k čemu vede klepnutí. Záložka Zdroje tak nesla filtr
+  // vysoký 24 px a odkazy pod seznamem vysoké 20 px, zatímco test výše procházel.
+  // alfa-dotace je fixtura, která má filtr zdrojů (víc skupin zdrojů), zeta-stret odkaz na mapu.
+  for (const cesta of ['/kauzy/zeta-stret/', '/kauzy/gama-offshore/', '/kauzy/alfa-dotace/', '/pravidla/zakon-omega/', '/pravidla/usneseni-kappa/']) {
+    test(`${cesta}: dotykové cíle i v záložkách a po rozbalení`, async ({ page }) => {
+      await otevri(page, cesta);
+      const zalozky = await page.locator('dialog#detail .zalozky [role="tab"]').evaluateAll(l => l.map(b => (b as HTMLElement).dataset.p!));
+      expect(zalozky.length, 'detail má záložky').toBeGreaterThan(2);
+      for (const z of zalozky) {
+        await page.locator(`dialog#detail .zalozky [data-p="${z}"]`).click();
+        expect(await maleDotykoveCile(page, 44), `záložka ${z}: cíle pod 44 px`).toEqual([]);
+      }
+      await page.locator(`dialog#detail .zalozky [data-p="${zalozky[0]}"]`).click();
+      for (const sel of ['.perex-vice', '.castky-vice']) {
+        const prvek = page.locator(`dialog#detail ${sel}`);
+        if (!(await prvek.isVisible())) continue;
+        await prvek.click();
+        expect(await maleDotykoveCile(page, 44), `po klepnutí na ${sel}: cíle pod 44 px`).toEqual([]);
+      }
+    });
+  }
+
+  // Řád ovládání: rámovaný prvek volby (čip, přepínač, filtr) má jeden řez, ať je kdekoli.
+  // Záložka detailu je nadpis oddílu a drží 600.
+  test('čipy, přepínače a filtry mají jeden řez písma', async ({ page }) => {
+    const rezy: Record<string, string> = {};
+    const zmer = async (jmeno: string, sel: string) => {
+      const prvek = page.locator(sel).first();
+      await expect(prvek, jmeno).toBeVisible();
+      rezy[jmeno] = await prvek.evaluate(e => { const c = getComputedStyle(e); return `${c.fontSize} ${c.fontWeight}`; });
+    };
+    await otevri(page, '/');
+    await zmer('čip tématu', '.filtry .f-cipy button:not(.f-vice)');
+    await otevri(page, '/pravidla/');
+    await zmer('přepínač pohledu', '.pr-pohled button');
+    await otevri(page, '/hlasovani/psp-10-5-12/');
+    await zmer('čip klubu', '.hl-cipy a');
+    await otevri(page, '/kauzy/alfa-dotace/'); // jediná kauza ve fixturách s filtrem zdrojů
+    await page.getByRole('tab', { name: /^Zdroje/ }).click();
+    await zmer('filtr zdrojů', '.zdroje-filtr button');
+    expect([...new Set(Object.values(rezy))], `řezy se liší: ${JSON.stringify(rezy)}`).toEqual(['13px 500']);
+    await expect(page.locator('dialog#detail .zalozky [role="tab"]').first(), 'záložka je nadpis oddílu').toHaveCSS('font-weight', '600');
+  });
+
+  // Obsah detailu začíná na stejné svislici jako obsah stránky a jako lišta listování pod ním.
+  test('detail drží stejný okraj jako stránka', async ({ page }) => {
+    await otevri(page, '/');
+    const okrajStranky = await page.locator('.filtry').evaluate(e => Math.round(e.getBoundingClientRect().left));
+    await otevri(page, '/kauzy/zeta-stret/');
+    await page.getByRole('tab', { name: 'Kdy' }).tap();
+    const leve = await page.evaluate(() => {
+      const x = (sel: string) => Math.round(document.querySelector(sel)!.getBoundingClientRect().left);
+      return {
+        nadpis: x('dialog#detail h1'), shrnuti: x('dialog#detail .perex'), zalozka: x('dialog#detail .zalozky [role="tab"]'),
+        udalost: x('.udalosti-seznam > li:not([hidden]) time'), listovani: x('.listovani [data-krok="-1"]'),
+      };
+    });
+    for (const [co, kde] of Object.entries(leve)) expect(kde, `${co} začíná na okraji stránky`).toBe(okrajStranky);
+  });
 
   for (const cesta of PRO_AXE) {
     test(`${cesta}: bez závažných chyb přístupnosti na mobilu`, async ({ page }) => {

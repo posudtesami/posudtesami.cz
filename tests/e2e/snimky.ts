@@ -66,7 +66,10 @@ export async function prvkyPresahujiciSirku(page: Page) {
  *  U zaškrtávátka se měří celý jeho štítek, protože klepnout jde i na text. */
 export async function maleDotykoveCile(page: Page, min = 44) {
   return page.evaluate((MIN) => {
-    const vTextu = (el: Element) => !!el.closest('p, li, sup, small, figcaption, .lead, .met-hlava, .legenda, .paticka-met, .s-vazba');
+    // .pr-oblasti: odkazy na oblasti stojí v řádku textu nad názvem zákona („… · Oblasti: A, B“).
+    // Platí pro ně výjimka pro odkaz uvnitř věty (WCAG 2.5.8); zvětšit je na 44 px by hlavičce
+    // přidalo přes 50 px kvůli jednomu řádku doprovodného textu.
+    const vTextu = (el: Element) => !!el.closest('p, li, sup, small, figcaption, .lead, .met-hlava, .legenda, .paticka-met, .s-vazba, .pr-oblasti');
     const nalezene: string[] = [];
     for (const el of document.querySelectorAll<HTMLElement>('a[href], button, [role="button"], input, select, summary')) {
       if (!el.getClientRects().length || el.closest('[hidden]') || (el as HTMLInputElement).disabled || vTextu(el)) continue;

@@ -6,7 +6,8 @@
  * Co hlídá:
  *   obal       kolik px stojí nad obsahem, než začne to, kvůli čemu tam čtenář přišel
  *   do strany  posouvání celé stránky i jednotlivých prvků mimo šířku okna
- *   cíle       ovládání menší než pohodlných 44 px (povinné minimum je 24)
+ *   cíle       ovládání menší než pohodlných 44 px (povinné minimum je 24) — i v záložkách
+ *              detailu a po rozbalení, ne jen na stránce, jak se načte
  *   pole       pole formuláře pod 16 px — Safari na iOS při klepnutí přiblíží a nevrátí zpět
  *   písmo      nejmenší viditelný souvislý text (pod 14 px nejdeme)
  *   řádek      délka řádku hlavního textu ve znacích (pohodlné je 40–60)
@@ -54,7 +55,8 @@ function najdiStranky(koren, cesta = '') {
 const ZMER = () => {
   const okno = innerWidth;
   const skryteProOci = e => !!e.closest('.jen-ctecka, [aria-hidden="true"]');
-  const vTextu = e => !!e.closest('p, li, sup, small, figcaption, .lead, .met-hlava, .legenda, .paticka-met, .s-vazba');
+  // .pr-oblasti: odkazy na oblasti v řádku textu nad názvem zákona — výjimka pro odkaz uvnitř věty
+  const vTextu = e => !!e.closest('p, li, sup, small, figcaption, .lead, .met-hlava, .legenda, .paticka-met, .s-vazba, .pr-oblasti');
   const popis = e => {
     const t = e.tagName.toLowerCase();
     const tridy = typeof e.className === 'string' && e.className.trim() ? '.' + e.className.trim().split(/\s+/).slice(0, 2).join('.') : '';
@@ -133,6 +135,33 @@ const ZMER = () => {
   };
 };
 
+/** Stavy, do kterých se stránka dostane až ovládáním: záložky detailu a rozbalovací prvky.
+ *  Bez nich audit měřil jen stránku, jak se načte — a záložka Zdroje tak půl dne nesla filtr
+ *  vysoký 24 px a odkazy vysoké 20 px, zatímco výpis hlásil „cíle pod 44 px: nic“. */
+const ROZBALOVACE = ['.perex-vice', '.castky-vice', '.pro-vas-vice', '.filtry .f-cipy .f-vice', '.filtry .f-upresnit', '.hl-vice'];
+async function zmerStavy(page) {
+  const nalezy = { maleCile: [], siroke: [], malaPole: [] };
+  const pridej = async stav => {
+    await page.waitForTimeout(120);
+    const m = await page.evaluate(ZMER);
+    for (const k of Object.keys(nalezy)) nalezy[k].push(...m[k].map(x => `${x} [${stav}]`));
+  };
+  const klepni = sel => page.evaluate(s => {
+    const e = [...document.querySelectorAll(s)].find(x => x.getClientRects().length && !x.closest('[hidden]'));
+    if (e) e.click();
+    return !!e;
+  }, sel);
+  const zalozky = await page.evaluate(() => [...document.querySelectorAll('.zalozky [role="tab"]')].map(b => b.dataset.p));
+  for (const z of zalozky.slice(1)) {
+    await klepni(`.zalozky [data-p="${z}"]`);
+    await pridej(`záložka ${z}`);
+    if (z === 'chrono' && await klepni('.listovani-prehled')) { await pridej('přehled událostí'); await klepni('.listovani-prehled'); }
+  }
+  if (zalozky.length) await klepni(`.zalozky [data-p="${zalozky[0]}"]`);
+  for (const sel of ROZBALOVACE) if (await klepni(sel)) await pridej(`po klepnutí na ${sel}`);
+  return nalezy;
+}
+
 let server;
 try {
   console.log('stavím web ze skutečného obsahu…');
@@ -157,6 +186,11 @@ try {
     const zavazne = axe.violations.filter(v => v.impact === 'serious' || v.impact === 'critical')
       .map(v => `${v.id} (${v.nodes.length}×)`);
 
+    // stavy až po axe: ten má vidět stránku, jak se načte
+    const stavy = await zmerStavy(page);
+    for (const k of Object.keys(stavy)) stojato[k] = [...new Set([...stojato[k], ...stavy[k]])];
+
+    await page.goto(ADRESA + cesta, { waitUntil: 'load' });
     await page.setViewportSize(NALEZATO);
     await page.waitForTimeout(250);
     const lezato = await page.evaluate(ZMER);

@@ -766,3 +766,40 @@ body .hl-skupina.rozbalene .hl-vice::after { content: "▴"; }
 @media (max-width: 760px) {
   body .hero.u2.pr-hero .u2-nad { display: none; }
 }
+
+/* ===== Řád ovládání na telefonu: rámované prvky, cíle ve stavech, svislice =====
+   Druhý průchod řádem (15. 11.). Rozbor po sjednocení rozbalovacích odkazů ukázal tři další místa
+   bez pravidla — a jedno, kde dosavadní měření lhalo. */
+@media (max-width: 760px) {
+  /* Rámovaný prvek volby (čip, přepínač, filtr) má jeden řez: 13px/500. Dosud to bylo 12px/500
+     u přepínače pohledu, 13px/400 u klubů v hlasování a 13px/500 u témat a filtru zdrojů.
+     Záložka detailu drží 13px/600 — není to volba, ale nadpis oddílu, do kterého vede. */
+  body .hl-cipy a { font-weight: 500; }
+  body .pohled button, body .pr-pohled button { font-size: 13px; }
+
+  /* Dotykové cíle ve stavech, do kterých se čtenář dostane až ovládáním. Audit i testy měřily jen
+     stránku, jak se načte, takže záložku Zdroje neviděly: filtr zdrojů měl 24 px a odkazy pod
+     seznamem („Historie změn“, „Nahlásit chybu“, „Zkopírovat odkaz“) 20 px. */
+  body .zdroje-filtr { gap: 8px; }
+  body .zdroje-filtr button { min-height: 44px; padding-block: 0; }
+  body .paticka-detailu { gap: 0 16px; }
+  body .paticka-detailu a { min-height: 44px; display: inline-flex; align-items: center; }
+  /* „Ukázat na mapě →“ pod seznamem vazeb v záložce Vazby: 25 px na výšku */
+  body .m2-panel .vazby .na-mapu { min-height: 44px; display: inline-flex; align-items: center; margin-top: 0; }
+  /* „méně“ je krátké slovo: na výšku cíl mělo, na šířku 37 px */
+  body .perex-vice, body .castky-vice, body .pro-vas-vice { min-width: 44px; }
+  body .chyba404-tlacitko { min-height: 44px; display: inline-flex; align-items: center; }
+  /* Výběry ve větě dalších filtrů měly pod 16 px, takže Safari na iPhonu po klepnutí přiblížil
+     a nevrátil se — stejná vada jako dřív u vyhledávání, jen schovaná za „Upřesnit výběr“. */
+  body .f-dalsi select { font-size: 16px; }
+
+  /* Svislice: obsah detailu začíná tam, kde obsah stránky — 16 px od okraje. Detail měl 18 px,
+     takže se o 2 px rozcházel se stránkou pod sebou i s lištou listování, která 16 px má.
+     Místo vpravo pro zavírací křížek (60 px u hlavičky a záložek) zůstává. */
+  body .m2-hlava { padding-left: 16px; }
+  body .zalozky { padding-left: 16px; }
+  body .m2-panel { padding-left: 16px; padding-right: 16px; }
+  /* Rámovaný blok má vnitřní okraj 16 px jako karty metodiky; hlasování mělo 10 px. Řádky osy
+     kauz mají 14 px a zůstávají: sdílejí ho s mřížkou let a nedá se měnit bez přeměření osy. */
+  body .hl-telo { padding-inline: 16px; }
+}

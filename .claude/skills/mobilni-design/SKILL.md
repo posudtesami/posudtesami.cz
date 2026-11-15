@@ -59,6 +59,8 @@ Když tam není, je to rozhodnutí pro uživatele, ne detail k doladění.**
      a metodiku, takže přes něj nesmí ležet překryv tlačítka.
 2. **Jedna typografie ovládání:** popisek `600 14px`, číselný údaj `13px` mono. Popisek, na který
    se klepe, není kurzívou — ta patří doprovodnému textu (datum, „← předchozí“, poznámka).
+   **Rámovaný prvek volby** (čip tématu, čip klubu, přepínač pohledu, filtr zdrojů) má `13px/500`.
+   **Záložka** detailu má `13px/600` — není to volba, ale nadpis oddílu, do kterého vede.
 3. **Rámeček má jen to, co něco udělá** (přepínač, krok, filtr, čip). Co jen rozbaluje, rámeček nemá.
 4. **Počet schovaných věcí se píše „+N“** a stojí u toho, co rozbaluje („+12 dalších“, „+1 ▾“).
 5. **Trvale přilepené ovládání:** nejvýš jeden pruh nahoře a jeden dole, dohromady do **15 %
@@ -67,6 +69,10 @@ Když tam není, je to rozhodnutí pro uživatele, ne detail k doladění.**
 6. **Mezery z jedné stupnice:** 4 · 8 · 12 · 16 · 24 · 32 px. Platí pro vše nové a pro vše, na co
    se sahá. Starší pravidla v `upravy.css` mají i 5, 6, 10, 14 a 18 px a hromadně se nepřepisovala:
    posunulo by to desítky míst o 1–2 px bez viditelného přínosu a každé by se muselo přeměřit.
+7. **Dvě svislice, víc ne.** Obsah stránky i detailu začíná **16 px** od okraje displeje (detail měl
+   18 px a rozcházel se se stránkou i s vlastní lištou listování). Obsah uvnitř rámovaného bloku
+   začíná o dalších **16 px** dál (karta metodiky, blok hlasování). Výjimka: řádky osy kauz mají
+   vnitřních 14 px, protože ho sdílejí s mřížkou let — bez přeměření osy nesahat.
 
 Vzhled rozbalovacího odkazu je v `upravy.css` na **jediném místě** (blok „Řád ovládání“); jednotlivé
 prvky si jinde řeší jen rozvržení. Hlídá to test „rozbalovací odkazy mají na celém webu jeden vzhled“.
@@ -125,6 +131,13 @@ Oba skripty si samy postaví web ze **skutečného obsahu** (`obsah/`), spustí 
 `prehled.mjs` vypíše tabulku: u každé stránky kolik pixelů zabere obal nad obsahem, jak je stránka
 vysoká v obrazovkách, jestli se něco posouvá do strany, kolik je cílů pod 44 px a jaké je nejmenší
 viditelné písmo. **Tím každá práce začíná.**
+
+`audit.mjs` měří **i stavy, do kterých se stránka dostane až ovládáním**: projde záložky detailu,
+otevře přehled událostí a rozklikne rozbalovací prvky. Do 15. 11. měřil jen stránku, jak se načte,
+a výpis „cíle pod 44 px: nic“ tak půl dne platil jen napůl — záložka Zdroje nesla filtr vysoký
+24 px a tři odkazy vysoké 20 px (včetně „Historie změn“, které uživatel hlásil hned první den)
+a výběry za „Upřesnit výběr“ měly pod 16 px. **Tvrzení „nikde“ smíš říct jen o tom, co jsi
+opravdu prošel.** Stejně to hlídají testy „dotykové cíle i v záložkách a po rozbalení“.
 
 `shoda-pocitace.mjs` porovná dva hotové buildy v okně počítače bod po bodu a řekne, který prvek
 se pohnul. **Pouštěj ho po každé změně CSS psané mimo `@media (max-width: 760px)`** — testy takový
@@ -207,7 +220,16 @@ skupina hlasování je řádek-tlačítko s názvem skupiny jako popiskem, pořa
 v obsahu i na liště. Obal nad obsahem detailu je v průměru 329 px (nejhorší 342), počítač je shodný
 na pixel.
 
-Nejdelší stránka webu je 1,3 obrazovky a nic se nikde neposouvá do strany.
+Druhý průchod řádem (15. 11.): čipy, přepínače a filtry mají jeden řez (13px/500), detail má okraj
+16 px jako stránka, blok hlasování vnitřních 16 px. Dotykové cíle jsou na 44 px **i v záložkách
+a po rozbalení** (filtr zdrojů, odkazy pod seznamem zdrojů, „Ukázat na mapě“, „méně“) a výběry ve
+větě filtrů mají 16 px. Záložka Zdroje tím narostla o desetinu obrazovky; jinde se výška nezměnila.
+
+Otevřené (díly předložené 15. 11., čeká se na volbu): **písmo menu 12 px** (pod vlastní hranicí
+14 px; čtyři položky se ve 14 px na jeden řádek nevejdou) a **záložky detailu zákona**, které se
+posouvají do strany, zatímco u kauz mají krátké popisky a vejdou se.
+
+Nejdelší stránka webu mimo seznam zdrojů je 1,3 obrazovky a nic se nikde neposouvá do strany.
 
 ## Časté chyby
 
@@ -223,3 +245,4 @@ Nejdelší stránka webu je 1,3 obrazovky a nic se nikde neposouvá do strany.
 | Vymyslet pro nový prvek vlastní vzhled, protože se sem zrovna hodí | Najdi jeho tvar v řádu ovládání; když tam není, je to otázka pro uživatele |
 | Opakovat údaj z lišty i v obsahu („30 z 30“ a „událost 30 z 30“) | Jeden údaj, jedno místo |
 | Psát sdílené pravidlo mimo `@media` a věřit, že se počítače netýká | `shoda-pocitace.mjs` před commitem |
+| Říct „nikde na webu“ po změření stránek, jak se načtou | Projdi i záložky a rozbalené stavy — `audit.mjs` to dělá |
