@@ -61,7 +61,7 @@ Tvar rozlišuje druh události. Barva nehodnotí a červená (`#DB1F2D`) se nepo
 ## 6. Velikosti obrazovky
 
 - **Počítač** (velikosti z hlavní specifikace, oddíl 7): osa se vejde na šířku bez posouvání do strany, nejméně do rozsahu 20 měsíců. Při delším rozsahu se plocha posouvá do strany uvnitř a sloupec názvů zůstává přichycený vlevo.
-- **Mobil 390×700:** plocha se posouvá do strany uvnitř. Sloupec názvů je přichycený vlevo a užší (jen název). Po otevření osy se plocha posune tak, aby byla vidět čára „dnes“.
+- **Mobil (do 760 px šířky):** časová osa tu není (změna 15. 11. 2026, na úzkém displeji se nedala číst). Přepínač nemá tlačítko Časová osa; když by zbyl jen Seznam, přepínač se skryje celý. Adresa `?pohled=osa` otevřená na mobilu ukáže výchozí pohled a adresu na něj srovná. Zúžení okna, když je osa otevřená, přepne na výchozí pohled.
 - Na žádné velikosti se stránka svisle neposouvá (`document.scrollingElement.scrollHeight <= innerHeight`).
 
 ## 7. Architektura
@@ -90,7 +90,7 @@ Tvar rozlišuje druh události. Barva nehodnotí a červená (`#DB1F2D`) se nepo
   - popisek při fokusu,
   - klik na bod otevře Průběh na správné události, `?udalost=` v adrese, zavření vrátí osu,
   - filtry skrývají řádky osy, počítadlo a prázdný stav,
-  - mobil: posouvání do strany a přichycený sloupec názvů,
+  - mobil: bez tlačítka Časová osa, `?pohled=osa` ukáže výchozí pohled, zúžení okna osu zavře,
   - bez JavaScriptu není přepínač ani osa,
   - žádné svislé posouvání na všech velikostech,
   - axe bez závažných chyb.

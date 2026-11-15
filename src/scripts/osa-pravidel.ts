@@ -1,15 +1,19 @@
 import { otevriPravidlo } from './navigace-pravidel';
 
 /** Přepínání Oblasti · Seznam · Časová osa, popisky bodů a posun osy na „dnes“ (spec osy, oddíl 2, 5 a 6;
- *  specifikace oblastí, oddíl 8.1). Výchozí pohled jsou Oblasti, pokud přehled nějakou kartu má, jinak Seznam. */
+ *  specifikace oblastí, oddíl 8.1). Výchozí pohled jsou Oblasti, pokud přehled nějakou kartu má, jinak Seznam.
+ *  Časová osa je jen na počítači: na mobilu (stejná hranice 760 px jako v CSS) se místo ní ukáže výchozí pohled. */
 export type Pohled = 'oblasti' | 'seznam' | 'osa';
 
+const MOBIL = '(max-width: 760px)';
 const maOblasti = (): boolean => document.querySelector('[data-oblasti-pohled]') !== null;
 export const vychoziPohled = (): Pohled => (maOblasti() ? 'oblasti' : 'seznam');
 export const aktualniPohled = (): Pohled => (document.body.dataset.pohledPravidel as Pohled | undefined) ?? vychoziPohled();
+/** Pohled, který jde v tomto okně ukázat: osa na mobilu není. */
+const dostupny = (p: Pohled): Pohled => (p === 'osa' && matchMedia(MOBIL).matches ? vychoziPohled() : p);
 export function pohledZAdresy(): Pohled {
   const p = new URLSearchParams(location.search).get('pohled');
-  if (p === 'osa' || p === 'seznam') return p;
+  if (p === 'osa' || p === 'seznam') return dostupny(p);
   if (p === 'oblasti' && maOblasti()) return 'oblasti';
   return vychoziPohled();
 }
@@ -30,7 +34,11 @@ export function inicializujOsuPravidel(): void {
   const popisek = osa.querySelector<HTMLElement>('.op-popisek')!;
   prepinac.hidden = false;
 
-  const nastav = (p: Pohled, zapsat: boolean) => {
+  const nastav = (pozadovany: Pohled, zapsat: boolean) => {
+    const p = dostupny(pozadovany);
+    // ?pohled=osa otevřené na mobilu (třeba sdílený odkaz): adresa se srovná s tím, co je vidět
+    const adresaChceOsu = new URLSearchParams(location.search).get('pohled') === 'osa';
+    if (p !== 'osa' && adresaChceOsu && location.pathname === '/pravidla/') zapsat = true;
     document.body.dataset.pohledPravidel = p;
     osa.hidden = p !== 'osa';
     seznam.hidden = p !== 'seznam';
@@ -54,6 +62,8 @@ export function inicializujOsuPravidel(): void {
     if (b) nastav(b.dataset.pohled as Pohled, true);
   });
   nastav(pohledZAdresy(), false);
+  // zúžení okna pod hranici mobilu, když je otevřená osa, přepne na výchozí pohled
+  matchMedia(MOBIL).addEventListener('change', e => { if (e.matches && aktualniPohled() === 'osa') nastav('osa', true); });
 
   // popisek bodu: jeden prvek s position: fixed, aby ho neořízla posouvaná plocha
   const ukazPopisek = (el: HTMLElement) => {
