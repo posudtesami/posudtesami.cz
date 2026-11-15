@@ -484,3 +484,26 @@ body .radek[data-shoda-v-textu] .nazev small::after { content: " · shoda v text
   /* odkaz na zdroj posune seznam tak, aby zdroj nezůstal pod přilepenou lištou záložek */
   html body dialog.m2 ol.zdroje li { scroll-margin-top: 64px; }
 }
+
+/* ===== Dotykové cíle na telefonu (WCAG 2.5.8, povinné minimum 24×24 px) =====
+   Na mobilu měla řada ovládacích prvků 15–22 px na výšku: menu v hlavičce (15 px), značka, přepínač
+   pohledu, volby ve větě dalších filtrů, zaškrtávátko a textová tlačítka („celé shrnutí“, „Celé znění“).
+   Zvětšuje se jen schránka, do které se dá klepnout — písmo ani rozvržení se nemění, u řádkových prvků
+   roste výplň do volného místa kolem textu. Hlídá to tests/e2e/mobil.spec.ts („velikost dotykových cílů“). */
+@media (max-width: 760px) {
+  /* Menu a značka v hlavičce: výplň u řádkového odkazu nezvětší řádek, ale zvětší plochu pro prst. */
+  body .top .brand, body .top nav a { padding-block: 6px; }
+
+  /* Přepínač pohledu: Osa / Mapa u kauz, Oblasti / Seznam / Časová osa u pravidel. */
+  body .pohled button, body .pr-pohled button { min-height: 24px; }
+
+  /* Zaškrtávátko „jen neuzavřené“ a „jen v projednávání“ — klepnout jde na celý štítek. */
+  body .filtry.f4 .f-prepinac { min-height: 24px; }
+
+  /* Volby ve větě dalších filtrů: zůstávají podtrženými slovy, jen mají vyšší schránku. */
+  body .f-dalsi select { min-height: 24px; }
+
+  /* Tlačítka a odkazy psané jako slovo, ale stojící samostatně mimo větu. */
+  body .perex-vice { padding-block: 4px; }
+  body .v4-karta button, body .v4-karta a { padding-block: 4px; }
+}
