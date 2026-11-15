@@ -8,7 +8,7 @@ description: Specialista na mobilní zobrazení posudtesami.cz. Použij vždy, k
 Web je archiv kauz pro veřejnost. **Většina čtenářů ho otevře na telefonu.** Desktop je v pořádku
 a nemá se měnit; práce i posuzování se vede na **390 × 844** (hlavní) a **320 × 568** (hraniční).
 
-## Tři pravidla, která tady platí nade vším
+## Pravidla, která tady platí nade vším
 
 **1. Nic se nemaže, jen se sbaluje nebo přesouvá.** Webu stojí důvěra na tom, že každé tvrzení má
 zdroj a každé číslo popis. Hustota se řeší tím, že se věc schová za rozbalení nebo přesune tam, kam
@@ -30,6 +30,13 @@ rozprostřené body osy měly terč 11 px (hůř než předtím), rozšířená 
 strop na částky ušetřil 32 px místo slibovaných 95, sbalení popisů nespravilo nízké okno,
 tlačítko „na řádku s částkami“ v náhledu jen zmizelo, a šipka s `nowrap` přetekla u jedné kauzy
 o 7 px do strany. Měř na **všech** kauzách, ne na té jedné, na které to vyšlo.
+
+**5. Zvolenou variantu po postavení změř znovu — náhled není stavba.** Hotová věc žije mezi
+staršími pravidly, která v náhledu nevadila. Při zavádění vybraných dílů 15. 11. to byly dvě
+tiché chyby: `.listovani button { max-width: 48% }` z `hlavni.css` zúžilo položky nového přehledu
+tak, že se názvy lámaly do čtyř řádků, a seznam vložený jako položka pružné lišty
+(`flex: 1 0 100%` + záporné okraje) vytlačil na 320 px listovací tlačítko 2 px mimo obraz. Obojí
+se poznalo až změřením v hotovém buildu, ne z náhledu.
 
 ## Čísla, která platí
 
@@ -134,14 +141,25 @@ jehož „po" jsi neviděl.
 
 | věc | stav |
 |---|---|
-| listování je po zrušení osy jediné ovládání chronologie: kde stojí, jak skočit doprostřed | **díly předložené 15. 11., čeká se na volbu** |
-| dva rozbalovací odkazy v hlavičce detailu berou každý 44 px | díly předložené, čeká se na volbu |
-| text 12–13 px na pravidlech a hlasování | na hraně, jinde 14–15 px |
+| text 12–13 px na pravidlech a hlasování | na hraně, jinde 14–15 px; uživatel odložil (nejdřív rozvržení a ovladatelnost) |
+| kroky `.prubeh` na pravidlech mají 11 px | návrh byl, nevybral se |
+| přehled událostí má u kauzy se 3 událostmi stejné ovládání jako u třiceti | zatím bez prahu, kdyby vadilo, zapne se podle počtu |
 
 Hotovo (ať se k tomu nevrací): hlavička detailu 518 → 294 px, úvod 417 → 323 px,
 hlasování 5,7 → 1,1 obrazovky, dotykové cíle na **44 px**, strop na dvě částky v hlavičce,
 u hlasování přepíná nadpis, na nízkém okně počítače se modal posouvá dolů místo ořezávání,
 vyhledávací pole má 16 px a mini-osa se na telefonu neukazuje (událostmi se listuje tlačítky).
+
+Z dílů vybraných 15. 11. (volba C · B · A · C · A):
+**lišta listování je přilepená dole** (77 px, panel si o ně zmenší spodní okraj, aby nepřekryla
+konec události), **v ní je přehled všech událostí** (dvě klepnutí kamkoli místo patnácti; seznam
+stojí nad lištou jako překryv, ne jako položka pružné lišty) a **sbalený řádek částek je sám
+tlačítkem** — popisek se ořízne pro čtečku, šipka za částkami nese počet schovaných
+(`data-sbalene` / `data-skryte` nastavuje skript, takže bez JavaScriptu ani na počítači nevznikne).
+Seznam částek tím klesl ze **77 na 49 px** v průměru přes 21 kauz (na jeden řádek se vejde
+u 14 z 21 místo 5), obal nad obsahem z **359 na 331 px** v průměru, nejhorší z 392 na 344.
+Chronologie se začíná poslední událostí a shrnutí drží tři řádky — obojí zůstalo, jak bylo.
+
 Nejdelší stránka webu je 1,3 obrazovky a nic se nikde neposouvá do strany.
 
 ## Časté chyby

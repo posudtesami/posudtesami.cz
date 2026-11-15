@@ -537,6 +537,10 @@ body .radek[data-shoda-v-textu] .nazev small::after { content: " · shoda v text
 /* Krátký tvar popisku záložky (jako menu-kratky v hlavičce) — na počítači se nepoužije. */
 .zal-kratky { display: none; }
 
+/* Přehled událostí je náhrada za osu, a tu má počítač pořád: tam se tohle ovládání neukazuje
+   (ani když telefon otočíme naležato a stránka přejde na rozvržení pro širší displej). */
+.listovani-prehled, .udalosti-prehled { display: none; }
+
 /* „k čemu částky jsou“ vypadá a chová se jako „celé shrnutí“ nad ním. */
 body .castky-vice { display: inline-block; margin: 6px 0 0; padding: 4px 0; border: 0; background: none; font: italic 14px var(--f-text); color: var(--modra); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 body .castky-vice[hidden] { display: none; }
@@ -564,6 +568,59 @@ body .f-upresnit { display: none; flex: 1 0 100%; order: 5; margin: 0; padding: 
   html.js body .m2-panel[data-p="chrono"] .listovani { margin-top: 14px; gap: 8px; }
   html.js body .m2-panel[data-p="chrono"] .listovani button { flex: 1 1 0; min-height: 56px; padding: 8px 10px; border: 1px solid var(--linka); }
   html.js body .m2-panel[data-p="chrono"] .listovani button:disabled { opacity: .45; }
+
+  /* ===== Lišta listování je přilepená dole =====
+     V toku stála za textem události, takže u delší události sjela pod okraj displeje a musela se
+     k ní rolovat — a pokaždé byla jinde. Přilepená je v dosahu palce a vždycky na stejném místě.
+     Cena je 77 px z displeje natrvalo; názvy sousedních událostí se proto krátí na jeden řádek.
+     Detail zákona má v chronologii vlastní rozvržení (ukazatel průběhu, pár událostí), tam se nic
+     nemění. */
+  html.js body dialog.m2:not(.pravidlo) .m2-panel[data-p="chrono"] .listovani {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 6;
+    margin: 0; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+    flex-wrap: wrap; background: var(--plocha); border-top: 1px solid var(--inkoust);
+  }
+  html.js body dialog.m2:not(.pravidlo) .m2-panel[data-p="chrono"] .listovani button[data-krok] { max-width: none; min-width: 0; }
+  html.js body dialog.m2:not(.pravidlo) .m2-panel[data-p="chrono"] .listovani button[data-krok] span {
+    display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  /* Pod poslední řádek události musí zůstat místo, jinak by ji lišta překryla. */
+  html.js body dialog.m2:not(.pravidlo) .m2-panel[data-p="chrono"]:not([hidden]) { padding-bottom: 96px; }
+
+  /* ===== Přehled všech událostí =====
+     Bez osy vedlo k události uprostřed třicetidílné kauzy patnáct klepnutí a čtenář nevěděl, co
+     v kauze vůbec je, dokud to neprolistoval. Prostřední tlačítko lišty nese pořadí a otevře seznam
+     dat a názvů: dvě klepnutí kamkoli. Seznam je první řádek lišty, takže roste nahoru nad tlačítka. */
+  html.js body dialog.m2:not(.pravidlo) .listovani .listovani-prehled {
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+    flex: none; min-width: 84px; max-width: none; min-height: 56px; padding: 6px 8px;
+    border: 1px solid var(--linka); background: var(--plocha);
+    font: 600 13px var(--f-mono); color: var(--modra); cursor: pointer;
+  }
+  html.js body dialog.m2:not(.pravidlo) .listovani .listovani-prehled::after { content: "▾"; font: 400 15px/1 var(--f-text); }
+  html.js body dialog.m2:not(.pravidlo) .listovani .listovani-prehled[aria-expanded="true"] { border-color: var(--inkoust); }
+  html.js body dialog.m2:not(.pravidlo) .listovani .listovani-prehled[aria-expanded="true"]::after { content: "▴"; }
+  /* Seznam stojí nad lištou (ne v ní): jako položka pružného řádku by se s tlačítky přetahoval
+     o místo a na úzkém displeji je vytlačil mimo obraz — změřeno na 320 px. */
+  html.js body dialog.m2:not(.pravidlo) .listovani .udalosti-prehled:not([hidden]) { display: block; }
+  html.js body dialog.m2:not(.pravidlo) .listovani .udalosti-prehled {
+    position: absolute; left: 0; right: 0; bottom: 100%;
+    max-height: 52dvh; overflow-y: auto; overscroll-behavior: contain;
+    padding: 0 16px; background: var(--plocha);
+    border-top: 1px solid var(--linka); border-bottom: 1px solid var(--inkoust);
+    box-shadow: 0 -6px 24px rgb(14 23 38 / .15);
+  }
+  html.js body dialog.m2:not(.pravidlo) .udalosti-prehled ol { list-style: none; margin: 0; padding: 0; }
+  html.js body dialog.m2:not(.pravidlo) .udalosti-prehled button {
+    /* .listovani button má v hlavni.css max-width: 48 %, jinak by se název lámal do čtyř řádků */
+    display: flex; gap: 10px; align-items: center; width: 100%; max-width: none; min-height: 44px;
+    padding: 5px 0; border: 0; border-bottom: 1px solid var(--linka);
+    background: none; text-align: left; font: inherit; color: var(--inkoust); cursor: pointer;
+  }
+  html.js body dialog.m2:not(.pravidlo) .udalosti-prehled .pr-datum { flex: none; width: 86px; font: 600 12px var(--f-mono); color: var(--meta); }
+  html.js body dialog.m2:not(.pravidlo) .udalosti-prehled .pr-nazev { font-size: 14px; line-height: 1.3; }
+  html.js body dialog.m2:not(.pravidlo) .udalosti-prehled button[aria-current="true"] { background: color-mix(in srgb, var(--modra) 8%, transparent); }
+  html.js body dialog.m2:not(.pravidlo) .udalosti-prehled button[aria-current="true"] .pr-nazev { font-weight: 700; }
 
   /* Záložky: krátké popisky, aby se vešlo všech pět včetně Zdrojů a nic nezůstalo mimo obraz. */
   body .zalozky .zal-dlouhy { display: none; }
@@ -602,6 +659,30 @@ body .hl-vice[hidden] { display: none; }
   /* Rozbalovací tlačítko stojí uvnitř seznamu částek, takže sdílí jejich řádek místo vlastních 44 px. */
   body .m2-hlava .castky .castky-ovladani { flex: none; }
   body .m2-hlava .castky .castky-vice { margin: 0; }
+
+  /* ===== Sbalený řádek částek je sám tlačítkem =====
+     Slova „k čemu částky jsou“ se vedle částek vešla jen u 5 kauz z 21; jinde si vzala vlastní řádek
+     a seznam částek měl v průměru 77 px. Terčem je proto celý řádek: tlačítko se přes něj roztáhne,
+     popisek se ořízne pro čtečku a že jde řádek otevřít, říká šipka za částkami. Kolik částek je
+     schovaných, nese šipka číslem — jinak by to čtenář nepoznal.
+     Atribut data-sbalene nastavuje skript, a jen když se částky opravdu sbalily: bez JavaScriptu
+     ani na počítači tím pádem nevznikne a nic se nemění. */
+  html.js body .m2-hlava:not(.castky-rozbalene) .castky[data-sbalene] { position: relative; min-height: 44px; align-items: center; }
+  html.js body .m2-hlava:not(.castky-rozbalene) .castky[data-sbalene]::after {
+    content: "▾"; align-self: center; margin-left: auto; font: 400 18px/1 var(--f-text); color: var(--modra);
+  }
+  html.js body .m2-hlava:not(.castky-rozbalene) .castky[data-sbalene][data-skryte]::after {
+    /* u schovaných částek patří značka k nim, ne na konec řádku: je to údaj o částkách, ne šipka */
+    content: "+" attr(data-skryte) " ▾"; margin-left: -6px; font: 600 14px/1 var(--f-mono);
+  }
+  html.js body .m2-hlava:not(.castky-rozbalene) .castky[data-sbalene] .castky-ovladani { position: absolute; inset: 0; margin: 0; max-width: none; }
+  html.js body .m2-hlava:not(.castky-rozbalene) .castky[data-sbalene] .castky-vice {
+    position: absolute; inset: 0; width: 100%; min-height: 0; padding: 0; border: 0;
+    background: none; text-decoration: none; cursor: pointer;
+  }
+  html.js body .m2-hlava:not(.castky-rozbalene) .castky[data-sbalene] .castky-popisek {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
 }
 
 /* ===== Hlasování: přepínač vedle nadpisu skupiny (telefon) =====

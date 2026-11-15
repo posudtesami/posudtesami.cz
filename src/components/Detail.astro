@@ -36,11 +36,11 @@ const chipy = (cisla: number[]) => cisla.map(c => `<a href="#zdroj-${c}" class="
             {k.castky.map(c => <li class={c.druh === 'objem' ? 'objem' : undefined}><strong>{castkaText(c)}</strong> <span class="druh-castky">{popisekDruhu(c.druh)}</span> <span class="popis-castky">{c.popis}<span class="chipy" set:html={chipy(c.zdroje)}></span></span></li>)}
             <li class="castky-metodika"><a href="/metodika/#jazyk">Co částky znamenají</a></li>
             {/* Na telefonu zůstanou z částek jen dvě čísla s druhem; zbytek, popisy, čísla zdrojů
-                a odkaz na metodiku otevře tohle tlačítko. Stojí uvnitř seznamu, aby na úzkém displeji
-                sdílelo řádek s částkami a nebralo vlastních 44 px. Skript ho ukáže jen tam, kde se
-                částky opravdu sbalily — bez JavaScriptu je vidět všechno rovnou a tlačítko zůstane
-                schované. */}
-            <li class="castky-ovladani"><button class="castky-vice" type="button" aria-expanded="false" aria-controls="detail-castky" hidden>k čemu částky jsou</button></li>
+                a odkaz na metodiku otevře tohle tlačítko. Stojí uvnitř seznamu, protože na telefonu
+                je terčem celý řádek částek: tlačítko se přes něj roztáhne a jeho popisek se ořízne
+                pro čtečku (slova by zabrala řádek navíc). Skript ho ukáže jen tam, kde se částky
+                opravdu sbalily — bez JavaScriptu je vidět všechno rovnou a tlačítko zůstane schované. */}
+            <li class="castky-ovladani"><button class="castky-vice" type="button" aria-expanded="false" aria-controls="detail-castky" hidden><span class="castky-popisek">k čemu částky jsou</span></button></li>
           </ul>
         )}
       </header>

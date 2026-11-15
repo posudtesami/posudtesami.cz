@@ -127,6 +127,70 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
     await vyfot(page, 'stav-detail-listovani', 'Detail kauzy — chronologie se na telefonu listuje tlačítky');
   });
 
+  // Lišta listování stála v toku za textem události: u delší události sjela pod okraj displeje
+  // a pokaždé byla jinde. Přilepená dole je v dosahu palce a na stejném místě — za cenu 77 px,
+  // o které se panel musí zmenšit, aby poslední řádek události nezůstal pod ní.
+  test('detail kauzy: lišta listování je přilepená dole a nepřekrývá událost', async ({ page }) => {
+    await otevri(page, '/kauzy/zeta-stret/');
+    await page.getByRole('tab', { name: 'Kdy' }).tap();
+    const lista = page.locator('dialog#detail .listovani');
+    const m = await lista.evaluate(e => ({ poloha: getComputedStyle(e).position, dno: e.getBoundingClientRect().bottom }));
+    expect(m.poloha, 'lišta je přilepená k displeji').toBe('fixed');
+    expect(Math.abs(m.dno - HLAVNI.height), 'a drží se u spodního okraje').toBeLessThanOrEqual(2);
+
+    // konec textu události musí zůstat nad lištou, i když se čtenář posune na konec
+    await page.locator('dialog#detail').evaluate(e => { e.scrollTop = e.scrollHeight; });
+    await page.waitForTimeout(150);
+    const prekryv = await page.evaluate(() => {
+      const l = document.querySelector('.listovani')!.getBoundingClientRect();
+      const t = document.querySelector('.udalosti-seznam > li:not([hidden]) .udalost-velka > div')!.getBoundingClientRect();
+      return Math.round(Math.max(0, t.bottom - l.top));
+    });
+    expect(prekryv, 'lišta nesmí překrýt konec události').toBe(0);
+    await expect(lista, 'a sama zůstává vidět i po posunutí').toBeInViewport();
+    await vyfot(page, 'stav-detail-listovani-dole', 'Detail kauzy — lišta listování přilepená dole');
+  });
+
+  // Bez osy by k události uprostřed třicetidílné kauzy vedlo patnáct klepnutí a čtenář by nevěděl,
+  // co v kauze vůbec je, dokud by to neprolistoval. Přehled je obojí: rozcestník i pohled na celek.
+  test('detail kauzy: přehled událostí v liště skočí kamkoli dvěma klepnutími', async ({ page }) => {
+    await otevri(page, '/kauzy/zeta-stret/');
+    await page.getByRole('tab', { name: 'Kdy' }).tap();
+    const celkem = await page.locator('.udalosti-seznam > li').count();
+    const prehled = page.locator('dialog#detail .listovani-prehled');
+    // jméno pro čtečku začíná tím, co je vidět (pořadí) — hlasové ovládání najde, co čtenář čte
+    await expect(prehled, 'tlačítko nese pořadí').toHaveText(`${celkem} z ${celkem}`);
+    await expect(prehled).toHaveAccessibleName(new RegExp(`^${celkem} z ${celkem} — `));
+    await expect(prehled).toHaveAttribute('aria-expanded', 'false');
+
+    const seznam = page.locator('dialog#detail .udalosti-prehled');
+    await expect(seznam).toBeHidden();
+    await prehled.tap();
+    await expect(seznam, 'přehled se otevře nad lištou').toBeVisible();
+    const polozky = seznam.locator('button[data-i]');
+    await expect(polozky, 'v přehledu jsou všechny události').toHaveCount(celkem);
+    for (const b of await polozky.all()) {
+      const r = (await b.boundingBox())!;
+      expect(r.height, 'položka přehledu je pohodlný terč').toBeGreaterThanOrEqual(44);
+    }
+    // přehled nese datum i název, aby se dalo vybírat očima
+    await expect(polozky.first().locator('.pr-datum')).not.toBeEmpty();
+    const prvniNazev = (await page.locator('.udalosti-seznam > li').first().locator('h3').textContent())!.trim();
+    await expect(polozky.first().locator('.pr-nazev')).toHaveText(prvniNazev);
+    await vyfot(page, 'stav-detail-prehled-udalosti', 'Detail kauzy — přehled všech událostí nad lištou');
+
+    await polozky.first().tap();
+    await expect(seznam, 'po skoku se přehled zavře').toBeHidden();
+    await expect(page.locator('.udalosti-seznam > li:not([hidden]) time small')).toHaveText(`událost 1 z ${celkem}`);
+    await expect(prehled, 'počítadlo jde s událostí').toHaveText(`1 z ${celkem}`);
+
+    // jiná záložka přehled zavře, ať nezůstane viset nad obsahem
+    await prehled.tap();
+    await expect(seznam).toBeVisible();
+    await page.getByRole('tab', { name: 'Stav' }).tap();
+    await expect(prehled).toHaveAttribute('aria-expanded', 'false');
+  });
+
   test('vyhledávací pole má aspoň 16 px, aby iPhone po klepnutí nepřibližoval', async ({ page }) => {
     for (const cesta of ['/', '/pravidla/']) {
       await otevri(page, cesta);
@@ -151,9 +215,25 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
     // hlídáme proto stavbu, ne polohu — ta závisí na délce částek.
     await expect(page.locator('dialog#detail .castky .castky-vice'), 'tlačítko je uvnitř seznamu částek').toHaveCount(1);
     await expect(page.locator('dialog#detail .m2-hlava > .castky-vice'), 'a nestojí jako samostatný blok pod ním').toHaveCount(0);
+    // Terčem je celý řádek částek: slova by si vedle nich vzala vlastní řádek (vešla se jen u 5 kauz
+    // z 21). Tlačítko se proto přes řádek roztáhne a jeho popisek zůstane jen pro čtečku.
+    const pokryti = await page.evaluate(() => {
+      const c = document.querySelector('.castky')!.getBoundingClientRect();
+      const t = document.querySelector('.castky-vice')!.getBoundingClientRect();
+      return { sirka: t.width / c.width, vyska: t.height / c.height, terc: Math.min(t.width, t.height) };
+    });
+    expect(pokryti.sirka, 'tlačítko kryje celou šířku řádku částek').toBeGreaterThan(0.95);
+    expect(pokryti.vyska, 'i celou jeho výšku').toBeGreaterThan(0.95);
+    expect(pokryti.terc, 'terč je pohodlný').toBeGreaterThanOrEqual(44);
+    await expect(vice, 'popisek zůstává jménem tlačítka pro čtečku').toHaveAccessibleName(/částk/);
+    await expect(page.locator('dialog#detail .castky'), 'styly poznají sbalený řádek podle atributu').toHaveAttribute('data-sbalene', '');
     await vice.click();
     await expect(popis, 'po rozbalení je popis i s čísly zdrojů vidět').toBeVisible();
     await expect(vice).toHaveAttribute('aria-expanded', 'true');
+    // rozbalené částky už tlačítko nepřekrývá: odkaz na metodiku i čísla zdrojů jdou klepnout
+    await expect(page.locator('dialog#detail .castky-metodika a')).toBeVisible();
+    expect(await page.locator('dialog#detail .castky-vice').evaluate(e => getComputedStyle(e).position),
+      'tlačítko se vrátí mezi ostatní, aby nepřekrývalo odkazy').not.toBe('absolute');
   });
 
   // Kauza se čtyřmi částkami měla hlavičku o řádek vyšší než ostatní (385 px proti 252–294).
@@ -168,6 +248,9 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
     // slovem, ne číslem („další částka“ u jedné, „další 2 částky“ u dvou).
     const vice = page.locator('dialog#detail .castky-vice');
     await expect(vice, 'tlačítko musí říct, že jsou další částky schované').toContainText(/dalš/);
+    // Popisek je na telefonu jen pro čtečku, takže počet schovaných částek nese i šipka za nimi.
+    await expect(page.locator('dialog#detail .castky'), 'kolik částek je schovaných, je vidět u šipky')
+      .toHaveAttribute('data-skryte', String(vsech - 2));
     if (vsech - 2 > 1) await expect(vice).toContainText(String(vsech - 2));
     await vice.click();
     expect(await videt(), 'po rozbalení jsou vidět všechny').toBe(vsech);

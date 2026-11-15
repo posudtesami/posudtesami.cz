@@ -1,3 +1,5 @@
+import { vytvorPrehled, type Prehled } from './udalosti-prehled';
+
 /** Rozměry závislé na šířce okna (tlačítko „celé shrnutí“, vytrácení záložek) přepočítá naposledy otevřená kauza. */
 let premerAktualni: (() => void) | null = null;
 const sPosluchaci = new WeakSet<HTMLDialogElement>();
@@ -53,6 +55,8 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
   const proVasVice = proVasObal?.querySelector<HTMLButtonElement>('.pro-vas-vice');
   const castky = hlava.querySelector<HTMLElement>('.castky');
   const castkyVice = hlava.querySelector<HTMLButtonElement>('.castky-vice');
+  const listovani = dlg.querySelector<HTMLElement>('.listovani');
+  let prehled: Prehled | null = null;
   let akt = polozky.length - 1;
 
   /** Záložky, které se nevejdou, se posouvají do strany; okraj, za kterým pokračují, se vytrácí. */
@@ -71,17 +75,29 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
   };
   /** Tlačítko „k čemu částky jsou“ jen tam, kde styly popisy částek opravdu schovaly (na telefonu).
    *  Ptáme se přímo stylů, ne šířky okna: rozhodnutí, kdy se částky sbalí, zůstává v CSS na jednom místě. */
+  /** Popisek tlačítka částek je uvnitř <span>: na telefonu se jen ořízne pro čtečku, protože terčem
+   *  je celý řádek částek a slova by v něm zabrala řádek navíc. */
+  const popisekCastek = (text: string) => {
+    const span = castkyVice?.querySelector<HTMLElement>('.castky-popisek');
+    if (span) span.textContent = text; else if (castkyVice) castkyVice.textContent = text;
+  };
   const dalsiCastky = (n: number) => n === 1 ? 'další částka' : n < 5 ? `další ${n} částky` : `dalších ${n} částek`;
   const zmerCastky = () => {
     if (!castky || !castkyVice || hlava.classList.contains('castky-rozbalene')) return;
     const popisCastky = castky.querySelector<HTMLElement>('.popis-castky');
     castkyVice.hidden = !popisCastky || getComputedStyle(popisCastky).display !== 'none';
-    if (castkyVice.hidden) return;
+    // Sbalený seznam částek je na telefonu sám tlačítkem: styly to poznají podle data-sbalene
+    // a dokreslí šipku. Bez JavaScriptu a na počítači atribut nevznikne a nic se nemění.
+    if (castkyVice.hidden) { delete castky.dataset.sbalene; delete castky.dataset.skryte; return; }
+    castky.dataset.sbalene = '';
     // Na úzkém displeji se ukážou jen dvě částky. Kolik jich styly schovaly, musí být vidět
     // na tlačítku — jinak čtenář neví, že tam ještě něco je.
     const skryte = [...castky.querySelectorAll<HTMLElement>('li:not(.castky-metodika):not(.castky-ovladani)')]
       .filter(li => getComputedStyle(li).display === 'none').length;
-    castkyVice.textContent = skryte > 0 ? `${dalsiCastky(skryte)} a k čemu jsou` : 'k čemu částky jsou';
+    // Že jsou další částky schované, musí být vidět i bez čtení popisku tlačítka (to je na telefonu
+    // jen pro čtečku) — proto se počet dokresluje k šipce za částkami.
+    if (skryte > 0) castky.dataset.skryte = String(skryte); else delete castky.dataset.skryte;
+    popisekCastek(skryte > 0 ? `${dalsiCastky(skryte)} a k čemu jsou` : 'k čemu částky jsou');
   };
   /** Body mini-osy mají cíl široký 24 px, ale nikdy se nepřekrývají se sousedy: u blízkých dat je cíl užší
    *  (nejméně jako viditelný bod), aby klik na bod nevzal sousední událost. Viditelný bod se u hustě
@@ -138,7 +154,7 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
   castkyVice?.addEventListener('click', () => {
     const rozbaleno = hlava.classList.toggle('castky-rozbalene');
     castkyVice.setAttribute('aria-expanded', String(rozbaleno));
-    if (rozbaleno) castkyVice.textContent = 'méně';
+    if (rozbaleno) popisekCastek('méně');
     else zmerCastky(); // popisek zase nese počet schovaných částek
   });
   proVasVice?.addEventListener('click', () => {
@@ -153,6 +169,7 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
     dlg.querySelectorAll<HTMLElement>('.zalozky [role="tab"]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.p === p)));
     dlg.querySelectorAll<HTMLElement>('.m2-panel').forEach(x => { x.hidden = x.dataset.p !== p; });
     if (p === 'zdroje') okrajeZdroju();
+    if (p !== 'chrono') prehled?.zavri();
     // Chronologie je na telefonu jediná záložka, kde je mini-osa vidět; změřit ji jde teprve teď.
     if (p === 'chrono') { sirkyBodu(); umistiPopis(); }
     // Na mobilu se celý modal posouvá dolů a lišta záložek se přilepí nahoře. Když je čtenář níž v delší
@@ -184,10 +201,15 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
       umistiPopis();
     }
     const nazev = (j: number) => polozky[j]?.querySelector('h3')?.textContent ?? '';
+    prehled?.obnov(akt);
     zpet.disabled = akt === 0; dal.disabled = akt === polozky.length - 1;
     zpet.querySelector('span')!.textContent = akt > 0 ? nazev(akt - 1) : '';
     dal.querySelector('span')!.textContent = akt < polozky.length - 1 ? nazev(akt + 1) : '';
   };
+
+  // Přehled všech událostí: bez osy je to jediné místo, kde je celý průběh kauzy vidět naráz,
+  // a jediná cesta doprostřed dlouhé kauzy kratší než patnáct klepnutí.
+  prehled = vytvorPrehled(listovani, polozky, i => ukaz(i, false));
 
   lista.addEventListener('click', e => {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[role="tab"]');
