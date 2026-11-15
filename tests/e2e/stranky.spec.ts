@@ -214,8 +214,10 @@ test.describe('mobil 390×700', () => {
       const odkazy = page.getByRole('navigation', { name: 'Hlavní' }).getByRole('link');
       await expect(odkazy).toHaveCount(4);
       for (const o of await odkazy.all()) await expect(o).toBeVisible();
-      const vysky = await odkazy.evaluateAll(a => a.map(x => x.getBoundingClientRect().height));
-      expect(Math.max(...vysky), 'odkaz se nesmí zalomit').toBeLessThan(30);
+      // Zalomení se pozná podle počtu řádkových boxů, ne podle výšky: odkazy mají kvůli dotykovému
+      // cíli výplň 15 px nahoře i dole, takže jsou vysoké 45 px i na jednom řádku.
+      const radky = await odkazy.evaluateAll(a => a.map(x => x.getClientRects().length));
+      expect(Math.max(...radky), 'odkaz se nesmí zalomit na dva řádky').toBe(1);
     }
   });
 
@@ -229,7 +231,9 @@ test.describe('mobil 390×700', () => {
           iw: window.innerWidth,
           odkazy: [...document.querySelectorAll('nav[aria-label="Hlavní"] a')].map(a => {
             const r = a.getBoundingClientRect();
-            return { levy: r.left, prave: r.right, vyska: r.height, pismo: parseFloat(getComputedStyle(a).fontSize) };
+            // radky: počet řádkových boxů. Výška sama o sobě zalomení neprozradí, odkazy mají
+            // kvůli dotykovému cíli výplň 15 px nahoře i dole.
+            return { levy: r.left, prave: r.right, radky: a.getClientRects().length, pismo: parseFloat(getComputedStyle(a).fontSize) };
           }),
         }));
         expect(sw, `${cesta} ${sirka}: stránka se posouvá do strany`).toBeLessThanOrEqual(iw);
@@ -237,7 +241,7 @@ test.describe('mobil 390×700', () => {
         for (const o of odkazy) {
           expect(o.levy, `${cesta} ${sirka}: odkaz menu začíná mimo okno`).toBeGreaterThanOrEqual(0);
           expect(o.prave, `${cesta} ${sirka}: odkaz menu přesahuje okno`).toBeLessThanOrEqual(iw);
-          expect(o.vyska, `${cesta} ${sirka}: odkaz se zalomil`).toBeLessThan(30);
+          expect(o.radky, `${cesta} ${sirka}: odkaz se zalomil`).toBe(1);
           expect(o.pismo, `${cesta} ${sirka}: písmo odkazu je příliš malé`).toBeGreaterThanOrEqual(12);
         }
       }

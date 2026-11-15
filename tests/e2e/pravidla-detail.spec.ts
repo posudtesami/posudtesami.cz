@@ -210,13 +210,16 @@ for (const v of VELIKOSTI) {
 // Na Linuxu v CI se písmo láme jinak než ve Windows, proto test vyžaduje rezervu, ne jen hranici.
 const DLOUHA_CESTA = (el: Element) => { for (let i = 1; i <= 12; i++) el.insertAdjacentHTML('beforeend', `<p>Doplněný řádek ${i} s delším textem o cestě předložení.</p>`); };
 for (const v of [{ width: 1256, height: 528 }]) {
-  test(`${v.width}×${v.height}: dlouhá cesta předložení se posouvá ve vlastním boxu a událost má místo`, async ({ page }) => {
+  test(`${v.width}×${v.height}: dlouhá cesta předložení se neořízne a událost má místo`, async ({ page }) => {
     await page.setViewportSize(v);
     await page.goto('/pravidla/pozmenovaci-sigma/');
     await page.getByRole('tab', { name: 'Průběh' }).click();
     const box = page.locator('.m2-panel[data-p="chrono"] .cesta-box');
     await box.evaluate(DLOUHA_CESTA);
-    expect(await box.evaluate(el => el.scrollHeight > el.clientHeight + 1)).toBe(true);
+    // Na okně nižším než 620 px se posouvá celý modal, stejně jako na telefonu: na obsah záložky
+    // tu dřív zbývalo 60 px a text se ořezával o 105. Cesta předložení proto nemá vlastní posuvník,
+    // roste do přirozené výšky a že se nic neořízne, hlídá presahPanelu níž.
+    expect(await page.locator('dialog#detail').evaluate(d => getComputedStyle(d).overflowY)).toBe('auto');
     await expect(box).toHaveAttribute('tabindex', '0');
     await expect(box).toHaveAccessibleName('Cesta předložení');
     expect(await presahPanelu(page, true)).toBeLessThanOrEqual(1);

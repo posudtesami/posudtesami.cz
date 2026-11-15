@@ -485,27 +485,47 @@ body .radek[data-shoda-v-textu] .nazev small::after { content: " · shoda v text
   html body dialog.m2 ol.zdroje li { scroll-margin-top: 64px; }
 }
 
-/* ===== Dotykové cíle na telefonu (WCAG 2.5.8, povinné minimum 24×24 px) =====
-   Na mobilu měla řada ovládacích prvků 15–22 px na výšku: menu v hlavičce (15 px), značka, přepínač
-   pohledu, volby ve větě dalších filtrů, zaškrtávátko a textová tlačítka („celé shrnutí“, „Celé znění“).
-   Zvětšuje se jen schránka, do které se dá klepnout — písmo ani rozvržení se nemění, u řádkových prvků
-   roste výplň do volného místa kolem textu. Hlídá to tests/e2e/mobil.spec.ts („velikost dotykových cílů“). */
+/* ===== Dotykové cíle na telefonu: 44 × 44 px =====
+   Povinné minimum je 24 px (WCAG 2.5.8, úroveň AA) a to web splňoval. Pohodlné je 44 px — shodně
+   WCAG 2.5.5 (AAA), Apple HIG i Material Design. Pod hranicí jich bylo sedmnáct na jedné stránce.
+   Zvětšuje se jen schránka, do které se dá klepnout: písmo zůstává. Hlavička tím vyroste z 61 na
+   79 px a řádek filtrů ze 119 na 158, což je vědomá cena.
+   Hlídá to tests/e2e/mobil.spec.ts („velikost dotykových cílů“). */
 @media (max-width: 760px) {
-  /* Menu a značka v hlavičce: výplň u řádkového odkazu nezvětší řádek, ale zvětší plochu pro prst. */
-  body .top .brand, body .top nav a { padding-block: 6px; }
+  /* Menu a značka: na výšku i na šířku — „Kauzy“ mělo 37 px široký cíl. Odsazení mezi odkazy se
+     o přibylou výplň zmenší, aby se řádek pořád vešel na 390 px i na 320 px. */
+  body .top .brand, body .top nav a { padding-block: 15px; padding-inline: 7px; }
+  body .top nav a, body .top nav a:first-child { margin-left: 2px; }
+
+  /* Vyhledávací pole mělo 33 px na výšku. */
+  body .filtry.f4 .f-hledat input { min-height: 44px; }
 
   /* Přepínač pohledu: Osa / Mapa u kauz, Oblasti / Seznam / Časová osa u pravidel. */
-  body .pohled button, body .pr-pohled button { min-height: 24px; }
+  body .pohled button, body .pr-pohled button { min-height: 44px; padding-inline: 14px; }
 
   /* Zaškrtávátko „jen neuzavřené“ a „jen v projednávání“ — klepnout jde na celý štítek. */
-  body .filtry.f4 .f-prepinac { min-height: 24px; }
+  body .filtry.f4 .f-prepinac { min-height: 44px; }
+
+  /* Čipy témat a „+N dalších“. */
+  body .filtry .f-cipy button, body .filtry .f-cipy .f-vice { min-height: 44px; }
 
   /* Volby ve větě dalších filtrů: zůstávají podtrženými slovy, jen mají vyšší schránku. */
-  body .f-dalsi select { min-height: 24px; }
+  body .f-dalsi select { min-height: 44px; }
+
+  /* Záložky detailu a čipy klubů u hlasování. */
+  body .zalozky button { min-height: 44px; }
+  body .hl-cipy a { min-height: 44px; display: inline-flex; align-items: center; }
+
+  /* Zavírací křížek modalu a odkazy v drobečkové navigaci nad hlasováním. */
+  body dialog .zavrit { width: 44px; height: 44px; }
+  body .hl-drobky a { display: inline-block; padding-block: 15px; }
+
+  /* Stránkování na ose kauz mělo 40 × 40 px. */
+  body .strankovani button { min-width: 44px; height: 44px; }
 
   /* Tlačítka a odkazy psané jako slovo, ale stojící samostatně mimo větu. */
-  body .perex-vice { padding-block: 4px; }
-  body .v4-karta button, body .v4-karta a { padding-block: 4px; }
+  body .perex-vice, body .castky-vice, body .f-upresnit, body .hl-vice,
+  body .v4-karta button, body .v4-karta a { min-height: 44px; display: inline-flex; align-items: center; }
 }
 
 /* ===== Hlavička detailu a filtry na telefonu: míň obalu nad obsahem =====
@@ -520,7 +540,7 @@ body .castky-vice { display: inline-block; margin: 6px 0 0; padding: 4px 0; bord
 body .castky-vice[hidden] { display: none; }
 
 /* „Upřesnit výběr“ je na místě věty dalších filtrů (stejné order, proto drží svůj řádek). */
-body .f-upresnit { display: none; flex: 1 0 100%; order: 5; margin: 0; padding: 4px 0; min-height: 24px; border: 0; background: none; text-align: left; font: 600 14px var(--f-text); color: var(--modra); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+body .f-upresnit { display: none; flex: 1 0 100%; order: 5; margin: 0; padding: 4px 0; border: 0; background: none; text-align: left; font: 600 14px var(--f-text); color: var(--modra); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 
 @media (max-width: 760px) {
   /* Částky: zůstane číslo s druhem, popisy a čísla zdrojů otevře tlačítko. Bez JavaScriptu se
@@ -561,4 +581,30 @@ body .hl-vice[hidden] { display: none; }
 @media (max-width: 760px) {
   :root { --sbalit-skupiny: 1; }
   html.js body .hl-skupina:not(.rozbalene) > ul { display: none; }
+}
+
+/* ===== Strop na dvě částky v hlavičce detailu (telefon) =====
+   Kauza se čtyřmi částkami měla hlavičku 385 px, ostatní 252–294. Zůstanou dvě, zbytek otevře
+   stejné tlačítko jako popisy — jen se v něm připomene, kolik jich ještě je. */
+@media (max-width: 760px) {
+  html.js body .m2-hlava:not(.castky-rozbalene) .castky li:nth-of-type(n+3) { display: none; }
+}
+
+/* ===== Hlasování: přepínač vedle nadpisu skupiny (telefon) =====
+   „Ukázat jména“ stálo na vlastním řádku pětkrát pod sebou. Sbalená skupina je proto jeden řádek:
+   vlevo nadpis s počtem, vpravo přepínač. Rozbalená se zalomí a jména přijdou pod to. */
+@media (max-width: 760px) {
+  html.js body .hl-skupina { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 12px; }
+  html.js body .hl-skupina > h3 { margin: 0; }
+  html.js body .hl-skupina > ul { flex: 1 0 100%; }
+  html.js body .hl-skupina:not(.rozbalene) { border-bottom: 1px solid var(--linka); }
+}
+
+/* ===== Nízké okno počítače: modal se posouvá dolů =====
+   Na okně vysokém 528 px zbylo na obsah záložky 60 px a text se ořízl o 105 px — hlavička detailu
+   je prostě vyšší než okno. Řešení je stejné, jaké má telefon: celý modal se posouvá dolů, místo
+   aby se obsah ořezal. Sbalit popisy částek nestačilo, přesah klesl jen na 83 px. */
+@media (min-width: 761px) and (max-height: 620px) {
+  html.js body dialog.m2[open] { display: block; overflow-y: auto; }
+  html.js body dialog.m2 .m2-panel[data-p]:not([hidden]) { overflow: visible; columns: auto; }
 }

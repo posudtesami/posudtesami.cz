@@ -71,10 +71,17 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
   };
   /** Tlačítko „k čemu částky jsou“ jen tam, kde styly popisy částek opravdu schovaly (na telefonu).
    *  Ptáme se přímo stylů, ne šířky okna: rozhodnutí, kdy se částky sbalí, zůstává v CSS na jednom místě. */
+  const dalsiCastky = (n: number) => n === 1 ? 'další částka' : n < 5 ? `další ${n} částky` : `dalších ${n} částek`;
   const zmerCastky = () => {
     if (!castky || !castkyVice || hlava.classList.contains('castky-rozbalene')) return;
     const popisCastky = castky.querySelector<HTMLElement>('.popis-castky');
     castkyVice.hidden = !popisCastky || getComputedStyle(popisCastky).display !== 'none';
+    if (castkyVice.hidden) return;
+    // Na úzkém displeji se ukážou jen dvě částky. Kolik jich styly schovaly, musí být vidět
+    // na tlačítku — jinak čtenář neví, že tam ještě něco je.
+    const skryte = [...castky.querySelectorAll<HTMLElement>('li:not(.castky-metodika)')]
+      .filter(li => getComputedStyle(li).display === 'none').length;
+    castkyVice.textContent = skryte > 0 ? `${dalsiCastky(skryte)} a k čemu jsou` : 'k čemu částky jsou';
   };
   /** Body mini-osy mají cíl široký 24 px, ale nikdy se nepřekrývají se sousedy: u blízkých dat je cíl užší
    *  (nejméně jako viditelný bod), aby klik na bod nevzal sousední událost. Viditelný bod se u hustě
@@ -131,7 +138,8 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
   castkyVice?.addEventListener('click', () => {
     const rozbaleno = hlava.classList.toggle('castky-rozbalene');
     castkyVice.setAttribute('aria-expanded', String(rozbaleno));
-    castkyVice.textContent = rozbaleno ? 'méně' : 'k čemu částky jsou';
+    if (rozbaleno) castkyVice.textContent = 'méně';
+    else zmerCastky(); // popisek zase nese počet schovaných částek
   });
   proVasVice?.addEventListener('click', () => {
     const rozbaleno = proVasObal!.classList.toggle('rozbalene');

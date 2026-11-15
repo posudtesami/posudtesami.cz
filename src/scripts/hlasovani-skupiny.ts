@@ -28,10 +28,14 @@ export function inicializujSkupinyHlasovani(): void {
     tlacitko.hidden = true;
     tlacitko.setAttribute('aria-controls', jmena.id);
 
+    // Tlačítek je pět pod sebou a všechna by se jmenovala „ukázat jména“. Jméno pro čtečku proto
+    // nese i skupinu; viditelný text v něm zůstává celý, aby fungovalo hlasové ovládání (WCAG 2.5.3).
+    const nazevSkupiny = nadpis.textContent?.trim().replace(/\s+/g, ' ') ?? '';
     const nastav = (otevreno: boolean) => {
       skupina.classList.toggle('rozbalene', otevreno);
       tlacitko.setAttribute('aria-expanded', String(otevreno));
       tlacitko.textContent = otevreno ? 'skrýt jména' : 'ukázat jména';
+      if (nazevSkupiny) tlacitko.setAttribute('aria-label', `${tlacitko.textContent} — ${nazevSkupiny}`);
     };
     tlacitko.addEventListener('click', () => nastav(tlacitko.getAttribute('aria-expanded') !== 'true'));
 

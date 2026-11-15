@@ -27,7 +27,7 @@ function najdiStranky(koren = 'dist-e2e', cesta = ''): { cesta: string; nazev: s
 
 const STRANKY = najdiStranky();
 const PRO_AXE = ['/', '/?pohled=mapa', '/kauzy/zeta-stret/', '/pravidla/', '/pravidla/zakon-omega/', '/metodika/', '/o-projektu/'];
-const PRO_DOTYK = ['/', '/?pohled=mapa', '/kauzy/zeta-stret/', '/pravidla/', '/metodika/'];
+const PRO_DOTYK = ['/', '/?pohled=mapa', '/kauzy/zeta-stret/', '/kauzy/gama-offshore/', '/pravidla/', '/metodika/', '/hlasovani/psp-10-5-12/'];
 // Na telefonu mají záložky krátké popisky, aby se vešlo všech pět. Krátký tvar je skutečný text
 // tlačítka, takže je zároveň jeho jménem pro čtečku i pro hlasové ovládání — proto se vybírají jím.
 const ZALOZKY = [
@@ -121,6 +121,23 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
     await expect(vice).toHaveAttribute('aria-expanded', 'true');
   });
 
+  // Kauza se čtyřmi částkami měla hlavičku o řádek vyšší než ostatní (385 px proti 252–294).
+  test('detail kauzy: na telefonu jsou vidět nejvýš dvě částky', async ({ page }) => {
+    await otevri(page, '/kauzy/gama-offshore/');
+    const polozky = page.locator('dialog#detail .castky li:not(.castky-metodika)');
+    const vsech = await polozky.count();
+    expect(vsech, 'fixtura musí mít víc než dvě částky, jinak se strop nemá na čem projevit').toBeGreaterThan(2);
+    const videt = async () => (await polozky.evaluateAll(li => li.filter(x => x.getClientRects().length).length));
+    expect(await videt(), 'na telefonu se ukážou dvě částky').toBe(2);
+    // Schéma dovolí nejvýš tři částky, takže se schovává jedna až jedna — popisek proto hlídáme
+    // slovem, ne číslem („další částka“ u jedné, „další 2 částky“ u dvou).
+    const vice = page.locator('dialog#detail .castky-vice');
+    await expect(vice, 'tlačítko musí říct, že jsou další částky schované').toContainText(/dalš/);
+    if (vsech - 2 > 1) await expect(vice).toContainText(String(vsech - 2));
+    await vice.click();
+    expect(await videt(), 'po rozbalení jsou vidět všechny').toBe(vsech);
+  });
+
   test('kauzy: další filtry se otevírají tlačítkem a zvolený filtr se neschová', async ({ page }) => {
     await otevri(page, '/');
     const veta = page.locator('.filtry .f-dalsi');
@@ -150,6 +167,11 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
     await vice.click();
     await expect(jmena, 'po klepnutí jsou jména vidět').toBeVisible();
     await expect(vice).toHaveAttribute('aria-expanded', 'true');
+    // přepínač stojí vedle nadpisu, ne pod ním — jinak by pět skupin stálo pět řádků navíc
+    const [n, t] = await Promise.all([skupina.locator('h3').boundingBox(), vice.boundingBox()]);
+    expect(t!.y, 'přepínač je na řádku nadpisu').toBeLessThan(n!.y + n!.height);
+    // a každý se pro čtečku jmenuje svou skupinou, ne pětkrát stejně
+    await expect(vice).toHaveAttribute('aria-label', /—/);
     await vyfot(page, 'stav-hlasovani-jmena', 'Hlasování — rozbalená jména v jedné skupině');
     await overBezPosouvaniDoStrany(page);
   });
@@ -190,13 +212,12 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
     await expect(page.locator('dialog#detail')).not.toBeVisible();
   });
 
-  // Povinné minimum (24 px) je kontrola, doporučených 44 px se jen vypíše do zprávy z běhu jako příloha.
+  // Povinné minimum je 24 px (WCAG 2.5.8, AA), pohodlné 44 px (WCAG 2.5.5 AAA, shodně Apple
+  // i Material). Web drží tu vyšší hranici, proto se kontroluje rovnou 44.
   for (const cesta of PRO_DOTYK) {
-    test(`${cesta}: velikost dotykových cílů`, async ({ page }, info) => {
+    test(`${cesta}: velikost dotykových cílů`, async ({ page }) => {
       await otevri(page, cesta);
-      const pod44 = await maleDotykoveCile(page, 44);
-      await info.attach('cile-pod-44px.txt', { body: pod44.join('\n') || 'žádné', contentType: 'text/plain' });
-      expect(await maleDotykoveCile(page, 24), 'dotykové cíle pod povinnou hranicí WCAG 2.5.8').toEqual([]);
+      expect(await maleDotykoveCile(page, 44), 'dotykové cíle menší než pohodlných 44 px').toEqual([]);
     });
   }
 

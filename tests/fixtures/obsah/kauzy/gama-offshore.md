@@ -15,6 +15,10 @@ castky:
     druh: pokuta
     popis: fiktivní pokuta uložená fiktivním úřadem
     zdroje: [2]
+  - castka: 2500000
+    druh: dotace
+    popis: fiktivní daňový doměrek za fiktivní zdaňovací období
+    zdroje: [1]
 overeno: 2026-11-09
 zdroje:
   - id: 1
