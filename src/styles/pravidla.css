@@ -72,10 +72,18 @@
   .pr-nazev small { font-size: 12px; line-height: 1.35; }
   .pr-nazev .pr-cesta { display: none; }
   .pr-nazev .pr-proc-radek { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; white-space: normal; }
-  /* názvy fází se zalamují, nezkracují; ukončení (zamítnuto, staženo) má vlastní řádek */
+  /* Názvy fází se nezkracují ani nelámou uvnitř slova („Sněmovn-a“, „Vyhlášen-o“): sloupec je aspoň tak
+     široký jako název. Datum se smí zalomit na mezeře („30. 10. / 2026“), aby se pět fází vešlo i na 320 px.
+     Ukončení (zamítnuto, staženo) má vlastní řádek. */
   .prubeh { flex-wrap: wrap; font-size: 11px; }
-  .prubeh .f-nazev { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+  .prubeh li:not(.konec) { min-width: min-content; }
+  .prubeh .f-nazev { overflow: visible; text-overflow: clip; }
+  .prubeh time { white-space: normal; }
   .prubeh li.konec { flex: 1 1 100%; align-self: auto; }
+}
+/* Na nejužších telefonech by se pět názvů fází v 14 px nevešlo (součet 263 px na 258 px místa). */
+@media (max-width: 359px) {
+  body .prubeh .f-nazev { font-size: 13px; }
 }
 
 /* detail pravidla: bez svislého posouvání, delší obsah pokračuje ve sloupcích do strany (jako Souvislosti a Zdroje kauzy) */
