@@ -2,9 +2,11 @@
 typ: kauza
 nazev: "Istrochem: spor o sanaci areálu"
 shrnuti: Agrofert koupil bratislavský Istrochem v roce 2002. Úřad v letech 2016 a 2025 zastavil řízení o tom, kdo zaplatí sanaci staré zátěže, s odkazem na splněný privatizační závazek, takže by ji platil stát. Prokuratura rozhodnutí z roku 2025 napadla a úřad je v roce 2026 zrušil. Agrofert odpovědnost odmítá.
+oCoJde: Spor o to, kdo zaplatí vyčištění starého chemického areálu v Bratislavě, který koupil Agrofert. Rozhodnuto není.
 od: 2002
 do: null
 stav: jine
+stavKratce: Řízení začíná znovu
 stavPoznamka: Okresní úřad Bratislava 3. 7. 2026 vyhověl třem protestům krajské prokuratury a zrušil svá rozhodnutí z roku 2025 o zastavení řízení o určení povinné osoby. Řízení začíná znovu, nové rozhodnutí se k 12. 11. 2026 nepodařilo dohledat. Žádný úřad dosud neurčil firmu A. Babiše povinnou osobou ani nerozhodl, že Agrofert privatizační závazek nesplnil. O trestním řízení ve věci zdroje neinformují.
 stitky: [zivotni-prostredi, privatizace]
 overeno: 2026-11-12

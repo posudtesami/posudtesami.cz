@@ -1,0 +1,79 @@
+/* ===== Čitelnost pro širokou veřejnost =====
+   Tři věci, které má pochopit i čtenář bez právního slovníku:
+   1. věta „O co jde“ obyčejnou řečí (v seznamu kauz na telefonu a jako první věta detailu),
+   2. pojmy a zkratky v textu, které jdou rozkliknout (výklad se ukáže dole na obrazovce),
+   3. výklad stavu kauzy jednou větou.
+   Samostatný soubor, aby se úpravy nepletly do úprav rozvržení v upravy.css. */
+
+/* --- 1. Věta „O co jde“ v hlavičce detailu: čte se první, proto silnější než shrnutí pod ní --- */
+body .m2-hlava .o-co-jde { margin: 0; font-weight: 700; color: var(--inkoust); }
+/* Na počítači tvoří věta a shrnutí jeden odstavec (věta tučně jako návěští v novinách): dva odstavce pod sebou
+   by zbytečně ubíraly výšku záložkám, které se na počítači neposouvají. */
+@media (min-width: 761px) {
+  body .m2-hlava .o-co-jde, body .m2-hlava .o-co-jde + .perex { display: inline; }
+  body .m2-hlava .o-co-jde::after { content: " "; }
+}
+@media (max-width: 760px) {
+  body .m2-hlava .o-co-jde { font-size: 15px; line-height: 1.4; margin-bottom: 2px; }
+}
+/* Na telefonu a v nízkém okně na počítači (notebook, okno do 800 px) stačí v hlavičce věta obyčejnou řečí.
+   Přesné shrnutí je hned pod ní za tlačítkem „celé shrnutí“. Obojí naráz by hlavičku natáhlo o dva řádky a obsah
+   záložek pod ní by se dole ořízl (kauza s částkami se do nízkého okna nevejde už dnes). Na vysokém okně je vidět obojí.
+   Tlačítko ukazuje skript, proto jen s JavaScriptem; bez něj je vidět obojí. Sbalené shrnutí je blok s nulovou výškou
+   (ne display: none), aby skript změřil, že je co rozbalit, a neviditelné, aby nechytalo fokus klávesnice. */
+@media (max-width: 760px), (max-height: 800px) {
+  html.js body .m2-hlava:not(.rozbalene) .o-co-jde + .perex { display: block; max-height: 0; overflow: hidden; visibility: hidden; }
+}
+
+/* --- 1. Věta „O co jde“ v řádku osy: jen na telefonu, kde řádek jinak říká jen název a roky --- */
+.radek .nazev .o-co-jde { display: none; }
+@media (max-width: 760px) {
+  body .radek .nazev .o-co-jde { display: block; margin-top: 3px; font: 13px/1.35 var(--f-text); color: var(--text2); }
+}
+/* bez JavaScriptu je řádek obyčejný odkaz v seznamu: větu ukáže i na počítači */
+html:not(.js) body .radek .nazev .o-co-jde { display: block; font: 13px/1.35 var(--f-text); color: var(--text2); }
+
+/* --- 2. Pojem s výkladem: vypadá jako okolní text, tečkované podtržení říká „tady je vysvětlení“ --- */
+button.pojem {
+  all: unset; display: inline; white-space: nowrap; cursor: help; border-radius: 2px;
+  text-decoration: underline dotted; text-decoration-color: var(--modra); text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+  -webkit-tap-highlight-color: transparent;
+}
+button.pojem:hover, button.pojem[aria-expanded="true"] { background: color-mix(in srgb, var(--modra) 10%, transparent); text-decoration-style: solid; }
+button.pojem:focus-visible { outline: 2px solid var(--okr); outline-offset: 2px; }
+
+/* Výklad: lišta dole uprostřed, na telefonu přes celou šířku. Nezakrývá místo, kde čtenář čte,
+   a nepotřebuje počítat polohu vůči pojmu (text v detailu teče ve sloupcích a posouvá se). */
+.pojem-vyklad {
+  position: fixed; inset: auto 0 20px 0; margin: 0 auto; box-sizing: border-box;
+  width: min(520px, calc(100vw - 24px)); max-height: 60dvh; overflow: auto; padding: 14px 18px 8px;
+  border: 1px solid var(--linka); border-top: 3px solid var(--modra);
+  background: var(--plocha); color: var(--inkoust); box-shadow: 0 10px 34px rgb(14 23 38 / .22);
+  font: 16px/1.5 var(--f-text); text-align: left;
+}
+.pojem-vyklad::backdrop { background: transparent; }
+.pojem-vyklad .pojem-heslo { display: block; margin-bottom: 4px; font: 700 17px/1.25 var(--f-nadpis); }
+.pojem-vyklad p { margin: 0; color: var(--text2); }
+.pojem-vyklad .pojem-dal { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 4px; }
+.pojem-vyklad .pojem-dal a { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: var(--modra); text-underline-offset: 3px; }
+.pojem-vyklad .pojem-dal button {
+  min-width: 88px; min-height: 44px; padding: 0 14px; border: 1px solid var(--linka); background: none;
+  font: 700 14px var(--f-text); color: var(--modra); cursor: pointer;
+}
+.pojem-vyklad .pojem-dal button:hover { border-color: var(--modra); }
+@media (max-width: 760px) {
+  .pojem-vyklad { inset: auto 0 0 0; width: 100%; border-width: 3px 0 0; padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pojem-vyklad:popover-open { animation: nv-vyklad .18s ease-out both; }
+  @keyframes nv-vyklad { from { opacity: 0; transform: translateY(8px); } }
+}
+/* Prohlížeč bez podpory popover (starší než z roku 2024): výklady se neukazují pod textem jako odstavce
+   a pojmy nevypadají klikatelně. Slovníček zůstává v Metodice. */
+@supports not selector(:popover-open) {
+  .pojem-vyklad { display: none; }
+  button.pojem { text-decoration: none; cursor: inherit; }
+}
+
+/* --- 3. Výklad stavu: jedna věta pod stavem v záložce Stav a stanovisko --- */
+body .stav-box .stav-vyklad { margin: 2px 0 8px; font-size: 14px; font-style: italic; color: var(--meta); }

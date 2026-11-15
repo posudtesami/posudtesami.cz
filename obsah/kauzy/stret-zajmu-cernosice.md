@@ -2,9 +2,11 @@
 typ: kauza
 nazev: "Střet zájmů: řízení v Černošicích"
 shrnuti: Městský úřad Černošice třikrát rozhodl, že A. Babiš jako člen vlády ovládá média Agrofertu, a uložil mu pokuty 200 000 Kč (2019, dvakrát) a 250 000 Kč (2021). Krajský úřad všechna rozhodnutí na odvolání zrušil. Podněty k majetkovým přiznáním úřad odložil kvůli promlčení. Babiš střet zájmů popírá.
+oCoJde: Úřad v Černošicích dal Babišovi tři pokuty za to, že ve vládě ovládal média Agrofertu. Krajský úřad je všechny zrušil.
 od: 2017
 do: 2022
 stav: jine
+stavKratce: Pokuty zrušeny
 stavPoznamka: Jde o přestupková řízení podle zákona o střetu zájmů, ne o trestní věc. Krajský úřad Středočeského kraje řízení o ovládání médií pravomocně zastavil 26. 9. 2019 (přestupek nebyl prokázán) a v listopadu 2021 zrušil i pokutu 250 000 Kč pro překážku věci rozhodnuté. Žádná pokuta nenabyla právní moci. Nejvyšší státní zastupitelství v roce 2020 označilo rozhodnutí kraje z roku 2019 za nesprávné, správní žalobu ale nepodalo. Podněty k oznámením o majetku a příjmech Černošice odložily kvůli promlčení (2017, 2022).
 stitky: [stret-zajmu, media, offshore]
 overeno: 2026-11-12

@@ -2,9 +2,11 @@
 typ: kauza
 nazev: Agrofert a státní hmotné rezervy
 shrnuti: Navos z Agrofertu skladuje státní obilí podle smlouvy z roku 2005 na dobu neurčitou, kterou SSHR znovu nesoutěžila. Podle Reportérů ČT a týdeníku Euro na ní vydělával a v roce 2013 odmítl výzvu obilí naskladnit s tím, že podle smlouvy není oprávněná. A. Babiš smlouvu označil za standardní.
+oCoJde: Firma z Agrofertu skladuje státní obilí podle smlouvy z roku 2005, o kterou se už nesoutěžilo. Úřady porušení nenašly.
 od: 2005
 do: 2021
 stav: jine
+stavKratce: Porušení nezjištěno
 stavPoznamka: Žádný úřad nezjistil, že by firmy Agrofertu při skladování státních hmotných rezerv porušily zákon nebo smlouvu. NKÚ v kontrole SSHR (kontrolní závěr 21/04, 2021) u vybraného vzorku zakázek a smluv o ochraňování nevýhodné podmínky nezjistil. Vzorek potravin tvořily komodity z 15 zkontrolovaných zakázek (mimo jiné sušené mléko, máslo, maso, sýry a cukr), obilí mezi nimi nebylo. SSHR smlouvu v roce 2015 upravila dodatkem. Podle Deníku N smlouva na obilí v roce 2021 stále trvala.
 stitky: [verejne-zakazky, zemedelstvi]
 overeno: 2026-11-12

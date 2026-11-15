@@ -1,6 +1,7 @@
 ---
 nazev: Testovací kauza Gama
 shrnuti: Fiktivní nákup nemovitosti přes fiktivní zahraniční společnosti Gama.
+oCoJde: Fiktivní nemovitost koupená přes fiktivní firmy v zahraničí.
 od: 2009
 do: 2021
 stav: zastaveno

@@ -2,11 +2,12 @@
 import Zaklad from '../layouts/Zaklad.astro';
 import KartyStranky from '../components/KartyStranky.astro';
 import { metodika } from '../data/metodika';
-import { maPravidla } from '../lib/kauzy';
+import { maPravidla, nactiOblasti } from '../lib/kauzy';
 import '../styles/stranky.css';
 import { titulek as nazevStranky } from '../lib/web';
 const sPravidly = maPravidla();
-const obsah = metodika(sPravidly);
+// oddíl Oblasti jen tehdy, když je pohled Oblasti na webu opravdu vidět
+const obsah = metodika(sPravidly, sPravidly && nactiOblasti().length > 0);
 ---
 <Zaklad titulek={nazevStranky('Metodika')} popis="Pravidla, podle kterých vybíráme, ověřujeme a opravujeme kauzy i změny zákonů." cesta="/metodika/" styly="stranky" aktivni="metodika">
   <KartyStranky nadtitulek="Metodika" nadpis="Jak archiv vedeme" perex="Pravidla, podle kterých vybíráme, ověřujeme a opravujeme kauzy i změny zákonů."

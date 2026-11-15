@@ -2,6 +2,7 @@
 typ: kauza
 nazev: "SZPI: méně hovězího v mletém mase"
 shrnuti: Státní zemědělská a potravinářská inspekce v dubnu až červnu 2023 zjistila v pěti šaržích mletého masa od Kosteleckých uzenin z Agrofertu méně hovězího, než uváděl obal, a zařadila je mezi falšované potraviny. U výrobku Vocílka šlo podle ČT24 o 23,34 % místo 44 %. Firma zjištění odmítá.
+oCoJde: Inspekce našla v mletém mase Kosteleckých uzenin z Agrofertu méně hovězího, než stálo na obalu. Firma to odmítá.
 od: 2023
 do: 2023
 stav: uredni-zjisteni

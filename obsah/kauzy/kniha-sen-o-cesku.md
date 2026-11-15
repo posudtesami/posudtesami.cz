@@ -2,6 +2,7 @@
 typ: kauza
 nazev: Kniha O čem sním a pokuta pro ANO
 shrnuti: Úřad pro dohled nad hospodařením politických stran a politických hnutí uložil v listopadu 2017 hnutí ANO pokutu 31 000 Kč, protože první výtisky předvolební knihy A. Babiše „O čem sním, když náhodou spím“ neobsahovaly povinné údaje o zadavateli a zpracovateli. Babiš uvedl, že hnutí pokutu nebude rozporovat.
+oCoJde: Hnutí ANO dostalo pokutu 31 000 korun. Na prvních výtiscích Babišovy předvolební knihy chybělo, kdo ji zadal a vyrobil.
 od: 2017
 do: 2017
 stav: uredni-zjisteni

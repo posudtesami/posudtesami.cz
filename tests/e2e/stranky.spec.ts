@@ -3,7 +3,7 @@ import { overBezPosouvani, overBezPosouvaniDoStrany } from './pomocne';
 
 test.use({ viewport: { width: 1366, height: 768 } });
 
-for (const [cesta, nadpis, karet] of [['/metodika/', 'Jak archiv vedeme', 9], ['/o-projektu/', 'Kdo, proč a jak', 8]] as const) {
+for (const [cesta, nadpis, karet] of [['/metodika/', 'Jak archiv vedeme', 10], ['/o-projektu/', 'Kdo, proč a jak', 8]] as const) {
   test(`${cesta}: karty, modal s plným zněním, bez posouvání`, async ({ page }) => {
     await page.goto(cesta);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(nadpis);
@@ -80,7 +80,8 @@ test('Metodika a O projektu mluví o prospěchu neutrálně, jako o výsledku ro
 
 test('bez pravidel Metodika ani O projektu o oddílu Zákony a nařízení nemluví', async ({ page }) => {
   await page.goto('http://localhost:4322/metodika/');
-  await expect(page.locator('.v4-karta:not(.v4-cta)')).toHaveCount(7);
+  await expect(page.locator('.v4-karta:not(.v4-cta)')).toHaveCount(8);
+  await expect(page.locator('[data-sekce="oblasti"]')).toHaveCount(0);
   await expect(page.locator('[data-sekce="pravidla"]')).toHaveCount(0);
   await page.locator('.v4-karta button[data-sekce="kriteria"]').click();
   const panel = page.locator('.v4-dlg-panel[data-sekce="kriteria"]');
@@ -265,7 +266,7 @@ test.describe('mobil 390×700', () => {
     await page.goto('/metodika/');
     const karty = page.locator('.v4-karta:not(.v4-cta)');
     const pocet = await karty.count();
-    expect(pocet).toBe(9);
+    expect(pocet).toBe(10);
     for (let i = 0; i < pocet; i++) {
       await karty.nth(i).click({ position: { x: 20, y: 20 } });
       await expect(page.locator('dialog.v4-dlg')).toBeVisible();

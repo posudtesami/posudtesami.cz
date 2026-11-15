@@ -1,6 +1,7 @@
 ---
 nazev: Testovací kauza Epsilon, delší název
 shrnuti: Fiktivní audit fiktivní komise k fondům, které čerpala fiktivní skupina Epsilon.
+oCoJde: Fiktivní kontrola zjišťovala, jak fiktivní skupina Epsilon čerpala peníze z fondů.
 od: 2017
 do: null
 stav: uredni-zjisteni

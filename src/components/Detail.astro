@@ -2,11 +2,13 @@
 import type { KauzaZaznam } from '../lib/validace';
 import { rozdelOdstavce, odstavecNaHtml } from '../lib/souvislosti';
 import { datumText, rozsahText, delkaText, polohaVKauze, popiskyRoku } from '../lib/casova-osa';
-import { popisekStavu, pripominaPresumpci } from '../lib/stavy';
+import { stavKauzy, vykladStavu, pripominaPresumpci } from '../lib/stavy';
 import { popisekKriteria } from '../lib/kriteria';
 import { castkaText, popisekDruhu } from '../lib/castky';
 import type { VazbyKauzy } from '../lib/mapa';
 import SeznamZdroju from './SeznamZdroju.astro';
+import Vyklady from './Vyklady.astro';
+import { vytvorOznacovac } from '../lib/slovnicek';
 import type { SouvisejiciPravidlo } from '../lib/pravidla';
 
 interface Props { zaznam?: KauzaZaznam; vazby?: VazbyKauzy; naMapu?: boolean; pravidla?: SouvisejiciPravidlo[] }
@@ -18,6 +20,23 @@ const posledni = k ? k.udalosti.length - 1 : 0;
 const rokyOsy = k ? popiskyRoku(k.udalosti.map(u => ({ datum: u.datum, p: poloha(u.datum) }))) : [];
 const maVazby = !!vazby && (vazby.akteri.length + vazby.navazuje.length + vazby.navazujiNaNi.length) > 0;
 const chipy = (cisla: number[]) => cisla.map(c => `<a href="#zdroj-${c}" class="chip" data-zdroj="${c}" aria-label="Zdroj ${c}">${c}</a>`).join('');
+// Právní pojmy a zkratky jdou v textu rozkliknout. V každé části, kterou čtenář vidí najednou (hlavička, záložka,
+// jedna událost), se pojem označí jen poprvé. Texty se připraví předem, aby se vědělo, které výklady stránka potřebuje.
+const sl = vytvorOznacovac();
+const t = k && zaznam ? {
+  // věta obyčejnou řečí a shrnutí tvoří jednu skupinu: pojem z věty se ve shrnutí neoznačuje podruhé
+  oCoJde: k.oCoJde ? sl.text(k.oCoJde, 'hlava') : '',
+  shrnuti: sl.text(k.shrnuti, 'hlava'),
+  // částky mají vlastní skupinu: shrnutí je na telefonu sbalené a pojem označený jen v něm by u částky chyběl
+  castky: k.castky.map(c => sl.text(c.popis, 'castky')),
+  proc: sl.text(k.proc.text, 'proc'),
+  udalosti: k.udalosti.map((u, i) => sl.text(u.popis, `udalost-${i}`)),
+  souvislosti: rozdelOdstavce(zaznam.telo).map(o => sl.html(odstavecNaHtml(o), 'souv')),
+  akteri: (vazby?.akteri ?? []).map(a => sl.text(a.popis, 'souv')),
+  navazuje: (vazby?.navazuje ?? []).map(n => sl.text(n.popis, 'souv')),
+  stavPoznamka: k.stavPoznamka ? sl.text(k.stavPoznamka, 'stav') : '',
+  stanovisko: sl.text(k.stanovisko.text, 'stanovisko'),
+} : undefined;
 ---
 <!-- Stránka kauzy má dialog otevřený už v HTML, aby byl obsah vidět i bez JavaScriptu; skript ho přepne na modální. -->
 <dialog class={`detail m2${k?.do === null ? ' otevrena' : ''}`} id="detail" aria-labelledby="detail-nadpis" data-slug={zaznam?.slug} open={k ? true : undefined}>
@@ -25,15 +44,16 @@ const chipy = (cisla: number[]) => cisla.map(c => `<a href="#zdroj-${c}" class="
     <>
       <button class="zavrit" type="button" aria-label="Zavřít detail">×</button>
       <header class="m2-hlava">
-        <div class="roky">{rozsahText(k.od, k.do)} · {delkaText(k.od, k.do)} · {popisekStavu(k.stav)}</div>
+        <div class="roky">{rozsahText(k.od, k.do)} · {delkaText(k.od, k.do)} · {stavKauzy(k)}</div>
         {/* Název kauzy je nadpisem stránky. Detail s obsahem vzniká vždy jako samostatná stránka;
             na titulní stránce je dialog prázdný a skript do něj vloží obsah právě odtud. */}
         <h1 id="detail-nadpis">{k.nazev}</h1>
-        <p class="perex" id="detail-perex">{k.shrnuti}</p>
+        {t!.oCoJde && <p class="o-co-jde" set:html={t!.oCoJde}></p>}
+        <p class="perex" id="detail-perex" set:html={t!.shrnuti}></p>
         <button class="perex-vice" type="button" aria-expanded="false" aria-controls="detail-perex" hidden>celé shrnutí</button>
         {k.castky.length > 0 && (
           <ul class="castky" id="detail-castky" aria-label="Částky v kauze">
-            {k.castky.map(c => <li class={c.druh === 'objem' ? 'objem' : undefined}><strong>{castkaText(c)}</strong> <span class="druh-castky">{popisekDruhu(c.druh)}</span> <span class="popis-castky">{c.popis}<span class="chipy" set:html={chipy(c.zdroje)}></span></span></li>)}
+            {k.castky.map((c, i) => <li class={c.druh === 'objem' ? 'objem' : undefined}><strong>{castkaText(c)}</strong> <span class="druh-castky">{popisekDruhu(c.druh)}</span> <span class="popis-castky"><Fragment set:html={t!.castky[i]} /><span class="chipy" set:html={chipy(c.zdroje)}></span></span></li>)}
             <li class="castky-metodika"><a href="/metodika/#jazyk">Co částky znamenají</a></li>
             {/* Na telefonu zůstanou z částek jen dvě čísla s druhem; zbytek, popisy, čísla zdrojů
                 a odkaz na metodiku otevře tohle tlačítko. Stojí uvnitř seznamu, protože na telefonu
@@ -63,7 +83,7 @@ const chipy = (cisla: number[]) => cisla.map(c => `<a href="#zdroj-${c}" class="
       </div>
       <div class="m2-panel" data-p="proc" role="tabpanel">
         <h3 class="panel-nadpis">Proč je to kauza</h3>{/* jen bez JavaScriptu, kdy jsou všechny části pod sebou */}
-        <p class="proc-text">{k.proc.text}<span class="chipy" set:html={chipy(k.proc.zdroje)}></span></p>
+        <p class="proc-text"><Fragment set:html={t!.proc} /><span class="chipy" set:html={chipy(k.proc.zdroje)}></span></p>
         <p class="kriterium">Zařazeno podle metodiky: <a href="/metodika/#kriteria">{popisekKriteria(k.kriterium)}</a></p>
       </div>
       <div class="m2-panel" data-p="chrono" role="tabpanel" hidden>
@@ -73,7 +93,7 @@ const chipy = (cisla: number[]) => cisla.map(c => `<a href="#zdroj-${c}" class="
             <li data-i={i} data-datum={u.datum}>
               <div class="udalost-velka">
                 <time>{datumText(u.datum)}<small>událost {i + 1} z {k.udalosti.length}</small></time>
-                <div><h3>{u.nazev}</h3><p>{u.popis}</p><div>Zdroje:<span class="chipy" set:html={chipy(u.zdroje)}></span></div></div>
+                <div><h3>{u.nazev}</h3><p set:html={t!.udalosti[i]}></p><div>Zdroje:<span class="chipy" set:html={chipy(u.zdroje)}></span></div></div>
               </div>
             </li>
           ))}
@@ -85,13 +105,13 @@ const chipy = (cisla: number[]) => cisla.map(c => `<a href="#zdroj-${c}" class="
       </div>
       <div class="m2-panel" data-p="souv" role="tabpanel" hidden>
         <h3 class="panel-nadpis">Souvislosti</h3>{/* jen bez JavaScriptu, kdy jsou všechny části pod sebou */}
-        {rozdelOdstavce(zaznam.telo).map(o => <p set:html={odstavecNaHtml(o)}></p>)}
+        {t!.souvislosti.map(o => <p set:html={o}></p>)}
         {maVazby && vazby && (
           <section class="vazby" aria-labelledby="vazby-nadpis">
             <h3 id="vazby-nadpis">Aktéři a návaznosti</h3>
             <ul>
-              {vazby.akteri.map(a => <li><strong>{a.nazev}</strong>, {a.roleText}: {a.popis}<span class="chipy" set:html={chipy(a.zdroje)}></span></li>)}
-              {vazby.navazuje.map(n => <li><em>Navazuje na:</em> <a href={`/kauzy/${n.slug}/`} data-kauza={n.slug}>{n.nazev}</a> ({n.roleText}): {n.popis}<span class="chipy" set:html={chipy(n.zdroje)}></span></li>)}
+              {vazby.akteri.map((a, i) => <li><strong>{a.nazev}</strong>, {a.roleText}: <Fragment set:html={t!.akteri[i]} /><span class="chipy" set:html={chipy(a.zdroje)}></span></li>)}
+              {vazby.navazuje.map((n, i) => <li><em>Navazuje na:</em> <a href={`/kauzy/${n.slug}/`} data-kauza={n.slug}>{n.nazev}</a> ({n.roleText}): <Fragment set:html={t!.navazuje[i]} /><span class="chipy" set:html={chipy(n.zdroje)}></span></li>)}
               {vazby.navazujiNaNi.length > 0 && <li><em>Navazují na ni:</em> {vazby.navazujiNaNi.map((n, i) => <>{i > 0 && ', '}<a href={`/kauzy/${n.slug}/`} data-kauza={n.slug}>{n.nazev}</a></>)}</li>}
             </ul>
             {naMapu && <a class="na-mapu" href={`/?pohled=mapa&vyber=${zaznam.slug}`} data-na-mapu={zaznam.slug}>Ukázat na mapě →</a>}
@@ -109,13 +129,14 @@ const chipy = (cisla: number[]) => cisla.map(c => `<a href="#zdroj-${c}" class="
       <div class="m2-panel" data-p="stav" role="tabpanel" hidden>
         <h3 class="panel-nadpis">Stav a stanovisko</h3>{/* jen bez JavaScriptu, kdy jsou všechny části pod sebou */}
         <div class={`stav-box${k.do === null ? ' otevrena' : ''}`}>
-          <div class="stav">{popisekStavu(k.stav)}</div>
-          {k.stavPoznamka && <p>{k.stavPoznamka}</p>}
+          <div class="stav">{stavKauzy(k)}</div>
+          {vykladStavu(k.stav) && <p class="stav-vyklad">{vykladStavu(k.stav)}</p>}
+          {t!.stavPoznamka && <p set:html={t!.stavPoznamka}></p>}
           {k.do === null && pripominaPresumpci(k.stav) && <p>Dokud soud pravomocně nerozhodne, platí presumpce neviny.</p>}
           <div class="overeno">{k.overeno ? <>Naposledy ověřeno {datumText(k.overeno)}</> : <strong>Koncept, zatím neověřeno</strong>}</div>
         </div>
         <div class="stav-vpravo">
-          <div class="stanovisko"><h4>Stanovisko dotčené strany</h4><p>{k.stanovisko.text}<span class="chipy" set:html={chipy(k.stanovisko.zdroje)}></span></p></div>
+          <div class="stanovisko"><h4>Stanovisko dotčené strany</h4><p><Fragment set:html={t!.stanovisko} /><span class="chipy" set:html={chipy(k.stanovisko.zdroje)}></span></p></div>
           {k.opravy.length > 0 && <div class="opravy"><h4>Opravy</h4><ul>{k.opravy.map(o => <li>{datumText(o.datum)}: {o.popis}</li>)}</ul></div>}
         </div>
       </div>
@@ -128,6 +149,7 @@ const chipy = (cisla: number[]) => cisla.map(c => `<a href="#zdroj-${c}" class="
           <a href="#" data-sdilet>Zkopírovat odkaz na kauzu</a>
         </div>
       </div>
+      <Vyklady pojmy={sl.pouzite()} />
     </>
   )}
 </dialog>

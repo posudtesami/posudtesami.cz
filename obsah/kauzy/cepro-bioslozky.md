@@ -2,9 +2,11 @@
 typ: kauza
 nazev: Biosložky pro Čepro mimo tendry
 shrnuti: Státní Čepro od roku 2017 nakupuje biosložky do paliv od firem Agrofertu, hlavně od Preolu, většinu mimo zadávací řízení, podle Seznam Zpráv za přes 19 mld. Kč. ÚOHS v roce 2021 uvedl, že Čepro není veřejným zadavatelem. Nákupy spadaly do prověřování NCOZ, nikdo nebyl obviněn. Agrofert pochybení odmítá.
+oCoJde: Státní Čepro kupuje od Agrofertu přísady do paliv většinou bez soutěže. Podle antimonopolního úřadu soutěžit nemusí.
 od: 2017
 do: null
 stav: jine
+stavKratce: Nikdo nebyl obviněn
 stavPoznamka: ÚOHS 6. 5. 2021 ukončil šetření podnětu bez zahájení správního řízení, protože Čepro podle něj není veřejným zadavatelem, a proto se na jeho nákupy nevztahuje ani zákaz zakázek pro firmy člena vlády (§ 4b zákona o střetu zájmů). Připustil přezkum, pokud vyjdou najevo nové skutečnosti. NCOZ od roku 2020 prověřovala dotace a zakázky pro Agrofert včetně nákupů Čepra; prověřování podle Seznam Zpráv v roce 2023 odložila, zda odložení zahrnulo i nákupy biosložek, ze zdrojů jednoznačně neplyne. Nikdo nebyl obviněn. Čepro od firem Agrofertu nakupuje mimo zadávací řízení dál.
 stitky: [stret-zajmu, verejne-zakazky]
 overeno: 2026-11-12
