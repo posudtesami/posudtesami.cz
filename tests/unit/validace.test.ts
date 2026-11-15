@@ -62,3 +62,22 @@ describe('režim konceptů', () => {
     expect(overKauzu('a.md', platnaKauza(), '', STITKY, { koncepty: true }).kauza?.overeno).toBe('2026-11-09');
   });
 });
+
+describe('zkratky bez výkladu', () => {
+  it('neznámou zkratku v textu kauzy hlásí jako varování, ne jako chybu', () => {
+    const k = platnaKauza();
+    (k.udalosti as { popis: string }[])[0].popis = 'O dotaci rozhodl úřad XQZ.';
+    const r = overKauzu('a.md', k, 'Podle XQZ bylo vše v pořádku.[^1]', STITKY);
+    expect(r.chyby).toEqual([]);
+    expect(r.kauza).toBeDefined();
+    expect(r.varovani.map(v => v.zprava)).toEqual([expect.stringMatching(/^Zkratka „XQZ“ není vysvětlená/)]);
+    expect(r.varovani[0].soubor).toBe('a.md');
+  });
+  it('zkratku ze slovníčku, vlastní jméno ani zkratku v názvu zdroje nehlásí', () => {
+    const k = platnaKauza();
+    (k.udalosti as { popis: string }[])[0].popis = 'Pokutu firmě FAU uložil ÚOHS.';
+    (k.zdroje as { titulek: string; vydavatel: string }[])[0].titulek = 'Rozhodnutí QWX o pokutě';
+    (k.zdroje as { titulek: string; vydavatel: string }[])[0].vydavatel = 'QWX';
+    expect(overKauzu('a.md', k, '', STITKY).varovani).toEqual([]);
+  });
+});

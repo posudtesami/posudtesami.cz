@@ -1,7 +1,7 @@
 ---
 import type { KauzaZaznam } from '../lib/validace';
 import { ROK_OD, rokDo, naProcenta, rozsahText, delkaText, znackyOsy, konecRok, polohaVKauze } from '../lib/casova-osa';
-import { popisekStavu } from '../lib/stavy';
+import { stavKauzy } from '../lib/stavy';
 import { sklonuj } from '../lib/cestina';
 import { castkaText, castkaKratce, popisekDruhu, hlavniCastka } from '../lib/castky';
 import PrepinacPohledu from './PrepinacPohledu.astro';
@@ -30,7 +30,9 @@ const pct = (r: number) => naProcenta(r, ROK_OD, DO + 1);
             <a class="radek-btn" href={`/kauzy/${slug}/`} aria-haspopup="dialog">
               <span class="nazev">
                 <strong title={k.nazev}>{k.nazev}</strong>
-                <small>{popisekStavu(k.stav)}, {sklonuj(k.zdroje.length, ['zdroj', 'zdroje', 'zdrojů'])}{castka && <> · <span class="castka" title={`${castkaText(castka)}, ${popisekDruhu(castka.druh)}: ${castka.popis}`}>{castkaKratce(castka)}</span></>}</small>
+                {/* jen na telefonu: bez ní řádek říká jen název a roky, na počítači místo ní stojí stav a zdroje */}
+                {k.oCoJde && <span class="o-co-jde">{k.oCoJde}</span>}
+                <small>{stavKauzy(k)}, {sklonuj(k.zdroje.length, ['zdroj', 'zdroje', 'zdrojů'])}{castka && <> · <span class="castka" title={`${castkaText(castka)}, ${popisekDruhu(castka.druh)}: ${castka.popis}`}>{castkaKratce(castka)}</span></>}</small>
               </span>
               <span class="stopa">
                 <span class="mrizka-roku" style="inset:0"></span>

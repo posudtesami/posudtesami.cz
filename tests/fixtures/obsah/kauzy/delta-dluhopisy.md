@@ -1,6 +1,7 @@
 ---
 nazev: Testovací kauza Delta
 shrnuti: Fiktivní firma Delta vydala fiktivní dluhopisy s daňovou výhodou.
+oCoJde: Fiktivní firma Delta vydala dluhopisy, ze kterých se neplatila daň.
 od: 2012
 do: 2014
 stav: uredni-zjisteni

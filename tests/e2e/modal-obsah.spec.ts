@@ -36,7 +36,9 @@ for (const v of VELIKOSTI.filter(v => v.width > 760)) {
   });
 }
 
-// Shrnutí v hlavičce detailu se nikdy neusekne trojtečkou; na počítači se vejde celé (max. 320 znaků).
+// Shrnutí v hlavičce detailu se nikdy neusekne trojtečkou. Na vysokém okně počítače je vidět celé (max. 320 znaků).
+// Na telefonu a v nízkém okně (do 800 px) je před ním věta „O co jde“ a shrnutí rozbalí tlačítko, aby hlavička
+// nevzala místo záložkám (tests/e2e/citelnost.spec.ts).
 for (const v of VELIKOSTI) {
   test(`${v.width}×${v.height}: shrnutí v detailu není useknuté`, async ({ page }) => {
     await page.setViewportSize(v);
@@ -48,11 +50,11 @@ for (const v of VELIKOSTI) {
     }));
     expect(p.zkraceno, 'shrnutí se nesmí zkracovat trojtečkou').toBe(false);
     const vice = page.locator('#detail .perex-vice');
-    if (v.width > 760) {
-      expect(p.skryto, 'na počítači je shrnutí vidět celé').toBe(false);
+    if (v.width > 760 && v.height > 800) {
+      expect(p.skryto, 'na vysokém okně počítače je shrnutí vidět celé').toBe(false);
       await expect(vice).toBeHidden();
     } else if (p.skryto) {
-      // na mobilu je delší shrnutí zkrácené na tři řádky a tlačítko ho rozbalí celé
+      // na mobilu a v nízkém okně je shrnutí sbalené (za větou „O co jde“ celé) a tlačítko ho rozbalí
       await expect(vice).toBeVisible();
       await vice.click();
       await expect(vice).toHaveAttribute('aria-expanded', 'true');

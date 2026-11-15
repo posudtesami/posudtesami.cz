@@ -1,6 +1,7 @@
 ---
 nazev: Testovací kauza Beta
 shrnuti: Fiktivní archivní spis o spolupráci fiktivní osoby Beta s fiktivním úřadem.
+oCoJde: Fiktivní spis o tom, zda fiktivní osoba Beta spolupracovala s fiktivním úřadem. Soud rozhodl, že ne.
 od: 1982
 do: 2018
 stav: pravomocne-zprosten
