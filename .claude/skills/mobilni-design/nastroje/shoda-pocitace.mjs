@@ -25,7 +25,7 @@ if (!PRED || !PO || !existsSync(PRED) || !existsSync(PO)) {
   process.exit(2);
 }
 const { PNG } = createRequire(import.meta.url)('playwright-core/lib/utilsBundle');
-const PORTY = [4491, 4492];
+const PORTY = [4591, 4592];
 const servery = [PRED, PO].map((s, i) => spawn(`npx serve ${s} -l ${PORTY[i]} --no-clipboard`, { shell: true, stdio: 'ignore' }));
 const pockej = async port => { for (let i = 0; i < 60; i++) { try { if ((await fetch(`http://localhost:${port}/`)).ok) return; } catch { /* ještě nenaběhl */ } await new Promise(r => setTimeout(r, 300)); } throw new Error('server nenaběhl: ' + port); };
 const slozky = (kde, vynech = []) => existsSync(`${PO}/${kde}`) ? readdirSync(`${PO}/${kde}`, { withFileTypes: true }).filter(d => d.isDirectory() && !vynech.includes(d.name)).map(d => d.name) : [];

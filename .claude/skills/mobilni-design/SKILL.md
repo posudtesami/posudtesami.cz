@@ -211,6 +211,7 @@ jehož „po" jsi neviděl.
 | věta dalších filtrů: podtržení výběrů stojí daleko pod textem | vzniklo zvětšením cíle na 44 px, vypadá neupraveně |
 | seznam zdrojů je u velké kauzy 7 obrazovek | nikdo zatím nenavrhl, jak ho zkrátit a nic neschovat |
 | kroky `.prubeh` na pravidlech mají 11 px | návrh byl, nevybral se |
+| při řazení podle částky není částka v řádku kauzy na telefonu vidět (stav, zdroje i částka jsou tam schované) | řadí se podle čísla, které čtenář nevidí; nenavrženo |
 | přehled událostí má u kauzy se 3 událostmi stejné ovládání jako u třiceti | zatím bez prahu, kdyby vadilo, zapne se podle počtu |
 
 Hotovo (ať se k tomu nevrací): hlavička detailu 518 → 294 px, úvod 417 → 323 px,
@@ -247,6 +248,13 @@ jako dřív (kvůli tomu mají záložky užší výplň), na 320 px dva.
 Známá cena na nejužším displeji (320 × 568): detail kauzy má záložky ve dvou řádcích a v chronologii
 k nim přibude lišta listování — dohromady 165 px, tedy 29 % displeje, přes rozpočet 15 % z pravidla 5.
 Je to důsledek volby „zalomit, ne posouvat“; kdyby vadilo, dá se u kauz na 320 px vrátit posouvání.
+
+Z dílu vybraného 15. 11. večer (volba C, s poznámkou „bez a dál“): **seznam kauz je na telefonu svislá
+osa**. Pruh na ose 1980–letošek měl 6,8 px na rok (nejkratší 14 px), levá třetina osy byla vždy prázdná
+a čitelný byl jen popisek. Rok začátku teď stojí ve sloupci vlevo jen u první kauzy toho roku na stránce
+(`navaznostRoku` v `casova-osa.ts`, značky `data-stejny-rok` / `data-rok-pokracuje` nastavuje `filtry.ts`),
+nad názvem je `konecText` („do 2021 · 16 let“, „dosud · 12 let“ — bez „a dál“). Lišta s roky, pruhy
+a legenda pruhů na telefonu odpadly, seznam začíná o 41 px výš. Počítač je shodný na pixel.
 
 Nejdelší stránka webu mimo seznam zdrojů je 1,3 obrazovky a nic se nikde neposouvá do strany.
 

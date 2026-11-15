@@ -809,3 +809,31 @@ body .hl-skupina.rozbalene .hl-vice::after { content: "▴"; }
   /* odkaz na zdroj posune seznam pod přilepenou lištu, ať má jeden řádek, nebo dva */
   html body dialog.m2 ol.zdroje li { scroll-margin-top: calc(var(--vyska-zalozek, 44px) + 20px); }
 }
+
+/* ===== Seznam kauz na telefonu: svislá osa místo pruhů (díl vybraný 15. 11., varianta C) =====
+   Osa 1980–letošek měla na telefonu 6,8 px na rok: nejkratší pruh 14 px, čárky událostí splývaly a levá
+   třetina osy byla vždy prázdná (nejstarší kauza začíná 1994, 28 z 33 až od 2010). Čitelný byl jen popisek.
+   Čas proto běží dolů: rok začátku stojí ve sloupci vlevo, jen u první kauzy toho roku na stránce
+   (data-stejny-rok nastavuje filtry.ts), nad názvem je konec a délka („do 2021 · 16 let“, „dosud · 12 let“).
+   Lišta s roky, pruhy, zvýraznění vybrané kauzy na ose a legenda pruhů na telefonu odpadají; rozložení
+   událostí je v detailu kauzy (záložka Kdy s přehledem událostí). Na počítači se nemění nic: .r-cas tam
+   není vidět a pruh zůstává. Bez JavaScriptu stojí rok u každé kauzy (bloky let počítá skript). */
+.r-cas { display: none; }
+@media (max-width: 760px) {
+  html body .graf .osa-roku, html body .graf .pasmo, html body .graf .pilulka, html body .graf .radek .stopa { display: none; }
+  html body .legenda > span:not(.legenda-odkazy) { display: none; }
+  /* 16 px okraj, sloupec let 40 px (rok má 13 px mono, asi 35 px) a za ním text */
+  html body .graf .radek .nazev { position: relative; padding: 10px 16px 12px 56px; }
+  html body .graf .radek .r-cas {
+    display: block; order: -1; margin-bottom: 2px;
+    font: 600 13px/1.2 var(--f-mono); color: var(--inkoust); font-variant-numeric: tabular-nums;
+  }
+  html body .graf .radek .r-rok { position: absolute; left: 16px; top: 10px; }
+  /* rok stejný jako u kauzy nad ní: neukazuje se, čtečka ho ale přečte (jinak by kauza neměla začátek) */
+  html body .graf .radek[data-stejny-rok] .r-rok {
+    width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  /* kauzy téhož roku tvoří blok: čára mezi nimi vede jen pod textem, ne přes sloupec let */
+  html body .graf .radek[data-rok-pokracuje] { border-bottom-color: transparent; }
+  html body .graf .radek[data-stejny-rok] .nazev::before { content: ""; position: absolute; left: 56px; right: 0; top: 0; border-top: 1px solid var(--linka); }
+}

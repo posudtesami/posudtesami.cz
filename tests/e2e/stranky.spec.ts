@@ -278,14 +278,16 @@ test.describe('mobil 390×700', () => {
 test.describe('mobil 390×700: hlavní stránka', () => {
   test.use({ viewport: { width: 390, height: 700 } });
 
-  test('osa je zúžená: všechny pruhy jsou vidět bez posouvání do strany', async ({ page }) => {
+  test('seznam kauz se neposouvá do strany; místo pruhů má rok začátku a konec', async ({ page }) => {
     await page.goto('/');
     const graf = (await page.locator('#graf').boundingBox())!;
-    for (const pruh of await page.locator('.radek:not([hidden]) .pruh').all()) {
-      const b = (await pruh.boundingBox())!;
+    for (const cas of await page.locator('.radek:not([hidden]) .r-cas').all()) {
+      const b = (await cas.boundingBox())!;
       expect(b.x).toBeGreaterThanOrEqual(graf.x - 1);
       expect(b.x + b.width).toBeLessThanOrEqual(graf.x + graf.width + 1);
     }
+    await expect(page.locator('.radek:not([hidden]) .pruh').first()).toBeHidden();
+    await overBezPosouvaniDoStrany(page);
   });
 
   test('přepínač „jen neuzavřené“, počítadlo a Zrušit filtry jsou dostupné', async ({ page }) => {

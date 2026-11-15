@@ -1,6 +1,6 @@
 ---
 import type { KauzaZaznam } from '../lib/validace';
-import { ROK_OD, rokDo, naProcenta, rozsahText, delkaText, znackyOsy, konecRok, polohaVKauze } from '../lib/casova-osa';
+import { ROK_OD, rokDo, naProcenta, rozsahText, delkaText, znackyOsy, konecRok, polohaVKauze, konecText } from '../lib/casova-osa';
 import { popisekStavu } from '../lib/stavy';
 import { sklonuj } from '../lib/cestina';
 import { castkaText, castkaKratce, popisekDruhu, hlavniCastka } from '../lib/castky';
@@ -31,6 +31,8 @@ const pct = (r: number) => naProcenta(r, ROK_OD, DO + 1);
               <span class="nazev">
                 <strong title={k.nazev}>{k.nazev}</strong>
                 <small>{popisekStavu(k.stav)}, {sklonuj(k.zdroje.length, ['zdroj', 'zdroje', 'zdrojů'])}{castka && <> · <span class="castka" title={`${castkaText(castka)}, ${popisekDruhu(castka.druh)}: ${castka.popis}`}>{castkaKratce(castka)}</span></>}</small>
+                {/* jen na telefonu, místo pruhu: rok začátku ve sloupci vlevo (svislá osa), konec a délka nad názvem */}
+                <span class="r-cas"><span class="r-rok"><span class="jen-ctecka">od </span>{k.od}</span> <span class="r-konec">{konecText(k.od, k.do)}</span></span>
               </span>
               <span class="stopa">
                 <span class="mrizka-roku" style="inset:0"></span>

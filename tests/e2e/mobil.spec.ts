@@ -64,6 +64,29 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
     await overBezPosouvaniDoStrany(page);
   });
 
+  test('kauzy: svislá osa místo pruhů — rok začátku vlevo, konec a délka nad názvem', async ({ page }) => {
+    // pruh na ose 1980–letošek měl na telefonu 6,8 px na rok a čitelný byl jen popisek (díl vybraný 15. 11.)
+    await page.goto('/');
+    await expect(page.locator('.osa-roku')).toBeHidden();
+    const radek = page.locator('.radek[data-slug="alfa-dotace"]');
+    await expect(radek.locator('.pruh')).toBeHidden();
+    await expect(radek.locator('.r-konec')).toHaveText('dosud · ' + (new Date().getFullYear() - 2007) + ' let');
+    await expect(page.locator('.radek[data-slug="delta-dluhopisy"] .r-konec')).toHaveText('do 2014 · 2 roky');
+    // „a dál“ se na telefonu nepíše: „dosud“ říká totéž
+    for (const t of await page.locator('.radek:not([hidden]) .r-konec').allTextContents()) expect(t).not.toContain('a dál');
+    // rok stojí ve sloupci vlevo od textu, ne nad ním
+    const rok = (await radek.locator('.r-rok').boundingBox())!, nazev = (await radek.locator('strong').boundingBox())!;
+    expect(rok.x + rok.width).toBeLessThanOrEqual(nazev.x);
+    expect(rok.y).toBeLessThan(nazev.y);
+    // čtečka slyší název i začátek: „… od 2007 dosud · 19 let“
+    await expect(radek.locator('a')).toHaveAccessibleName(/^Testovací kauza Alfa.*od 2007 dosud · \d+ let/);
+    // žádná dvojice ve fixturách nezačíná stejným rokem: rok je vidět u každé kauzy
+    await expect(page.locator('.radek[data-stejny-rok]')).toHaveCount(0);
+    await expect(page.locator('.legenda i')).toHaveCount(3);
+    await expect(page.locator('.legenda i').first()).toBeHidden();
+    await overBezPosouvaniDoStrany(page);
+  });
+
   test('mapa: vysvětlení vazby pod řádkem stromu', async ({ page }) => {
     await otevri(page, '/?pohled=mapa');
     const uzel = page.locator('.strom li[data-uzel="k:epsilon-fondy"][data-hlavni]');
