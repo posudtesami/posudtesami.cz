@@ -192,6 +192,14 @@ test.describe('pojmy a zkratky s výkladem', () => {
   });
 });
 
+test('na počítači má „celé shrnutí“ původní odsazení 2 px (mobilní 4 px ho nepřebije)', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 657 });
+  await page.goto('/kauzy/zeta-stret/');
+  const vice = page.locator('dialog#detail .perex-vice');
+  await expect(vice).toBeVisible();
+  expect(await vice.evaluate(e => { const s = getComputedStyle(e); return [s.marginTop, s.paddingTop, s.paddingBottom]; })).toEqual(['2px', '2px', '2px']);
+});
+
 test.describe('stav kauzy', () => {
   test('pod stavem je jedna věta, co stav znamená', async ({ page }) => {
     await page.goto('/kauzy/zeta-stret/');
@@ -209,6 +217,17 @@ test.describe('Metodika', () => {
     await expect(panel.getByRole('heading', { level: 2 })).toHaveText('Slovníček pojmů a zkratek');
     expect(await panel.locator('dl.slovnicek dt').count()).toBeGreaterThan(80);
     await expect(panel.locator('#pojem-z-uohs')).toHaveText('ÚOHS');
+  });
+
+  test('odkazy na slovníčky v oddílu Jak píšeme přepnou na slovníček', async ({ page }) => {
+    for (const [odkaz, sekce] of [['slovníčku pojmů a zkratek', 'pojmy'], ['slovníčku stavů', 'stavy']]) {
+      await page.goto('/metodika/#srozumitelnost');
+      await expect(page.locator('.v4-dlg-panel[data-sekce="jazyk"]')).toBeVisible();
+      await page.locator('.v4-dlg-panel[data-sekce="jazyk"]').getByRole('link', { name: odkaz, exact: true }).click();
+      await expect(page.locator(`.v4-dlg-panel[data-sekce="${sekce}"]`), `${odkaz}: otevře se oddíl ${sekce}`).toBeVisible();
+      await expect(page.locator('.v4-dlg-panel[data-sekce="jazyk"]')).toBeHidden();
+      await expect(page.locator('.v4-dlg')).toHaveJSProperty('open', true);
+    }
   });
 
   test('oddíl Jak píšeme říká, jak se píše srozumitelně', async ({ page }) => {

@@ -86,8 +86,16 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
   };
   const dalsiCastky = (n: number) => n === 1 ? 'další částka' : n < 5 ? `další ${n} částky` : `dalších ${n} částek`;
   const zmerCastky = () => {
-    if (!castky || !castkyVice || hlava.classList.contains('castky-rozbalene')) return;
+    if (!castky || !castkyVice) return;
     const popisCastky = castky.querySelector<HTMLElement>('.popis-castky');
+    if (hlava.classList.contains('castky-rozbalene')) {
+      // Rozbalené částky po změně šířky (otočení tabletu): když by je styly už nesbalily, rozbalení
+      // nemá smysl a tlačítko „méně“ by viselo na počítači. Změří se to bez třídy rozbalení.
+      hlava.classList.remove('castky-rozbalene');
+      const sbalilyBy = !!popisCastky && getComputedStyle(popisCastky).display === 'none';
+      if (sbalilyBy) { hlava.classList.add('castky-rozbalene'); return; }
+      castkyVice.setAttribute('aria-expanded', 'false');
+    }
     castkyVice.hidden = !popisCastky || getComputedStyle(popisCastky).display !== 'none';
     // Sbalený seznam částek je na telefonu sám tlačítkem: styly to poznají podle data-sbalene
     // a dokreslí šipku. Bez JavaScriptu a na počítači atribut nevznikne a nic se nemění.

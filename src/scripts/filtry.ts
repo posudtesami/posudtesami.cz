@@ -4,6 +4,7 @@ import { sklonuj } from '../lib/cestina';
 import { navaznostRoku } from '../lib/casova-osa';
 import { nastavViditelne } from './stav-filtru';
 import { inicializujCipy } from './cipy';
+import { FILTRY_ZRUSENE } from './upresnit';
 
 export function inicializujFiltry(): void {
   const panel = document.querySelector<HTMLElement>('.filtry');
@@ -169,6 +170,7 @@ export function inicializujFiltry(): void {
     cipy.querySelectorAll('button[data-stitek]').forEach(b => b.setAttribute('aria-pressed', 'false'));
     prefiltruj();
     rozvrhniCipy();
+    document.dispatchEvent(new Event(FILTRY_ZRUSENE));
   };
 
   hledat.addEventListener('input', () => { filtr.text = hledat.value; prefiltruj(); });

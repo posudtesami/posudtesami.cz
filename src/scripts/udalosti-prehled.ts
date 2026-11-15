@@ -52,8 +52,10 @@ export function vytvorPrehled(
     ol.append(polozka);
   });
   seznam.append(ol);
-  // Seznam je první řádek lišty (CSS mu dá order: -1), takže přilepená lišta roste nahoru.
-  listovani.append(tlacitko, seznam);
+  // Tlačítko stojí mezi předchozí a další, a to i v DOM, aby pořadí pro klávesnici a čtečku odpovídalo
+  // tomu, co je vidět. Seznam stojí nad lištou jako překryv (CSS), v toku lišty nemá místo.
+  listovani.insertBefore(tlacitko, listovani.querySelector('button[data-krok="1"]'));
+  listovani.append(seznam);
 
   const prvky = [...ol.querySelectorAll<HTMLButtonElement>('button[data-i]')];
   let otevreno = false;
@@ -87,9 +89,13 @@ export function vytvorPrehled(
     zavri(true);
   });
   // Escape zavírá přehled, ne celý detail: jinak by se čtenář klávesou z kauzy vystřelil ven.
-  seznam.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && otevreno) { e.stopPropagation(); zavri(true); }
-  });
+  // Zavření modálního <dialog> je výchozí akce klávesy, zastaví ho jen preventDefault. Platí i s fokusem
+  // na tlačítku přehledu, nejen v seznamu.
+  const naEscape = (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && otevreno) { e.preventDefault(); e.stopPropagation(); zavri(true); }
+  };
+  seznam.addEventListener('keydown', naEscape);
+  tlacitko.addEventListener('keydown', naEscape);
 
   obnov(polozky.length - 1);
   return { obnov, zavri: () => zavri() };

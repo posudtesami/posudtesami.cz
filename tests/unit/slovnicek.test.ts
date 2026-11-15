@@ -78,6 +78,22 @@ describe('označování pojmů v textu', () => {
     // spojení se nepřenáší přes hranici věty
     expect(o.text('Policie prověřovala věc. Sněmovna schůzi odložila.', 'd')).toBe('Policie prověřovala věc. Sněmovna schůzi odložila.');
   });
+  it('imunitu v cizině nevykládá jako poslaneckou', () => {
+    const o = vytvorOznacovac();
+    expect(o.text('Jako premiér má podle Seznam Zpráv ve Francii imunitu.', 'a')).toBe('Jako premiér má podle Seznam Zpráv ve Francii imunitu.');
+    expect(o.text('Chrání ho ve Francii mezinárodní imunita.', 'b')).toBe('Chrání ho ve Francii mezinárodní imunita.');
+    expect(o.text('Byl ve Francii. Po volbách získal imunitu.', 'c')).toBe(`Byl ve Francii. Po volbách získal ${tl('imunita', 'imunitu')}.`);
+    expect(o.text('Brání mu poslanecká imunita.', 'd')).toBe(`Brání mu poslanecká ${tl('imunita', 'imunita')}.`);
+  });
+  it('holding v názvu firmy neoznačí, obecné slovo ano', () => {
+    const o = vytvorOznacovac();
+    for (const [i, t] of ['Vlastník AGROFERT HOLDING mlčí.', 'Firma Boyne Holding L.L.C. vznikla.', 'Patří skupině Hartenberg Holding.', 'Podnik Agrofert holdingu.'].entries())
+      expect(o.text(t, `n${i}`), t).toBe(t);
+    expect(o.text('Firmy z holdingu dotaci vrátily.', 'a')).toBe(`Firmy z ${tl('holding', 'holdingu')} dotaci vrátily.`);
+    expect(o.text('Firmy holdingu braly podpory.', 'b')).toBe(`Firmy ${tl('holding', 'holdingu')} braly podpory.`);
+    expect(o.text('Řekl to. Holding mlčí.', 'c')).toBe(`Řekl to. ${tl('holding', 'Holding')} mlčí.`);
+    expect(o.text('Firma Hartenberg Holding a holding Agrofert.', 'd')).toBe(`Firma Hartenberg Holding a ${tl('holding', 'holding')} Agrofert.`);
+  });
   it('text escapuje', () => {
     expect(vytvorOznacovac().text('<b> & „konkurz“ "x"', 'a')).toBe(`&lt;b&gt; &amp; „${tl('konkurz', 'konkurz')}“ &quot;x&quot;`);
   });

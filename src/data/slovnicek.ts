@@ -46,7 +46,9 @@ export const VYRAZY: Pojem[] = [
     'Pravomocné rozhodnutí je konečné: běžným odvoláním ho už změnit nejde. Nepravomocné rozhodnutí může ještě změnit vyšší soud nebo úřad.'),
   vyraz('presumpce-neviny', 'presumpce neviny', String.raw`presumpc${K} neviny`,
     'Na každého se hledí jako na nevinného, dokud soud pravomocně nerozhodne, že je vinen.'),
-  vyraz('imunita', 'poslanecká imunita', String.raw`imunit${K}`,
+  // jen poslanecká: imunita v cizině (premiér ve Francii, mezinárodní, diplomatická) je jiný mechanismus,
+  // výklad o vydání komorou by tam čtenáři podsunul nepravdu
+  vyraz('imunita', 'poslanecká imunita', String.raw`(?<!(?:Franci|mezinárodn|diplomat)[^.;!?]{0,60})imunit${K}`,
     'Poslance nebo senátora lze trestně stíhat jen se souhlasem jeho komory. Když ho komora nevydá, nelze stíhání po dobu mandátu vést.'),
   vyraz('odlozeni', 'odložení věci', String.raw`${vetaS('věc|případ|oznámení|podněty?|prověřování', 90)}odloži${K}|odložení věci|věc${K} (?:\p{L}+ )?odložen${K}`,
     'Policie nebo úřad se věcí dál nezabývá a nikoho neobviní, například proto, že nezjistí porušení zákona nebo uplynula lhůta.'),
@@ -86,7 +88,10 @@ export const VYRAZY: Pojem[] = [
   vyraz('narovnani', 'narovnání', String.raw`(?<=(?:za|o)\s)narovnání`,
     'Dohoda, kterou spor nebo řízení skončí bez dalšího dokazování. U antimonopolního úřadu firma přizná porušení zákona a dostane nižší pokutu.'),
   // firmy a majetek
-  vyraz('holding', 'holding', String.raw`holding${K}`,
+  // obecné slovo, ne součást názvu firmy („AGROFERT HOLDING“, „Boyne Holding L.L.C.“, „Hartenberg Holding“):
+  // s velkým H jen na začátku věty, malými písmeny jen tam, kde před ním nestojí jméno (slovo s velkým
+  // písmenem, které nezačíná větu)
+  vyraz('holding', 'holding', String.raw`(?:(?<=(?:^|[.!?„"]\s))(?-i:Holding)|(?<!(?<!^|[.!?:;„"]\s)(?-i:\p{Lu})\p{L}*\s)(?-i:holding))${K}`,
     'Skupina firem, kterou ovládá jedna mateřská společnost.'),
   vyraz('sverensky-fond', 'svěřenský fond', String.raw`svěřensk${K} fond${K}`,
     'Majetek, který zakladatel vyčlení ze svého vlastnictví a svěří správci. Správce se o něj stará podle pravidel zakladatele a výnosy dostává ten, koho zakladatel určil.'),

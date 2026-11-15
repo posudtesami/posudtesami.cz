@@ -275,6 +275,36 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
     await expect(prehled).toHaveAttribute('aria-expanded', 'false');
   });
 
+  test('detail kauzy: přehled stojí v liště uprostřed, i pro klávesnici', async ({ page }) => {
+    await otevri(page, '/kauzy/zeta-stret/');
+    await page.getByRole('tab', { name: 'Kdy' }).tap();
+    const lista = page.locator('dialog#detail .m2-panel[data-p="chrono"] .listovani');
+    const [pred, prehled, dalsi] = await Promise.all(['button[data-krok="-1"]', '.listovani-prehled', 'button[data-krok="1"]']
+      .map(s => lista.locator(s).boundingBox()));
+    expect(pred!.x + pred!.width, 'přehled je vpravo od předchozí').toBeLessThanOrEqual(prehled!.x);
+    expect(prehled!.x + prehled!.width, 'přehled je vlevo od další').toBeLessThanOrEqual(dalsi!.x);
+    // pořadí v DOM = pořadí tabulátorem a čtečkou
+    expect(await lista.locator(':scope > button').evaluateAll(b => b.map(x => x.dataset.krok ?? 'prehled'))).toEqual(['-1', 'prehled', '1']);
+  });
+
+  test('detail kauzy: Escape zavře přehled událostí, ne celý detail', async ({ page }) => {
+    await otevri(page, '/kauzy/zeta-stret/');
+    await page.getByRole('tab', { name: 'Kdy' }).tap();
+    const prehled = page.locator('dialog#detail .listovani-prehled');
+    const seznam = page.locator('dialog#detail .udalosti-prehled');
+    for (const fokus of ['položka seznamu', 'tlačítko přehledu']) {
+      await prehled.tap();
+      await expect(seznam).toBeVisible();
+      if (fokus === 'položka seznamu') await seznam.locator('button[data-i]').first().focus();
+      else await prehled.focus();
+      await page.keyboard.press('Escape');
+      await expect(seznam, `${fokus}: přehled se zavřel`).toBeHidden();
+      await expect(page.locator('dialog#detail'), `${fokus}: detail zůstal otevřený`).toHaveJSProperty('open', true);
+      await expect(page, `${fokus}: adresa zůstala na kauze`).toHaveURL(/\/kauzy\/zeta-stret\//);
+      await expect(prehled, 'fokus se vrátil na tlačítko přehledu').toBeFocused();
+    }
+  });
+
   test('vyhledávací pole má aspoň 16 px, aby iPhone po klepnutí nepřibližoval', async ({ page }) => {
     for (const cesta of ['/', '/pravidla/']) {
       await otevri(page, cesta);
@@ -346,6 +376,21 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
     expect(await videt(), 'po rozbalení jsou vidět všechny').toBe(vsech);
   });
 
+  // Otočení tabletu: rozbalené částky na úzkém displeji a pak široké okno, kde se částky nesbalují.
+  test('detail kauzy: rozbalené částky po rozšíření okna nenechají viset „méně“', async ({ page }) => {
+    await otevri(page, '/kauzy/gama-offshore/');
+    const vice = page.locator('dialog#detail .castky-vice');
+    await vice.click();
+    await expect(vice).toHaveAttribute('aria-expanded', 'true');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await expect(vice, 'na širokém okně tlačítko není').toBeHidden();
+    await expect(page.locator('dialog#detail .m2-hlava')).not.toHaveClass(/castky-rozbalene/);
+    await page.setViewportSize(HLAVNI);
+    await expect(vice, 'zpátky na telefonu je seznam zase sbalený').toBeVisible();
+    await expect(vice).toHaveAttribute('aria-expanded', 'false');
+    await expect(vice).toContainText(/dalš/);
+  });
+
   // Řád ovládání (upravy.css): web měl šest různých tvarů pro jednu akci „je toho víc, klepni sem“.
   // Odkaz, který rozbaluje blok textu, má všude stejný řez — ať je to shrnutí, filtry nebo znění.
   test('rozbalovací odkazy mají na celém webu jeden vzhled', async ({ page }) => {
@@ -386,6 +431,20 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
     await expect(veta).toBeHidden();
     await expect(upresnit).toHaveText('Upřesnit výběr (1)');
     await overBezPosouvaniDoStrany(page);
+    // „Zrušit filtry“ vynuluje výběry skriptem: počet v tlačítku nesmí zůstat starý
+    await page.locator('.filtry .f-zrusit:visible').first().click();
+    await expect(upresnit).toHaveText('Upřesnit výběr');
+  });
+
+  test('zákony: po zrušení filtrů tlačítko upřesnění nehlásí starý počet', async ({ page }) => {
+    await otevri(page, '/pravidla/');
+    const upresnit = page.locator('.filtry .f-upresnit:visible').first();
+    await upresnit.click();
+    await page.locator('.f-dalsi select[data-filtr]:visible').first().selectOption({ index: 1 });
+    await upresnit.click();
+    await expect(upresnit).toHaveText('Upřesnit výběr (1)');
+    await page.locator('.f-zrusit:visible').first().click();
+    await expect(upresnit).toHaveText('Upřesnit výběr');
   });
 
   // Jmenný seznam celé sněmovny byl na telefonu 4 409 px z 4 824 — pět a půl obrazovky jmen.

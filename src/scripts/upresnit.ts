@@ -7,6 +7,9 @@
  *
  *  Zvolený filtr se nikdy neschová: když je některý nastavený (třeba z adresy), věta se otevře sama,
  *  a je-li zavřená, tlačítko nese počet zvolených filtrů. */
+/** Událost na document: filtry se zrušily skriptem (výběry se vynulovaly bez události change). */
+export const FILTRY_ZRUSENE = 'nv:filtry-zrusene';
+
 export function inicializujUpresnit(): void {
   document.querySelectorAll<HTMLElement>('.f-dalsi').forEach((veta, poradi) => {
     const obal = veta.parentElement;
@@ -29,6 +32,8 @@ export function inicializujUpresnit(): void {
 
     tlacitko.addEventListener('click', () => nastav(tlacitko.getAttribute('aria-expanded') !== 'true'));
     veta.addEventListener('change', () => nastav(tlacitko.getAttribute('aria-expanded') === 'true'));
+    // „Zrušit filtry“ nastaví výběry skriptem, bez události change: počet v tlačítku by zůstal starý
+    document.addEventListener(FILTRY_ZRUSENE, () => nastav(tlacitko.getAttribute('aria-expanded') === 'true'));
     obal.insertBefore(tlacitko, veta);
     nastav(zvolene() > 0);
   });

@@ -13,12 +13,13 @@ test('záložka Hlasování: za Průběhem, bloky od nejnovějšího, výsledek 
   await expect(bloky.nth(0).locator('.hl-co')).toHaveText('Fiktivní návrh zákona jako celek ve třetím čtení');
   await expect(bloky.nth(0).locator('.hl-vysledek')).toHaveText('Přijato 7 : 3 · pro : proti · Všichni poslanci →');
   await expect(bloky.nth(0).locator('.hl-pata')).toHaveCount(0);
-  // kluby v řádcích PRO a PROTI podle toho, čeho měly víc; Piráti (0 : 0) nebyli ani pro, ani proti a v rozdělení nejsou
-  await expect(bloky.nth(0).locator('.hl-strana-nazev')).toHaveText(['Pro', 'Proti']);
+  // kluby v řádcích PRO a PROTI podle toho, čeho měly víc; Piráti (0 : 0) nebyli ani pro, ani proti a mají třetí řádek
+  await expect(bloky.nth(0).locator('.hl-strana-nazev')).toHaveText(['Pro', 'Proti', 'Ani pro, ani proti']);
   await expect(bloky.nth(0).locator('.hl-strana').nth(0).locator('a')).toHaveText(['ANO 5 : 0 (5 pro, 0 proti)', 'Nezařazení 1 : 0 (1 pro, 0 proti)']);
   await expect(bloky.nth(0).locator('.hl-strana').nth(1).locator('a')).toHaveText(['ODS 1 : 2 (1 pro, 2 proti)', 'STAN 0 : 1 (0 pro, 1 proti, 1 omluven)']);
+  await expect(bloky.nth(0).locator('.hl-strana').nth(2).locator('a')).toHaveText([/^Piráti 0 : 0 \(/]);
   await expect(bloky.nth(0).getByRole('list', { name: 'Pro', exact: true })).toBeVisible();
-  await expect(bloky.nth(0).locator('.hl-kluby')).not.toContainText('Piráti');
+  await expect(bloky.nth(0).getByRole('list', { name: 'Ani pro, ani proti', exact: true })).toBeVisible();
   await expect(bloky.nth(0).locator('.hl-proc')).toHaveCount(0);
   await expect(bloky.nth(1).locator('.hl-meta')).toHaveText('12. 6. 2026 · hlasování č. 12 · procedurální');
   await expect(bloky.nth(1).locator('.hl-kluby a .hl-cisla')).toHaveText(['4 : 0', '1 : 0', '0 : 2', '0 : 1', '0 : 1']);
@@ -86,5 +87,18 @@ for (const v of MOBILY) {
     const p = await panel.evaluate(e => ({ sw: e.scrollWidth, cw: e.clientWidth, sloupce: getComputedStyle(e).columnWidth }));
     expect(p.sloupce, 'záložka bez sloupců').toBe('auto');
     expect(p.sw, 'záložka se nesmí posouvat do strany').toBeLessThanOrEqual(p.cw + 1);
+  });
+
+  test(`mobil ${v.width}×${v.height}: název klubu a čísla od sebe dělí mezera`, async ({ page }) => {
+    await page.setViewportSize(v);
+    await page.goto('/pravidla/zakon-omega/');
+    await page.getByRole('tab', { name: zalozkaZakona('Hlasování (2)', v.width) }).click();
+    const mezery = await page.locator('.m2-panel[data-p="hlasovani"] .hl-kluby a').evaluateAll(odkazy => odkazy.map(a => {
+      const r = document.createRange();
+      r.selectNodeContents(a.firstChild!); // text s názvem klubu
+      return { klub: a.firstChild!.textContent!.trim(), mezera: a.querySelector('.hl-cisla')!.getBoundingClientRect().left - r.getBoundingClientRect().right };
+    }));
+    expect(mezery.length).toBeGreaterThan(0);
+    for (const m of mezery) expect(m.mezera, `${m.klub}: mezera před čísly`).toBeGreaterThanOrEqual(3);
   });
 }

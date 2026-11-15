@@ -169,9 +169,11 @@ body .m2-hlava .perex { display: block; -webkit-line-clamp: none; max-width: non
 /* Na mobilu jsou vidět tři řádky, které se dole vytrácejí, a tlačítko „celé shrnutí“ (skript ho ukáže, jen když
    text pokračuje). Bez trojtečky. Dřív to bylo okénko s posuvníkem, které na telefonu nebylo poznat, takže
    zbytek shrnutí (často se stanoviskem dotčené strany) zůstal skrytý. */
-body .perex-vice { display: inline-block; margin: 0; padding: 4px 0; }
+body .perex-vice { display: inline-block; }
 body .perex-vice[hidden] { display: none; }
 @media (max-width: 760px) {
+  /* odsazení jen na telefonu: na počítači platí původní 2 px z bloku výš (pozdější pravidlo by ho přebilo) */
+  body .perex-vice { margin: 0; padding: 4px 0; }
   body .m2-hlava .perex { line-height: 1.5; max-height: 4.5em; overflow: hidden; }
   body .m2-hlava:has(.perex-vice:not([hidden])):not(.rozbalene) .perex { mask-image: linear-gradient(#000 60%, transparent); }
   body .m2-hlava.rozbalene .perex { max-height: none; overflow: visible; }
@@ -839,9 +841,10 @@ body .hl-skupina.rozbalene .hl-vice::after { content: "▴"; }
 }
 
 /* Čipy klubů v záložce Hlasy u zákona měly na telefonu 26 px na výšku. Audit je přehlížel: odkaz v položce
-   seznamu bral jako odkaz ve větě, na který pravidlo 44 px neplatí (opraveno, viz vTextu v auditu). */
+   seznamu bral jako odkaz ve větě, na který pravidlo 44 px neplatí (opraveno, viz vTextu v auditu).
+   V inline-flex se mezera mezi názvem klubu a čísly zahodí („ODS14 : 0“), proto gap. */
 @media (max-width: 760px) {
-  body .hl-kluby a { display: inline-flex; align-items: center; min-height: 44px; padding-block: 0; }
+  body .hl-kluby a { display: inline-flex; align-items: center; gap: .4em; min-height: 44px; padding-block: 0; }
 }
 
 /* ===== Vybraná záložka je na telefonu podtržená (díl vybraný 15. 11., varianta B) =====
