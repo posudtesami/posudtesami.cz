@@ -59,7 +59,8 @@ iOS zoomu a zároveň vážná chyba přístupnosti — správné řešení je p
 
 ```
 node .claude/skills/mobilni-design/nastroje/prehled.mjs      # změří všechny stránky na telefonu
-node .claude/skills/mobilni-design/nastroje/varianty.mjs     # vyrendruje varianty k výběru
+node .claude/skills/mobilni-design/nastroje/varianty.mjs     # stupňované varianty jedné obrazovky
+node .claude/skills/mobilni-design/nastroje/vyber.mjs        # návrhy před/po se zaškrtávátky
 npm run e2e:mobil                                            # testy + snímek každé stránky
 ```
 
@@ -69,9 +70,18 @@ Oba skripty si samy postaví web ze **skutečného obsahu** (`obsah/`), spustí 
 vysoká v obrazovkách, jestli se něco posouvá do strany, kolik je cílů pod 44 px a jaké je nejmenší
 viditelné písmo. **Tím každá práce začíná.**
 
-`varianty.mjs` je šablona: nahoře se dopíší varianty jako kousky CSS (a případně úprava DOM), skript
-je nasadí na skutečnou stránku, vyfotí, co je vidět bez posunutí, a vyrobí `navrhy/index.html` —
-jednu stránku se snímky a čísly, ze které si uživatel vybere.
+`varianty.mjs` je šablona pro **jednu obrazovku a stupňované varianty** (A, B = A + něco, C = B + něco).
+Nasadí je na skutečnou stránku, vyfotí, co je vidět bez posunutí, a vyrobí `navrhy/index.html`.
+
+`vyber.mjs` je šablona pro **několik nezávislých návrhů naráz**. U každého vyfotí stav před a po
+vedle sebe, změří, co se změnilo, a vyrobí `navrhy/vyber.html` se zaškrtávátky a soupisem
+k zkopírování. Tohle použij, když se vybírá z backlogu.
+
+**Čísla v obou skriptech ber vážně i proti sobě.** Při psaní návrhů na listopadový backlog vyšlo,
+že dva z pěti nedělaly, co slibovaly: „strop na dvě částky" ušetřil 32 px místo slibovaných ~95
+(čtyři částky se lámou do dvou řádků, ne čtyř) a „sbalit popisy částek" snížil oříznutí na nízkém
+okně jen ze 105 na 83 px. Oboje se poznalo až z naměřeného sloupce „po". Nikdy nepředkládej návrh,
+jehož „po" jsi neviděl.
 
 **Testy:** projekt `mobil` v `playwright.config.ts` je emulovaný telefon s dotykem (Pixel 5), ne jen
 úzké okno počítače. Sada je v `tests/e2e/mobil.spec.ts`, snímky v `snimky/mobil/index.html`.
