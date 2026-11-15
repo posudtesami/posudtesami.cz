@@ -39,108 +39,151 @@ const TELEFON = { width: 390, height: 844 };
 // Položka { skupina, popis } vloží velký nadpis mezi díly.
 // ───────────────────────────────────────────────────────────────────────────────────────────────
 
-/** Seznam kauz: co řádek ukazuje a jak vysoký je. Délku roku na ose měří jen tam, kde pruh je. */
-const MER_SEZNAM = () => {
-  const radky = [...document.querySelectorAll('.radek')].filter(r => r.getClientRects().length);
-  const vysky = radky.map(r => r.getBoundingClientRect().height);
-  const lista = document.querySelector('.osa-roku');
-  const stopa = radky[0]?.querySelector('.stopa');
-  const naRok = stopa && stopa.getClientRects().length ? stopa.getBoundingClientRect().width / (new Date().getFullYear() + 1 - 1980) : 0;
-  const pruhy = radky.map(r => r.querySelector('.pruh')).filter(p => p && p.getClientRects().length).map(p => p.getBoundingClientRect().width);
+/** Hlasy klubů: kolik místa blok bere a jestli jde poznat, jak klub hlasoval, bez čtení čísel. */
+const MER_HLASY = () => {
+  const blok = document.querySelector('.hl-blok');
+  const cipy = [...blok.querySelectorAll('.hl-kluby a')];
+  const r = cipy.map(a => a.getBoundingClientRect());
   return {
-    'čas v řádku': naRok ? `pruh, ${String(Math.round(naRok * 10) / 10).replace('.', ',')} px na rok` : 'textem',
-    'nejkratší pruh': pruhy.length ? Math.round(Math.min(...pruhy)) + ' px' : '–',
-    'lišta s roky': lista && lista.getClientRects().length ? Math.round(lista.getBoundingClientRect().height) + ' px' : 'není',
-    'první kauza začíná': Math.round(radky[0].getBoundingClientRect().top + scrollY) + ' px',
-    'řádek průměrně': Math.round(vysky.reduce((a, b) => a + b, 0) / vysky.length) + ' px',
-    'deset kauz': Math.round(radky.at(-1).getBoundingClientRect().bottom - radky[0].getBoundingClientRect().top) + ' px',
+    'klubů v bloku': cipy.length,
+    'řádků čipů': new Set(r.map(x => Math.round(x.top))).size,
+    'blok hlasování': Math.round(blok.getBoundingClientRect().height) + ' px',
+    'nejmenší cíl': Math.round(Math.min(...r.map(x => x.height))) + ' px',
     'do strany': document.documentElement.scrollWidth > innerWidth ? 'PŘETÉKÁ' : 'ne',
   };
 };
 
-/* Věta „O co jde“ je ve větvi citelnost (uživatel ji má na telefonu); náhled ji přidá, aby řádek
- * vypadal jako po spojení obou větví. Text vět je převzatý z obsahu té větve do navrhy/o-co-jde.tsv
- * (slug, tabulátor, věta; řádek „oCoJde:“ z každého obsah/kauzy/*.md v NenechmeVyhnit-citelnost). */
-const VETY = Object.fromEntries(readFileSync('navrhy/o-co-jde.tsv', 'utf8').trim().split('\n').map(r => r.split('\t')));
-const VETA = `(() => { const V = ${JSON.stringify(VETY)};
-  for (const r of document.querySelectorAll('.radek')) { const s = document.createElement('span'); s.className = 'o-co-jde'; s.textContent = V[r.dataset.slug] ?? ''; r.querySelector('.nazev strong').after(s); }
-  const st = document.createElement('style'); st.textContent = '@media (max-width:760px){ body .radek .nazev .o-co-jde { display:block; margin-top:3px; font:13px/1.35 var(--f-text); color:var(--text2); } }'; document.head.append(st);
-})()`;
-const RAZENI = r => `(() => { ${VETA.slice(7, -3)}; const s = document.querySelector('select[data-razeni]'); s.value = '${r}'; s.dispatchEvent(new Event('change', { bubbles: true })); })()`;
-const SKROL = `(() => { const r = document.querySelector('.radek:not([hidden])'); scrollTo(0, r.getBoundingClientRect().top + scrollY - 44); })()`;
+/** Záložky: kolik řádků a místa lišta bere a kde je vybraná. */
+const MER_ZAL = () => {
+  const lista = document.querySelector('dialog#detail .zalozky');
+  const zal = [...lista.querySelectorAll('[role="tab"]')].map(b => b.getBoundingClientRect());
+  const vybrana = lista.querySelector('[aria-selected="true"]');
+  return {
+    'záložek': zal.length,
+    'řádků': new Set(zal.map(x => Math.round(x.top))).size,
+    'výška lišty': Math.round(lista.getBoundingClientRect().height) + ' px',
+    'vybraná': vybrana.innerText.trim(),
+    'nejmenší cíl': Math.round(Math.min(...zal.map(x => x.height))) + ' px',
+  };
+};
 
-/* B: „2014 – dosud · 12 let a dál“ nad názvem (stejně jako roky nad názvem v hlavičce detailu). */
-const ROKY_NAD = `(() => { for (const r of document.querySelectorAll('.radek')) {
-  const p = r.querySelector('.pruh .popisek'); const em = p.querySelector('em')?.textContent ?? '';
-  const s = document.createElement('span'); s.className = 'n-roky'; s.textContent = p.firstChild.textContent.trim() + ' · ' + em; r.querySelector('.nazev').prepend(s);
-} })()`;
+const NA_HLASY = `(() => { document.querySelector('.zalozky [data-p="hlasovani"]').click(); })()`;
+const K_HLASUM = `(() => { const d = document.querySelector('dialog#detail'), b = document.querySelector('.hl-blok');
+  if (innerWidth <= 760) d.scrollTop += b.getBoundingClientRect().top - 150; })()`;
+const NA_ZDROJE = `(() => { document.querySelector('.zalozky [data-p="zdroje"]').click(); })()`;
 
-/* C: rok začátku v levém sloupci, jen u první kauzy toho roku; vpravo konec a délka. */
-const ROK_VLEVO = `(() => { let pred = null;
-  for (const r of document.querySelectorAll('.radek')) {
-    if (!r.getClientRects().length) continue;
-    const od = r.dataset.odRok, doo = r.dataset.doRok, em = r.querySelector('.pruh .popisek em')?.textContent ?? '';
-    const s = document.createElement('span'); s.className = 'n-rok'; s.textContent = od === pred ? '' : od;
-    if (od === pred) r.classList.add('n-stejny');
-    pred = od;
-    const d = document.createElement('span'); d.className = 'n-roky';
-    d.textContent = (doo === 'dosud' ? 'dosud' : doo === od ? 'jen ' + od : 'do ' + doo) + ' · ' + em;
-    r.querySelector('.nazev').prepend(d); r.querySelector('.radek-btn').prepend(s);
+/** Pro a proti z čísel na čipu („ANO 0 : 62“). */
+const ROZDEL = `const cisla = li => li.querySelector('.hl-cisla').textContent.split(':').map(x => Number(x.trim()));`;
+
+/* B: zelená a červená podle toho, čeho bylo v klubu víc (návrh uživatele). */
+const ZELENA_CERVENA = `(() => { ${ROZDEL}
+  for (const li of document.querySelectorAll('.hl-kluby li')) { const [p, q] = cisla(li); li.querySelector('a').classList.add(p > q ? 'n-pro' : q > p ? 'n-proti' : 'n-nic'); } })()`;
+
+/* C: kluby rozdělené do řádků podle většiny v klubu; rozlišuje text a pořadí, ne barva. */
+const SKUPINY = `(() => { ${ROZDEL}
+  for (const ul of document.querySelectorAll('.hl-kluby')) {
+    const sk = { pro: [], proti: [], nic: [] };
+    for (const li of [...ul.children]) { const [p, q] = cisla(li); sk[p > q ? 'pro' : q > p ? 'proti' : 'nic'].push(li); }
+    ul.replaceChildren();
+    for (const [k, nazev] of [['pro', 'Většina pro'], ['proti', 'Většina proti'], ['nic', 'Bez většiny']]) {
+      if (!sk[k].length) continue;
+      const g = document.createElement('li'); g.className = 'n-skup';
+      const h = document.createElement('span'); h.className = 'n-skup-nazev'; h.textContent = nazev;
+      const vnitrek = document.createElement('ul'); vnitrek.append(...sk[k]);
+      g.append(h, vnitrek); ul.append(g);
+    }
   } })()`;
 
-const BEZ_OSY = `
-  body .osa-roku, body .graf .pasmo, body .graf .pilulka, body .radek .stopa { display: none !important; }
-  body .legenda > span:not(.legenda-odkazy) { display: none; }
-  body .graf .radek { min-height: 0; }
-  body .radek .nazev { padding: 10px 16px 12px; }
-  body .radek .nazev .n-roky { display: block; margin-bottom: 2px; font: 600 13px/1.2 var(--f-mono); color: var(--inkoust); font-variant-numeric: tabular-nums; }`;
+/* D: poměr pro : proti jako tenký pruh pod čipem, neutrálně (tmavá = pro, světlá = proti). */
+const PRUH = `(() => { ${ROZDEL}
+  for (const li of document.querySelectorAll('.hl-kluby li')) { const [p, q] = cisla(li); const a = li.querySelector('a');
+    if (p + q === 0) continue; a.classList.add('n-pomer'); a.style.setProperty('--pro', (100 * p / (p + q)).toFixed(1) + '%'); } })()`;
 
 const STRANKA = {
-  klic: 'seznam-kauz-bez-pruhu',
-  nazev: 'Seznam kauz na telefonu',
-  podtitul: 'co nahradí pruh na časové ose · varianty k výběru · skutečný obsah i s větami „O co jde“',
-  nadpis: 'Na telefonu pruh na ose nic neřekne. Čas ale do seznamu patří.',
+  klic: 'hlasy-a-vybrana-zalozka',
+  nazev: 'Hlasy klubů a vybraná záložka',
+  podtitul: 'dvě věci z telefonu · varianty k výběru · skutečný obsah',
+  nadpis: 'Kdo hlasoval jak, poznat na první pohled. A vybraná záložka, která nevypadá jako chyba.',
   odstavce: [
-    'Osa na úvodu běží od roku 1980 do letoška. Na telefonu má na šířku asi 320 px, tedy <b>6,8 px na rok</b>. Nejstarší kauza začíná 1994, takže levá třetina osy je vždycky prázdná, a 28 z 33 kauz začíná od roku 2010 — všechny pruhy se tlačí do pravé třetiny. Čárky událostí v pruhu splývají. Jediné, co z řádku opravdu přečteš, je popisek nad pruhem: „2014 – dosud 12 let a dál“.',
-    '<b>Na počítači má osa přes 900 px a dává smysl — tam zůstává beze změny.</b> Tady jde jen o telefon (do 760 px).',
-    'Náhledy počítají s <b>větou „O co jde“</b> z větve čitelnost, kterou máš na snímku z telefonu. Po spojení obou větví bude řádek vypadat takhle.',
-    '<b>Co to není:</b> nic se nemaže. Rozsah a délka kauzy zůstávají v řádku. Rozložení událostí, které ukazovaly čárky v pruhu, z řádku na telefonu odejde — v detailu kauzy je celé v záložce Kdy, i s přehledem všech událostí.',
+    '<b>Hlasy:</b> čip „ANO 0 : 62“ říká všechno, ale až po přečtení dvou čísel u každého z devíti klubů. Kdo byl pro a kdo proti, se z bloku na první pohled nepozná.',
+    '<b>Pozor na jedno dřívější rozhodnutí.</b> Návrh hlasování ze 14. 11. výslovně říká: <i>„Bez stranických barev a bez zelené pro ‚pro‘ a červené pro ‚proti‘. Hlas pro návrh není hodnocení. Kategorie rozlišuje text, pořadí a neutrální odstíny ze stávající palety.“</i> Zelená a červená (varianta B) jsou tu proto, že jsi je navrhl — ale šly by proti tomu pravidlu. C a D rozlišují bez nich.',
+    '<b>Záložky:</b> po zalomení do dvou řádků má každý řádek vlastní linku a vybraná záložka je „karta“, která linku přeruší. Ve dvou řádcích to vypadá jako výřez v plotě, ne jako vybraná záložka.',
+    '<b>Nález při měření:</b> čipy klubů mají na telefonu jen <b>26 px</b> na výšku, pod naším minimem 44 px (audit je přehlížel, protože stojí v seznamu, a ten bral jako odkazy ve větě). Zvětšit je potřeba v každé variantě; přidá to bloku asi 18 px na každý řádek čipů. Čísla níž jsou ještě s dnešní výškou.',
+    '<b>Co to není:</b> nic se nemaže ani nepřesouvá jinam. Čísla u klubů zůstávají, jen jde poznat, kam patří; záložky zůstávají tytéž, jen se jinak ukazuje, která je vybraná.',
   ],
 };
 
-const OTEVRENY = { cesta: '/', popis: 'Úvod, jak se otevře · 390 × 844', priprav: VETA };
-const SEZNAM = { cesta: '/', popis: 'Seznam od první kauzy (řazeno od nejstarší) · 390', priprav: VETA, po: SKROL };
-const CASTKA = { cesta: '/', popis: 'Řazeno podle částky · 390', priprav: RAZENI('castka'), po: SKROL, orez: 560 };
-const UZKY = { cesta: '/', popis: 'Nejužší displej · 320', okno: { width: 320, height: 568 }, priprav: VETA, po: SKROL };
+const ZAKON = '/pravidla/novela-stretu-zajmu-2026/';
+const H_390 = { cesta: ZAKON, popis: 'Záložka Hlasy u zákona · 390', priprav: NA_HLASY, po: K_HLASUM, orez: 700 };
+const H_320 = { cesta: ZAKON, popis: 'Nejužší displej · 320', okno: { width: 320, height: 568 }, priprav: NA_HLASY, po: K_HLASUM };
+const H_PC = { cesta: ZAKON, popis: 'Počítač · 1280 × 800 (čipy jsou tytéž)', okno: { width: 1280, height: 800 }, priprav: NA_HLASY };
+
+const Z_ZAKON = { cesta: ZAKON, popis: 'Zákon, vybrané Zdroje ve druhém řádku · 390', priprav: NA_ZDROJE, orez: 460 };
+const Z_ZAKON_1 = { cesta: ZAKON, popis: 'Zákon, vybraná záložka v prvním řádku · 390', priprav: NA_HLASY, orez: 460 };
+const Z_KAUZA = { cesta: '/kauzy/capi-hnizdo/', popis: 'Kauza, jeden řádek záložek · 390', orez: 420 };
+const Z_UZKY = { cesta: ZAKON, popis: 'Nejužší displej · 320', okno: { width: 320, height: 568 }, priprav: NA_ZDROJE, orez: 460 };
+
+const ZALOZKY_CSS = `html body dialog.m2 .zalozky { background-image: none; border-bottom: 1px solid var(--inkoust); }
+  html body dialog.m2 .zalozky button, html body dialog.m2 .zalozky button[aria-selected="true"] { border-color: transparent; background: none; margin-bottom: 0; }`;
 
 const DILY = [
-  { id: 'cas', nazev: 'Co v řádku kauzy nese čas', otazka: 'Čím na telefonu nahradit pruh na ose?', doporuceni: 'C',
-    pohledy: [OTEVRENY, SEZNAM, CASTKA, UZKY], mer: MER_SEZNAM, varianty: [
-    { k: 'A', nazev: 'Pruh na ose 1980–2026', stitek: 'dnešní stav',
-      myslenka: 'Každá kauza má pruh na společné ose let, nad seznamem je lišta s roky. Stejné jako na počítači, jen sedmkrát užší.',
-      ano: ['Kauzy jdou porovnat polohou: kdo začal dřív, kdo trvá déle', 'Stejné zobrazení jako na počítači'],
-      ne: ['6,8 px na rok: nejkratší pruh má 14 px a čárky událostí v něm splývají', 'Levá třetina osy (1980–1994) je vždycky prázdná, 28 z 33 kauz se tlačí do pravé třetiny', 'Lišta s roky nad seznamem bere 41 px', 'Čitelné je jen číslo v popisku nad pruhem — a to jde napsat i bez pruhu'],
-      znacky: [{ sel: '.radek:not([hidden]) .pruh', typ: 'spatne', text: '6,8 px na rok, události splývají', kde: 'pod' }] },
-    { k: 'B', nazev: 'Rozsah textem nad názvem', stitek: 'nejjednodušší',
-      myslenka: '„2014 – dosud · 12 let a dál“ jako první řádek kauzy — stejně jako roky nad názvem v hlavičce detailu. Bez pruhu a bez lišty roků.',
-      ano: ['Řádek nese totéž co popisek pruhu, jen čitelně a bez ozdob', 'Stejný tvar jako hlavička detailu: roky nad názvem', 'Seznam začíná o 41 px výš (lišta s roky odpadne)', 'Funguje stejně při každém řazení'],
-      ne: ['Kdo začal dřív, se čte z čísel, ne z polohy na ose', 'Řádek je o 7 px vyšší (109 proti 102 px)', 'Přepínač „Osa / Mapa“ by na telefonu musel říkat „Seznam“ — osa tu už nebude'],
-      uprav: ROKY_NAD, css: `@media (max-width:760px){ ${BEZ_OSY} }`,
-      znacky: [{ sel: '.radek:not([hidden]) .n-roky', typ: 'dobre', text: 'Rozsah a délka textem' }] },
-    { k: 'C', nazev: 'Rok začátku jako svislá osa', stitek: 'doporučuji',
-      myslenka: 'Čas běží dolů. Rok začátku stojí v levém sloupci, jen u první kauzy toho roku; vpravo „do 2021 · 16 let“ nebo „dosud · 12 let a dál“.',
-      ano: ['Čas zůstává kostrou seznamu, jen svisle — na telefonu přirozený směr', 'Je vidět, kdy se kauzy hromadily: kauzy téhož roku tvoří jeden blok (v roce 2017 jich začalo osm)', 'Každý údaj jen jednou: rok začátku vlevo, konec a délka vpravo', 'Přepínač „Osa“ dál říká pravdu', 'Seznam začíná o 41 px výš'],
-      ne: ['Řádek je o 10 px vyšší (112 proti 102 px), na nejužším displeji o 29 px (136 proti 107) — text má o 52 px užší sloupec', 'Bloky let fungují jen při řazení podle začátku; při řazení podle částky nebo délky stojí rok u každé kauzy zvlášť', 'Nový prvek, který v řádu ovládání zatím není (sloupec s rokem)'],
-      uprav: ROK_VLEVO, css: `@media (max-width:760px){ ${BEZ_OSY}
-        body .radek-btn { grid-template-columns: 52px 1fr; }
-        body .radek .n-rok { padding: 10px 0 0 16px; font: 600 13px/1.2 var(--f-mono); color: var(--inkoust); }
-        body .radek .nazev { padding-left: 4px; }
-        body .graf .radek { border-bottom: 0; border-top: 1px solid var(--linka); }
-        body .graf .radek:first-child { border-top: 0; }
-        body .graf .radek.n-stejny { border-top: 0; }
-        body .graf .radek.n-stejny .nazev { border-top: 1px solid var(--linka); }
-      }`,
-      znacky: [{ sel: '.radek:not([hidden]) .n-rok', typ: 'dobre', text: 'Rok začátku jako svislá osa' }] },
+  { skupina: 'Hlasy klubů', popis: 'Záložka Hlasy v detailu zákona: u každého hlasování čip za každý klub s počtem hlasů pro : proti.' },
+
+  { id: 'hlasy', nazev: 'Jak poznat, jak klub hlasoval', otazka: 'Čím odlišit pro a proti?', doporuceni: 'C',
+    pohledy: [H_390, H_320, H_PC], mer: MER_HLASY, varianty: [
+    { k: 'A', nazev: 'Jen čísla', stitek: 'dnešní stav',
+      myslenka: 'Všechny čipy vypadají stejně, rozdíl je jen v číslech „pro : proti“.',
+      ano: ['Nic nehodnotí, žádná barva', 'Nejúspornější'],
+      ne: ['Kdo byl pro a kdo proti, zjistíš až přečtením 18 čísel', 'Rozdělení sněmovny (koalice proti opozici) z bloku na první pohled nevyčteš'] },
+    { k: 'B', nazev: 'Zelená a červená podle většiny', stitek: 'tvůj návrh',
+      myslenka: 'Čip klubu, který byl většinou pro, je zelený; většinou proti červený; bez většiny šedý.',
+      ano: ['Rozlišení je okamžité, i z dálky', 'Barvy pro a proti zná každý z výsledků hlasování'],
+      ne: ['Jde proti pravidlu z návrhu hlasování: zelená a červená hodnotí („pro je dobře“), web má jen ukazovat', 'Červeno-zelenou slepotu má asi 8 % mužů — bez čísel by rozdíl neviděli', 'Na stránce, kde nic jiného barevné není, bude hlasování křičet'],
+      uprav: ZELENA_CERVENA,
+      css: `.hl-kluby a.n-pro { background: #e4f3e9; border-color: #0a7b3e; } .hl-kluby a.n-proti { background: #fbe6e7; border-color: #DB1F2D; }`,
+      znacky: [{ sel: '.hl-kluby a.n-proti', typ: 'spatne', text: 'Červená = „proti je špatně“?', kde: 'pod' }] },
+    { k: 'C', nazev: 'Řádky „Většina pro / proti“', stitek: 'doporučuji',
+      myslenka: 'Kluby se rozdělí do řádků podle toho, čeho měly víc: „Většina pro“, „Většina proti“, „Bez většiny“. Čísla zůstávají na čipech.',
+      ano: ['Rozdělení sněmovny je vidět naráz a slovy — kdo s kým hlasoval', 'Přesně podle pravidla hlasování: rozlišuje text a pořadí, ne barva', 'Funguje pro barvoslepé i pro čtečku (skupina má nadpis)', '„Většina“ je přesná i u klubu, který se rozdělil (8 : 3 je pořád většina pro)'],
+      ne: ['Blok hlasování je o 105 px vyšší (253 → 358 px), na nejužším displeji o 72 px — každá skupina má vlastní nadpis a začíná novým řádkem čipů. U zákona se čtyřmi hlasováními to je skoro půl obrazovky navíc', 'Pořadí klubů se mění podle hlasování (ANO jednou nahoře, jednou dole)'],
+      uprav: SKUPINY,
+      css: `.hl-kluby { display: block; }
+        .hl-kluby .n-skup { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; margin: 0 0 6px; }
+        .hl-kluby .n-skup-nazev { flex: 0 0 100%; font: 600 13px/1.4 var(--f-mono); color: var(--inkoust); }
+        .hl-kluby .n-skup ul { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }`,
+      znacky: [{ sel: '.hl-kluby .n-skup-nazev', typ: 'dobre', text: 'Skupina se jmenuje slovy' }] },
+    { k: 'D', nazev: 'Poměr pruhem pod čipem', stitek: 'bez barev',
+      myslenka: 'Pod každým čipem tenký pruh: tmavá část je podíl hlasů pro, světlá podíl proti. Pořadí klubů zůstává.',
+      ano: ['Poměr je vidět i u rozděleného klubu (8 : 3)', 'Neutrální barvy z palety webu', 'Pořadí klubů se nemění'],
+      ne: ['Co je tmavá a co světlá, se musí vysvětlit (legenda „pro : proti“ už nad čipy je)', 'Pruh 4 px na telefonu snadno přehlédneš', 'Další drobná grafika vedle textu — přesně to, co jsme u osy kauz právě rušili'],
+      uprav: PRUH,
+      css: `.hl-kluby a.n-pomer { background-image: linear-gradient(90deg, var(--inkoust) var(--pro), var(--linka) var(--pro)); background-size: 100% 4px; background-position: left bottom; background-repeat: no-repeat; }`,
+      znacky: [{ sel: '.hl-kluby a.n-pomer', typ: 'presun', text: 'Tmavá = pro, světlá = proti', kde: 'pod' }] },
+  ] },
+
+  { skupina: 'Vybraná záložka', popis: 'Na telefonu se záložky zákona (a u kauz na nejužším displeji) zalomí do dvou řádků. Vybraná je dnes „karta“ s rámečkem, která přeruší linku pod svým řádkem.' },
+
+  { id: 'zalozka', nazev: 'Jak ukázat vybranou záložku', otazka: 'Jak má vypadat vybraná záložka, když jsou řádky dva?', doporuceni: 'B',
+    pohledy: [Z_ZAKON, Z_ZAKON_1, Z_KAUZA, Z_UZKY], mer: MER_ZAL, varianty: [
+    { k: 'A', nazev: 'Karta na lince', stitek: 'dnešní stav',
+      myslenka: 'Každý řádek má linku, vybraná záložka je karta s rámečkem, která linku přeruší.',
+      ano: ['Na počítači (jeden řádek) je to klasická podoba záložek', 'U kauzy v jednom řádku vypadá dobře'],
+      ne: ['Ve dvou řádcích jsou dvě linky a karta v jedné z nich vypadá jako výřez', 'Vybraná ve druhém řádku visí pod první linkou, jako by k ní nepatřila'],
+      znacky: [{ sel: '.zalozky [aria-selected="true"]', typ: 'spatne', text: 'Výřez v lince', kde: 'pod' }] },
+    { k: 'B', nazev: 'Podtržení vybrané', stitek: 'doporučuji',
+      myslenka: 'Bez karet a bez linek mezi řádky. Vybraná záložka je tmavá s tlustou čarou pod sebou, pod celou lištou jedna linka.',
+      ano: ['Funguje stejně v jednom i ve dvou řádcích — nic se nepřerušuje', 'Obvyklá podoba záložek na telefonu (Material, iOS)', 'Méně čar: jedna linka pod lištou místo jedné pod každým řádkem'],
+      ne: ['Na telefonu jiná podoba záložek než na počítači (tam zůstanou karty)', 'Nevybrané záložky ztratí tvar — jsou to jen slova'],
+      css: `@media (max-width:760px){ ${ZALOZKY_CSS}
+        html body dialog.m2 .zalozky button[aria-selected="true"] { box-shadow: inset 0 -3px 0 var(--inkoust); } }`,
+      znacky: [{ sel: '.zalozky [aria-selected="true"]', typ: 'dobre', text: 'Vybraná podtržená', kde: 'pod' }] },
+    { k: 'C', nazev: 'Plná vybraná', stitek: 'nejvýraznější',
+      myslenka: 'Vybraná záložka je tmavý obdélník s bílým písmem, ostatní jen slova. Pod lištou jedna linka.',
+      ano: ['Vybraná je vidět okamžitě, i ve druhém řádku', 'Žádné výřezy ani linky mezi řádky'],
+      ne: ['Vypadá jako vybraný čip filtru — řád ovládání říká, že záložka není volba, ale nadpis oddílu', 'Tmavý blok přetáhne pozornost z obsahu na ovládání'],
+      css: `@media (max-width:760px){ ${ZALOZKY_CSS}
+        html body dialog.m2 .zalozky button[aria-selected="true"] { background: var(--inkoust); color: var(--plocha); } }`,
+      znacky: [{ sel: '.zalozky [aria-selected="true"]', typ: 'presun', text: 'Vybraná jako plný blok', kde: 'pod' }] },
   ] },
 ];
 
