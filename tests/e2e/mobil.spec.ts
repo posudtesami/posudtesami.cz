@@ -482,11 +482,13 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
     await expect(page.locator('.hl-tabulka-obal'), 'tabulka klubů je na telefonu nahrazená čipy').toBeHidden();
   });
 
-  for (const pohled of ['Seznam', 'Časová osa']) {
+  // Časová osa změn je jen na počítači (PR #18): na telefonu se přepíná mezi Seznamem a Oblastmi.
+  for (const pohled of ['Seznam', 'Oblasti']) {
     test(`zákony a nařízení: pohled ${pohled}`, async ({ page }) => {
       await otevri(page, '/pravidla/');
+      await expect(page.locator('.pr-pohled [data-pohled="osa"]'), 'časová osa na telefonu není').toBeHidden();
       await page.locator('.pr-pohled button', { hasText: pohled }).click();
-      await vyfot(page, `stav-pravidla-${pohled === 'Seznam' ? 'seznam' : 'osa'}`, `Zákony a nařízení — pohled ${pohled}`);
+      await vyfot(page, `stav-pravidla-${pohled === 'Seznam' ? 'seznam' : 'oblasti'}`, `Zákony a nařízení — pohled ${pohled}`);
       await overBezPosouvaniDoStrany(page);
     });
   }

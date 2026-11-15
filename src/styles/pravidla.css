@@ -142,14 +142,18 @@
 .pr-pohled[hidden] { display: none; }
 .pr-pohled button { font: 500 12px var(--f-text); border: 0; background: var(--plocha); color: var(--inkoust); padding: 2px 9px; cursor: pointer; }
 .pr-pohled button[aria-pressed="true"] { background: var(--modra); color: #fff; }
-/* Mobil: přepínač pohledů stál na vlastním řádku přes celou šířku, což stálo 48 px z 391, které
-   zabral obal nad obsahem. Teď stojí vedle počítadla změn, kde je místa dost; tlačítka mají
-   dotykový cíl z upravy.css, takže se prstem trefí i bez roztažení na celou šířku.
+/* Mobil: časová osa tu není (na úzkém displeji se nedá číst, je jen na počítači). Bez Oblastí by zbyl
+   jen Seznam, takže se přepínač skryje celý.
+   Přepínač pohledů stál na vlastním řádku přes celou šířku, což stálo 48 px z 391, které zabral obal
+   nad obsahem. Teď stojí vedle počítadla změn, kde je místa dost; tlačítka mají dotykový cíl
+   z upravy.css, takže se prstem trefí i bez roztažení na celou šířku.
    Ze stejného důvodu stojí vedle čipů i odkaz „Upřesnit výběr“. */
 @media (max-width: 760px) {
   body .filtry.f4.pr-filtry .pr-pohled { order: 4; flex: none; }
   body .filtry.f4.pr-filtry .pr-pohled button { flex: none; padding: 6px 9px; }
   html.js body .filtry.f4.pr-filtry .f-upresnit { flex: none; order: 3; }
+  .pr-pohled [data-pohled="osa"] { display: none; }
+  body .filtry.f4.pr-filtry .pr-pohled:not(:has([data-pohled="oblasti"])) { display: none; }
 }
 
 /* Časová osa: zabírá stejné místo jako seznam, posouvá se jen uvnitř */
@@ -195,14 +199,8 @@
 /* nic neodpovídá filtru: hláška je nahoře, prázdná osa a legenda se skryjí */
 .osa-pravidel:has(.op-prazdno:not([hidden])) :is(.op-uvod, .op-plocha, .op-legenda) { display: none; }
 .op-popisek { position: fixed; z-index: 20; max-width: min(360px, calc(100vw - 8px)); padding: 4px 8px; font-size: 12px; background: var(--inkoust); color: #fff; }
-@media (max-width: 760px) {
-  .op-plocha { --nazvy: 120px; --mesic: 44px; }
-  .op-roh.nazev-sloupce > * { display: none; }
-  /* na mobilu bez příkladů v legendě a s menším písmem, aby zbylo místo pro řádky osy */
-  .op-uvod { font-size: 12px; padding: 4px 8px; }
-  .op-legenda { font-size: 11px; gap: 2px 10px; padding: 4px 8px; }
-  .op-priklad { display: none; }
-}
+/* osa je jen na počítači; skript na mobilu ukáže výchozí pohled, tohle ji skryje i kdyby skript nedoběhl */
+@media (max-width: 760px) { .osa-pravidel { display: none; } }
 
 /* Pohled Oblasti (specifikace oblastí, oddíl 8.1): karty se posouvají uvnitř, stránka zůstává bez posuvníku. */
 .oblasti-pohled { flex: 1; min-height: 0; display: flex; flex-direction: column; margin-top: 12px; }
@@ -272,9 +270,9 @@ html:not(.js) body .pr-filtry { display: none; }
 /* socha Spravedlnosti v pozadí lehce prosvítá seznamem, stejně jako portrét osou kauz */
 .pravidla-obal { background: color-mix(in srgb, var(--plocha) 84%, transparent); }
 
-/* Mobil: stránka se posouvá dolů (upravy.css), proto seznam, karty oblastí i osa mají přirozenou výšku.
+/* Mobil: stránka se posouvá dolů (upravy.css), proto seznam i karty oblastí mají přirozenou výšku.
    Seznam na stránce ukazuje pevný počet změn (pravidla-filtr.ts), ne tolik, kolik se vejde na výšku okna. */
 @media (max-width: 760px) {
-  .pravidla-obal, .pravidla-seznam, .oblasti-pohled, .ob-karty, .osa-pravidel { flex: none; }
+  .pravidla-obal, .pravidla-seznam, .oblasti-pohled, .ob-karty { flex: none; }
   .pravidla-seznam, .ob-karty { overflow: visible; }
 }

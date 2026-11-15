@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { VELIKOSTI, overBezPosouvani, overPosouvani, ukazCip } from './pomocne';
+import { POCITACE, overBezPosouvani, overPosouvani, ukazCip } from './pomocne';
 
 test.use({ viewport: { width: 1366, height: 768 } });
 
@@ -121,19 +121,35 @@ test.describe('bez JavaScriptu', () => {
 
 test.describe('mobil 390×700', () => {
   test.use({ viewport: { width: 390, height: 700 } });
-  test('osa se posouvá do strany uvnitř své plochy, názvy zůstávají vlevo a je vidět dnes', async ({ page }) => {
+  test('časová osa na mobilu není: přepínač bez ní, ?pohled=osa ukáže oblasti a srovná adresu', async ({ page }) => {
     await page.goto('/pravidla/?pohled=osa');
-    const plocha = page.locator('.op-plocha');
-    expect(await plocha.evaluate(e => e.scrollWidth > e.clientWidth)).toBe(true);
-    await expect(page.locator('.op-dnes').first()).toBeInViewport();
-    const nazev = page.locator('.op-radek .op-nazev').first();
-    expect(await nazev.evaluate(e => getComputedStyle(e).position)).toBe('sticky');
+    await expect(page).toHaveURL(/\/pravidla\/$/);
+    await expect(page.locator('.oblasti-pohled')).toBeVisible();
+    await expect(page.locator('.osa-pravidel')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Časová osa' })).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Oblasti' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('button', { name: 'Seznam' })).toBeVisible();
     await overPosouvani(page);
+  });
+  test('detail otevřený z adresy s ?pohled=osa se zavře na oblasti', async ({ page }) => {
+    await page.goto('/pravidla/zakon-omega/?pohled=osa');
+    await page.getByRole('button', { name: 'Zavřít detail' }).click();
+    await expect(page).toHaveURL(/\/pravidla\/$/);
+    await expect(page.locator('.oblasti-pohled')).toBeVisible();
   });
 });
 
-for (const v of VELIKOSTI) {
-  test(`${v.width}×${v.height}: osa se neposouvá (počítač dolů, mobil do strany)`, async ({ page }) => {
+test('zúžení okna na mobil při otevřené ose přepne na výchozí pohled', async ({ page }) => {
+  await page.goto('/pravidla/?pohled=osa');
+  await expect(page.locator('.osa-pravidel')).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 700 });
+  await expect(page).toHaveURL(/\/pravidla\/$/);
+  await expect(page.locator('.oblasti-pohled')).toBeVisible();
+  await expect(page.locator('.osa-pravidel')).toBeHidden();
+});
+
+for (const v of POCITACE) {
+  test(`${v.width}×${v.height}: osa se neposouvá dolů`, async ({ page }) => {
     await page.setViewportSize(v);
     await page.goto('/pravidla/?pohled=osa');
     await expect(page.locator('.osa-pravidel')).toBeVisible();
@@ -348,7 +364,7 @@ test('fokus názvu řádku má okraj uvnitř buňky (neořízne ho plocha ani da
   expect(odsazeni).toBeLessThanOrEqual(-sirka);
 });
 
-for (const v of VELIKOSTI) {
+for (const v of POCITACE) {
   test(`${v.width}×${v.height}: značky měsíců, „dnes“ a „dříve“ se nepřekrývají`, async ({ page }) => {
     await page.setViewportSize(v);
     await page.goto('/pravidla/?pohled=osa');
