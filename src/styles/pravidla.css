@@ -81,9 +81,11 @@
   .prubeh time { white-space: normal; }
   .prubeh li.konec { flex: 1 1 100%; align-self: auto; }
 }
-/* Na nejužších telefonech by se pět názvů fází v 14 px nevešlo (součet 263 px na 258 px místa). */
+/* Na nejužších telefonech by se pět názvů fází v 14 px nevešlo (součet 263 px na 258 px místa, v prohlížeči
+   s klasickým posuvníkem jen 243 px). Ve 12 px a s mezerami 2 px se vejde i s posuvníkem, rezerva je asi 10 px. */
 @media (max-width: 359px) {
-  body .prubeh .f-nazev { font-size: 13px; }
+  body .prubeh { gap: 2px; }
+  body .prubeh .f-nazev { font-size: 12px; }
 }
 
 /* detail pravidla: bez svislého posouvání, delší obsah pokračuje ve sloupcích do strany (jako Souvislosti a Zdroje kauzy) */
