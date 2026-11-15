@@ -114,7 +114,7 @@ test.describe('pojmy a zkratky s výkladem', () => {
     await expect(page.locator('#detail .pojem-vyklad:popover-open')).toHaveCount(1);
   });
 
-  for (const cesta of ['/kauzy/alfa-dotace/', '/kauzy/zeta-stret/', '/kauzy/gama-offshore/', '/pravidla/zakon-omega/']) {
+  for (const cesta of ['/kauzy/alfa-dotace/', '/kauzy/zeta-stret/', '/kauzy/gama-offshore/', '/kauzy/delta-dluhopisy/', '/pravidla/zakon-omega/']) {
     test(`${cesta}: každý pojem má výklad a v jedné části je označený jednou`, async ({ page }) => {
       await page.goto(cesta);
       const r = await page.evaluate(() => {
@@ -123,7 +123,7 @@ test.describe('pojmy a zkratky s výkladem', () => {
         const cile = tlacitka.map(b => b.getAttribute('popovertarget')!);
         const vyklady = [...d.querySelectorAll('.pojem-vyklad')].map(v => v.id);
         // část = hlavička, jedna událost chronologie, nebo celá záložka
-        const cast = (b: HTMLElement) => b.closest('.udalosti-seznam > li') ?? b.closest('.stanovisko') ?? b.closest('.m2-panel, .m2-hlava')!;
+        const cast = (b: HTMLElement) => b.closest('.udalosti-seznam > li') ?? b.closest('.stanovisko') ?? b.closest('.castky') ?? b.closest('.m2-panel, .m2-hlava')!;
         const dvakrat: string[] = [];
         const videne = new Map<Element, Set<string>>();
         for (const b of tlacitka) {
@@ -173,6 +173,13 @@ test.describe('pojmy a zkratky s výkladem', () => {
       await overBezPosouvaniDoStrany(page);
     });
   }
+
+  test('zkratka v popisu částky jde rozkliknout', async ({ page }) => {
+    await page.goto('/kauzy/delta-dluhopisy/');
+    const castky = page.locator('#detail .castky');
+    await expect(castky).toBeVisible();
+    await expect(castky.locator('button.pojem')).toHaveText('doměření');
+  });
 
   test('pojem v textu vypadá jako text s tečkovaným podtržením, ne jako tlačítko', async ({ page }) => {
     await page.goto('/kauzy/zeta-stret/');

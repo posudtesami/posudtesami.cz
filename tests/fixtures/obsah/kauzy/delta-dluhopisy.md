@@ -7,6 +7,8 @@ do: 2014
 stav: uredni-zjisteni
 stitky: [dane]
 overeno: 2026-11-09
+castky:
+  - { castka: 2500000, druh: vraceno, popis: fiktivní doměření daně z výnosu dluhopisů, zdroje: [1] }
 zdroje:
   - id: 1
     vydavatel: Fiktivní finanční úřad

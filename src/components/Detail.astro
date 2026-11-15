@@ -27,6 +27,8 @@ const t = k && zaznam ? {
   // věta obyčejnou řečí a shrnutí tvoří jednu skupinu: pojem z věty se ve shrnutí neoznačuje podruhé
   oCoJde: k.oCoJde ? sl.text(k.oCoJde, 'hlava') : '',
   shrnuti: sl.text(k.shrnuti, 'hlava'),
+  // částky mají vlastní skupinu: shrnutí je na telefonu sbalené a pojem označený jen v něm by u částky chyběl
+  castky: k.castky.map(c => sl.text(c.popis, 'castky')),
   proc: sl.text(k.proc.text, 'proc'),
   udalosti: k.udalosti.map((u, i) => sl.text(u.popis, `udalost-${i}`)),
   souvislosti: rozdelOdstavce(zaznam.telo).map(o => sl.html(odstavecNaHtml(o), 'souv')),
@@ -51,7 +53,7 @@ const t = k && zaznam ? {
         <button class="perex-vice" type="button" aria-expanded="false" aria-controls="detail-perex" hidden>celé shrnutí</button>
         {k.castky.length > 0 && (
           <ul class="castky" aria-label="Částky v kauze">
-            {k.castky.map(c => <li class={c.druh === 'objem' ? 'objem' : undefined}><strong>{castkaText(c)}</strong> <span class="druh-castky">{popisekDruhu(c.druh)}</span> <span class="popis-castky">{c.popis}<span class="chipy" set:html={chipy(c.zdroje)}></span></span></li>)}
+            {k.castky.map((c, i) => <li class={c.druh === 'objem' ? 'objem' : undefined}><strong>{castkaText(c)}</strong> <span class="druh-castky">{popisekDruhu(c.druh)}</span> <span class="popis-castky"><Fragment set:html={t!.castky[i]} /><span class="chipy" set:html={chipy(c.zdroje)}></span></span></li>)}
             <li class="castky-metodika"><a href="/metodika/#jazyk">Co částky znamenají</a></li>
           </ul>
         )}
