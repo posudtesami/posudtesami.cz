@@ -95,17 +95,47 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
     for (const t of await page.getByRole('tab').all()) await expect(t).toBeInViewport();
   });
 
-  test('detail kauzy: mini-osa je jen v Chronologii', async ({ page }) => {
+  // Mini-osa na telefonu jako ovladač nefungovala: u delší kauzy leželo 24 z 30 bodů na sobě
+  // a konkrétní událost se prstem trefit nedala. Na telefonu se proto neukazuje vůbec a událostmi
+  // se listuje tlačítky — ta jsou tím pádem jediné ovládání a musí fungovat dotykem.
+  test('detail kauzy: na telefonu se událostmi listuje tlačítky, osa se neukazuje', async ({ page }) => {
     await otevri(page, '/kauzy/zeta-stret/');
     const osa = page.locator('dialog#detail .mini-osa');
-    await expect(osa, 'v záložce Proč osa nepatří').toBeHidden();
-    await page.getByRole('tab', { name: 'Kdy' }).click();
-    await expect(osa, 'v Chronologii se osa ovládá, tam patří').toBeVisible();
-    // body se měří až tady: dokud byla osa schovaná, měla nulovou šířku
-    const sirky = await osa.locator('.bod').evaluateAll(b => b.map(x => x.style.getPropertyValue('--sirka')));
-    expect(sirky.every(s => s !== ''), 'body osy musí mít spočítanou šířku').toBe(true);
-    await page.getByRole('tab', { name: 'Vazby' }).click();
-    await expect(osa).toBeHidden();
+    await expect(osa, 'v záložce Proč osa není').toBeHidden();
+    await page.getByRole('tab', { name: 'Kdy' }).tap();
+    await expect(osa, 'ani v Chronologii se osa na telefonu neukazuje').toBeHidden();
+
+    const udalost = page.locator('.udalosti-seznam > li:not([hidden])');
+    const poradi = udalost.locator('time small');
+    const [zpet, dal] = [page.locator('.listovani [data-krok="-1"]'), page.locator('.listovani [data-krok="1"]')];
+    const celkem = await page.locator('.udalosti-seznam > li').count();
+    await expect(poradi, 'čtenář vidí, kde v posloupnosti je').toHaveText(`událost ${celkem} z ${celkem}`);
+    await expect(dal, 'na poslední události není kam dál').toBeDisabled();
+
+    await zpet.tap();
+    await expect(poradi).toHaveText(`událost ${celkem - 1} z ${celkem}`);
+    await expect(dal).toBeEnabled();
+    await dal.tap();
+    await expect(poradi).toHaveText(`událost ${celkem} z ${celkem}`);
+
+    // obě tlačítka jsou pohodlný terč a tlačítko říká, kam krok povede
+    for (const t of [zpet, dal]) {
+      const r = (await t.boundingBox())!;
+      expect(Math.min(r.width, r.height), 'listovací tlačítko je aspoň 44 px').toBeGreaterThanOrEqual(44);
+    }
+    await expect(zpet.locator('span'), 'tlačítko nese název sousední události').not.toBeEmpty();
+    await vyfot(page, 'stav-detail-listovani', 'Detail kauzy — chronologie se na telefonu listuje tlačítky');
+  });
+
+  test('vyhledávací pole má aspoň 16 px, aby iPhone po klepnutí nepřibližoval', async ({ page }) => {
+    for (const cesta of ['/', '/pravidla/']) {
+      await otevri(page, cesta);
+      const pismo = await page.locator('.filtry .f-hledat input').evaluate(e => parseFloat(getComputedStyle(e).fontSize));
+      expect(pismo, `${cesta}: písmo vyhledávacího pole`).toBeGreaterThanOrEqual(16);
+    }
+    // a přibližování samo zůstává povolené — vypnout ho by byla chyba přístupnosti
+    const viewport = await page.locator('meta[name="viewport"]').getAttribute('content');
+    expect(viewport, 'přibližování nesmí být vypnuté').not.toMatch(/user-scalable\s*=\s*no|maximum-scale\s*=\s*1(\.0)?\b/);
   });
 
   // gama-offshore je jediná fixtura s částkami: ostatní kauzy testují krátkou hlavičku.
@@ -116,6 +146,11 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
     await expect(page.locator('dialog#detail .castky strong').first(), 'částka samotná zůstává vidět').toBeVisible();
     await expect(popis, 'popis částky je na telefonu sbalený').toBeHidden();
     await expect(vice).toBeVisible();
+    // Tlačítko je součást seznamu částek, takže s nimi sdílí řádek, kdykoli je na něm místo (u kauzy
+    // s jednou částkou), a jinak se zalomí pod ně. Na skutečném obsahu se vejde u 6 kauz z 21;
+    // hlídáme proto stavbu, ne polohu — ta závisí na délce částek.
+    await expect(page.locator('dialog#detail .castky .castky-vice'), 'tlačítko je uvnitř seznamu částek').toHaveCount(1);
+    await expect(page.locator('dialog#detail .m2-hlava > .castky-vice'), 'a nestojí jako samostatný blok pod ním').toHaveCount(0);
     await vice.click();
     await expect(popis, 'po rozbalení je popis i s čísly zdrojů vidět').toBeVisible();
     await expect(vice).toHaveAttribute('aria-expanded', 'true');
@@ -124,7 +159,7 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
   // Kauza se čtyřmi částkami měla hlavičku o řádek vyšší než ostatní (385 px proti 252–294).
   test('detail kauzy: na telefonu jsou vidět nejvýš dvě částky', async ({ page }) => {
     await otevri(page, '/kauzy/gama-offshore/');
-    const polozky = page.locator('dialog#detail .castky li:not(.castky-metodika)');
+    const polozky = page.locator('dialog#detail .castky li:not(.castky-metodika):not(.castky-ovladani)');
     const vsech = await polozky.count();
     expect(vsech, 'fixtura musí mít víc než dvě částky, jinak se strop nemá na čem projevit').toBeGreaterThan(2);
     const videt = async () => (await polozky.evaluateAll(li => li.filter(x => x.getClientRects().length).length));

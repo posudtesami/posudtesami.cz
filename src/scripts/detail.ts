@@ -79,7 +79,7 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
     if (castkyVice.hidden) return;
     // Na úzkém displeji se ukážou jen dvě částky. Kolik jich styly schovaly, musí být vidět
     // na tlačítku — jinak čtenář neví, že tam ještě něco je.
-    const skryte = [...castky.querySelectorAll<HTMLElement>('li:not(.castky-metodika)')]
+    const skryte = [...castky.querySelectorAll<HTMLElement>('li:not(.castky-metodika):not(.castky-ovladani)')]
       .filter(li => getComputedStyle(li).display === 'none').length;
     castkyVice.textContent = skryte > 0 ? `${dalsiCastky(skryte)} a k čemu jsou` : 'k čemu částky jsou';
   };

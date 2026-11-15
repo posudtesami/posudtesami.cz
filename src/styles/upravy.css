@@ -497,8 +497,10 @@ body .radek[data-shoda-v-textu] .nazev small::after { content: " · shoda v text
   body .top .brand, body .top nav a { padding-block: 15px; padding-inline: 7px; }
   body .top nav a, body .top nav a:first-child { margin-left: 2px; }
 
-  /* Vyhledávací pole mělo 33 px na výšku. */
-  body .filtry.f4 .f-hledat input { min-height: 44px; }
+  /* Vyhledávací pole mělo 33 px na výšku a písmo 15 px. Pod 16 px Safari na iPhonu po klepnutí do
+     pole přiblíží celou stránku a zpět ji nevrátí — čtenář pak roluje po zvětšeném webu. Řeší se to
+     písmem pole, nikdy vypnutím přibližování (user-scalable=no je chyba přístupnosti). */
+  body .filtry.f4 .f-hledat input { min-height: 44px; font-size: 16px; }
 
   /* Přepínač pohledu: Osa / Mapa u kauz, Oblasti / Seznam / Časová osa u pravidel. */
   body .pohled button, body .pr-pohled button { min-height: 44px; padding-inline: 14px; }
@@ -550,9 +552,18 @@ body .f-upresnit { display: none; flex: 1 0 100%; order: 5; margin: 0; padding: 
   body .m2-hlava .castky { gap: 4px 16px; margin-top: 10px; }
   body .m2-hlava .castky strong { font-size: 18px; }
 
-  /* Mini-osa je ovladač událostí, ne ozdoba hlavičky: ukáže se v Chronologii, kam patří. Podmínka míří
-     na schovanou záložku chronologie, aby se detail bez ní (oblast) nepřipravil o osu úplně. */
-  html.js body dialog.m2:has(.m2-panel[data-p="chrono"][hidden]) > .mini-osa { display: none; }
+  /* Mini-osa se na telefonu neukazuje vůbec. Jako ovladač nefungovala: u delší kauzy leželo 24 z 30
+     bodů na sobě (rozestup 0 px) a trefit konkrétní událost prstem nešlo. Rozestup podle pořadí by
+     terče oddělil, ale osa by přestala sedět na čase — a tím by přestala říkat to jediné, kvůli čemu
+     tam je. Událostmi se proto na telefonu listuje tlačítky; kdy která byla, stojí u ní datem
+     a rozsah celé kauzy je v řádku nad názvem. Na počítači osa zůstává beze změny. */
+  html.js body dialog.m2 > .mini-osa { display: none; }
+
+  /* Listování je tím pádem hlavní ovládání chronologie, ne doplněk: dvě velká tlačítka vedle sebe,
+     každé s názvem sousední události, aby bylo vidět, kam krok povede. */
+  html.js body .m2-panel[data-p="chrono"] .listovani { margin-top: 14px; gap: 8px; }
+  html.js body .m2-panel[data-p="chrono"] .listovani button { flex: 1 1 0; min-height: 56px; padding: 8px 10px; border: 1px solid var(--linka); }
+  html.js body .m2-panel[data-p="chrono"] .listovani button:disabled { opacity: .45; }
 
   /* Záložky: krátké popisky, aby se vešlo všech pět včetně Zdrojů a nic nezůstalo mimo obraz. */
   body .zalozky .zal-dlouhy { display: none; }
@@ -587,7 +598,10 @@ body .hl-vice[hidden] { display: none; }
    Kauza se čtyřmi částkami měla hlavičku 385 px, ostatní 252–294. Zůstanou dvě, zbytek otevře
    stejné tlačítko jako popisy — jen se v něm připomene, kolik jich ještě je. */
 @media (max-width: 760px) {
-  html.js body .m2-hlava:not(.castky-rozbalene) .castky li:nth-of-type(n+3) { display: none; }
+  html.js body .m2-hlava:not(.castky-rozbalene) .castky li:nth-of-type(n+3):not(.castky-ovladani) { display: none; }
+  /* Rozbalovací tlačítko stojí uvnitř seznamu částek, takže sdílí jejich řádek místo vlastních 44 px. */
+  body .m2-hlava .castky .castky-ovladani { flex: none; }
+  body .m2-hlava .castky .castky-vice { margin: 0; }
 }
 
 /* ===== Hlasování: přepínač vedle nadpisu skupiny (telefon) =====

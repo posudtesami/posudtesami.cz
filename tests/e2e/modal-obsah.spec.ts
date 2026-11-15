@@ -125,11 +125,13 @@ test('mobil: přepnutí záložky dole v dlouhém obsahu ukáže začátek nové
   await expect(page.locator('#detail .proc-text')).toBeInViewport();
 });
 
-for (const v of [{ width: 390, height: 700 }, { width: 320, height: 568 }, { width: 1366, height: 768 }]) {
+// Mini-osa s popiskem vybrané události je jen na počítači. Na telefonu se neukazuje — body na ní
+// ležely přes sebe a nedaly se trefit — a událostmi se listuje tlačítky (hlídá mobil.spec.ts).
+// Úzké šířky proto hlídáme na okně, které je pořád „počítač“: těsně nad zlomem 760 px.
+for (const v of [{ width: 780, height: 700 }, { width: 1024, height: 700 }, { width: 1366, height: 768 }]) {
   test(`${v.width}×${v.height}: popisek vybrané události nepřesahuje okraj detailu`, async ({ page }) => {
     await page.setViewportSize(v);
     await page.goto('/kauzy/zeta-stret/');
-    // na telefonu je mini-osa jen v Chronologii, kde se ovládá; na počítači je vidět pořád
     await page.getByRole('tab', { name: popisekZalozky('chrono', v.width) }).click();
     const body = page.locator('#detail .mini-osa .bod');
     for (const i of [0, await body.count() - 1]) {
