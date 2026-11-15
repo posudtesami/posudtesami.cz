@@ -15,7 +15,9 @@
 import { chromium } from '@playwright/test';
 import { createRequire } from 'node:module';
 import { readdirSync, existsSync } from 'node:fs';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+/** Na Windows server běží pod cmd (shell: true) a kill() zabije jen cmd — serve by zůstal viset na portu. */
+const zastav = p => { if (!p) return; if (process.platform === 'win32') spawnSync('taskkill', ['/pid', String(p.pid), '/T', '/F'], { stdio: 'ignore' }); else p.kill(); };
 
 const [PRED, PO] = process.argv.slice(2);
 if (!PRED || !PO || !existsSync(PRED) || !existsSync(PO)) {
@@ -79,5 +81,5 @@ try {
   }
   await prohlizec.close();
   console.log(ruznych ? `\n${ruznych} snímků se na počítači liší.` : '\nPočítač: všechny snímky shodné na pixel.');
-} finally { servery.forEach(s => s.kill()); }
+} finally { servery.forEach(zastav); }
 process.exit(ruznych ? 1 : 0);

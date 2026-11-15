@@ -6,7 +6,9 @@
  * Web si postaví sám (do dist-mobil-prehled/), spustí server a zase ho zavře. Nic nemění. */
 import { chromium, devices } from '@playwright/test';
 import { readdirSync, rmSync } from 'node:fs';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+/** Na Windows server běží pod cmd (shell: true) a kill() zabije jen cmd — serve by zůstal viset na portu. */
+const zastav = p => { if (!p) return; if (process.platform === 'win32') spawnSync('taskkill', ['/pid', String(p.pid), '/T', '/F'], { stdio: 'ignore' }); else p.kill(); };
 import path from 'node:path';
 
 const VYSTUP = 'dist-mobil-prehled';
@@ -130,6 +132,6 @@ try {
   console.log(`Nejdelší stránka: ${nejdelsi.cesta} (${nejdelsi.obrazovek} obrazovek).`);
   if (radky.some(r => r.doStrany > 0)) console.log('POZOR: některá stránka se posouvá do strany.');
 } finally {
-  server?.kill();
+  zastav(server);
   rmSync(VYSTUP, { recursive: true, force: true });
 }

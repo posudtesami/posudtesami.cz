@@ -19,7 +19,9 @@ import { chromium, devices } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { readdirSync, rmSync } from 'node:fs';
 import { writeFile, mkdir } from 'node:fs/promises';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+/** Na Windows server běží pod cmd (shell: true) a kill() zabije jen cmd — serve by zůstal viset na portu. */
+const zastav = p => { if (!p) return; if (process.platform === 'win32') spawnSync('taskkill', ['/pid', String(p.pid), '/T', '/F'], { stdio: 'ignore' }); else p.kill(); };
 import path from 'node:path';
 
 const VYSTUP = 'dist-mobil-audit';
@@ -245,6 +247,6 @@ try {
   await writeFile(path.join(SLOZKA, 'audit.json'), JSON.stringify(vysledky, null, 1), 'utf8');
   console.log(`\nPodrobnosti: ${path.join(SLOZKA, 'audit.json')}`);
 } finally {
-  server?.kill();
+  zastav(server);
   rmSync(VYSTUP, { recursive: true, force: true });
 }
