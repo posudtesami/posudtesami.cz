@@ -208,16 +208,22 @@ test('kolečko myši posouvá delší oddíl modalu do strany', async ({ page })
 test.describe('mobil 390×700', () => {
   test.use({ viewport: { width: 390, height: 700 } });
 
-  test('menu ukazuje všechny odkazy na jednom řádku', async ({ page }) => {
+  // Na telefonu má značka vlastní řádek a menu stojí pod ní přes celou šířku (díl „Kde a jak velké
+  // je menu“, varianta B). Všechny čtyři odkazy jsou v jedné řadě a žádný se neláme.
+  test('menu ukazuje všechny odkazy v jedné řadě pod značkou', async ({ page }) => {
     for (const cesta of ['/', '/metodika/']) {
       await page.goto(cesta);
       const odkazy = page.getByRole('navigation', { name: 'Hlavní' }).getByRole('link');
       await expect(odkazy).toHaveCount(4);
       for (const o of await odkazy.all()) await expect(o).toBeVisible();
       // Zalomení se pozná podle počtu řádkových boxů, ne podle výšky: odkazy mají kvůli dotykovému
-      // cíli výplň 15 px nahoře i dole, takže jsou vysoké 45 px i na jednom řádku.
+      // cíli výplň nahoře i dole, takže jsou vysoké přes 44 px i na jednom řádku.
       const radky = await odkazy.evaluateAll(a => a.map(x => x.getClientRects().length));
       expect(Math.max(...radky), 'odkaz se nesmí zalomit na dva řádky').toBe(1);
+      const vysky = await odkazy.evaluateAll(a => a.map(x => Math.round(x.getBoundingClientRect().top)));
+      expect(new Set(vysky).size, 'odkazy menu stojí v jedné řadě').toBe(1);
+      const znacka = (await page.locator('.top .brand').boundingBox())!;
+      expect(vysky[0], 'menu je pod značkou, ne vedle ní').toBeGreaterThanOrEqual(Math.round(znacka.y + znacka.height) - 1);
     }
   });
 
@@ -242,17 +248,17 @@ test.describe('mobil 390×700', () => {
           expect(o.levy, `${cesta} ${sirka}: odkaz menu začíná mimo okno`).toBeGreaterThanOrEqual(0);
           expect(o.prave, `${cesta} ${sirka}: odkaz menu přesahuje okno`).toBeLessThanOrEqual(iw);
           expect(o.radky, `${cesta} ${sirka}: odkaz se zalomil`).toBe(1);
-          expect(o.pismo, `${cesta} ${sirka}: písmo odkazu je příliš malé`).toBeGreaterThanOrEqual(12);
+          expect(o.pismo, `${cesta} ${sirka}: písmo odkazu je příliš malé`).toBeGreaterThanOrEqual(14);
         }
       }
     }
   });
 
-  test('tříodkazová hlavička (bez pravidel) má na 390 px značku 16 px', async ({ page }) => {
+  test('tříodkazová hlavička (bez pravidel) má na 390 px značku v plné velikosti', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 700 });
     await page.goto('http://localhost:4322/');
     await expect(page.getByRole('navigation', { name: 'Hlavní' }).getByRole('link')).toHaveCount(3);
-    expect(await page.locator('.top .brand').evaluate(b => getComputedStyle(b).fontSize)).toBe('16px');
+    expect(await page.locator('.top .brand').evaluate(b => getComputedStyle(b).fontSize)).toBe('18px');
   });
 
   test('každou kartu Metodiky jde otevřít', async ({ page }) => {

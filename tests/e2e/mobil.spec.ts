@@ -84,13 +84,71 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
     });
   }
 
+  // Menu mělo na telefonu písmo 12 px, aby se čtyři položky vešly na řádek se značkou — pod
+  // hranicí 14 px, a to u nejdůležitějšího ovládání webu. Teď má značka vlastní řádek a menu
+  // pod ní 15 px. Výšku hlavičky hlídáme: je to cena, která nesmí potichu růst.
+  test('hlavička: značka má vlastní řádek a menu pod ní čitelné písmo', async ({ page }) => {
+    for (const cesta of ['/', '/pravidla/', '/metodika/', '/hlasovani/psp-10-5-12/']) {
+      await otevri(page, cesta);
+      const m = await page.evaluate(() => {
+        const top = document.querySelector('.top')!, znacka = top.querySelector('.brand')!;
+        const odkazy = [...top.querySelectorAll('nav a')];
+        return {
+          vyska: Math.round(top.getBoundingClientRect().height),
+          pismo: Math.min(...odkazy.map(a => parseFloat(getComputedStyle(a).fontSize))),
+          znacka: parseFloat(getComputedStyle(znacka).fontSize),
+          podZnackou: Math.min(...odkazy.map(a => a.getBoundingClientRect().top)) >= znacka.getBoundingClientRect().bottom - 1,
+          rada: new Set(odkazy.map(a => Math.round(a.getBoundingClientRect().top))).size,
+        };
+      });
+      expect(m.pismo, `${cesta}: písmo menu`).toBeGreaterThanOrEqual(14);
+      expect(m.znacka, `${cesta}: značka je v plné velikosti`).toBe(18);
+      expect(m.podZnackou, `${cesta}: menu stojí pod značkou`).toBe(true);
+      expect(m.rada, `${cesta}: odkazy menu jsou v jedné řadě`).toBe(1);
+      expect(m.vyska, `${cesta}: hlavička nesmí být vyšší než 104 px`).toBeLessThanOrEqual(104);
+    }
+  });
+
+  // Zákon má pět až sedm záložek. S plnými názvy byly dvě ze šesti mimo obraz a třetí uříznutá,
+  // mezi nimi Zdroje. Teď mají krátké popisky jako kauzy, a co se nevejde, zalomí se na druhý
+  // řádek, místo aby ujelo do strany.
+  test('detail zákona: žádná záložka není mimo obraz ani pod zavíracím křížkem', async ({ page }) => {
+    for (const cesta of ['/pravidla/zakon-omega/', '/pravidla/usneseni-kappa/']) {
+      await otevri(page, cesta);
+      const m = await page.evaluate(() => {
+        const lista = document.querySelector('dialog#detail .zalozky')!;
+        const k = document.querySelector('dialog#detail .zavrit')!.getBoundingClientRect();
+        const zal = [...lista.querySelectorAll('[role="tab"]')].map(b => b.getBoundingClientRect());
+        return {
+          pocet: zal.length, vyska: Math.round(lista.getBoundingClientRect().height),
+          mimo: zal.filter(r => r.right > innerWidth + 0.5 || r.left < -0.5).length,
+          podKrizkem: zal.filter(r => r.right > k.left && r.left < k.right && r.bottom > k.top && r.top < k.bottom).length,
+          posouvaSe: lista.scrollWidth > lista.clientWidth + 1,
+        };
+      });
+      expect(m.pocet, `${cesta}: detail má záložky`).toBeGreaterThanOrEqual(4);
+      expect(m.mimo, `${cesta}: záložky mimo obraz`).toBe(0);
+      expect(m.podKrizkem, `${cesta}: záložky pod zavíracím křížkem`).toBe(0);
+      expect(m.posouvaSe, `${cesta}: lišta se nesmí posouvat do strany`).toBe(false);
+      expect(m.vyska, `${cesta}: lišta má nejvýš dva řádky`).toBeLessThanOrEqual(88);
+      for (const t of await page.getByRole('tab').all()) await expect(t).toBeInViewport();
+    }
+    // krátký popisek je skutečné jméno tlačítka, ne aria-label navíc
+    await otevri(page, '/pravidla/zakon-omega/');
+    await expect(page.getByRole('tab', { name: 'Výhrady', exact: true })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Výhrady a stanovisko' })).toHaveCount(0);
+    await vyfot(page, 'stav-zakon-zalozky', 'Detail zákona — krátké popisky záložek ve dvou řádcích');
+  });
+
   // Hlavička detailu zabírala 518 z 844 px, než se čtenář dostal k textu kauzy. Tyhle tři testy drží,
   // čím se to zmenšilo — jinak se to při příští úpravě stylů nepozorovaně vrátí.
   test('detail kauzy: všech pět záložek je vidět najednou', async ({ page }) => {
     await otevri(page, '/kauzy/zeta-stret/');
     const lista = page.locator('dialog#detail .zalozky');
-    const m = await lista.evaluate(e => ({ sw: e.scrollWidth, cw: e.clientWidth }));
+    const m = await lista.evaluate(e => ({ sw: e.scrollWidth, cw: e.clientWidth, v: Math.round(e.getBoundingClientRect().height) }));
     expect(m.sw, 'lišta záložek nesmí pokračovat mimo obraz').toBeLessThanOrEqual(m.cw);
+    // pět krátkých popisků kauzy se vejde na jeden řádek; druhý by z displeje bral 44 px navíc
+    expect(m.v, 'záložky kauzy jsou v jednom řádku').toBeLessThanOrEqual(45);
     await expect(page.getByRole('tab')).toHaveCount(5);
     for (const t of await page.getByRole('tab').all()) await expect(t).toBeInViewport();
   });

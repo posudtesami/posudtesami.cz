@@ -25,36 +25,32 @@ body .mini-osa .vybrany-popis::after { margin-left: calc(-6px - var(--posun, 0px
 @media (prefers-reduced-motion: no-preference) {
   body .mini-osa .vybrany-popis { transition: left .35s var(--ladne), translate .35s var(--ladne); }
 }
-/* Mobil: menu ukazuje všechny tři odkazy (prototyp skrýval Kauzy a Metodiku). Vyšší specificita kvůli pořadí stylů.
-   Okraje stránky 16 px (jako jinde na telefonu). Název a menu se vejdou na jeden řádek od 360 px; na užším
-   displeji se menu zalomí pod název, nikdy nepřeteče přes okraj. */
+/* ===== Hlavička na telefonu: značka a pod ní menu =====
+   Do 15. 11. stálo menu na jednom řádku se značkou a aby se tam čtyři položky vešly, zmenšovalo se
+   písmo až na 12 px (a značka s ním) — pod hranici 14 px, kterou jinde držíme, a to u nejdůležitějšího
+   ovládání webu. Na nejužším displeji se hlavička i tak lámala na dva řádky (105 px).
+   Zvolená varianta (díl „Kde a jak velké je menu“, B): značka má vlastní řádek v plné velikosti
+   a menu se pod ní roztáhne přes celou šířku písmem 15 px. Stejná hlavička na všech telefonech.
+   Od 521 px se obojí vejde vedle sebe, tam zůstává jeden řádek. Cena: na běžném telefonu je
+   hlavička vyšší a obsah začíná níž (čísla hlídá tests/e2e/mobil.spec.ts).
+   Okraje stránky 16 px jako jinde na telefonu. */
 @media (max-width: 760px) {
   body .wrap { padding-left: 16px; padding-right: 16px; }
-  body .top { flex-wrap: wrap; column-gap: 10px; row-gap: 2px; }
-  body .top nav a:not(:last-child) { display: inline; }
-  body .top nav a { margin-left: 10px; font-size: 13px; }
-  body .top nav a:first-child { margin-left: 0; }
-  body .top .brand { font-size: 16px; }
-}
-/* Menu se čtyřmi odkazy (jen když existuje stránka pravidel, třída top-4): značka a písmo se plynule zmenšují s šířkou okna,
-   odkazy zůstávají nejméně na 12 px. Kdyby se ani tak nevešlo vedle značky, menu spadne pod ni. Tříodkazová hlavička
-   (veřejný web bez pravidel) tyto úpravy nemá. */
-@media (max-width: 760px) {
-  body .top.top-4 { flex-wrap: wrap; column-gap: 4px; }
-  body .top.top-4 nav a:first-child { margin-left: 0; }
-  body .top.top-4 .brand { font-size: clamp(12px, 3.4vw, 16px); }
-  body .top.top-4 .brand::before { width: 8px; margin-right: clamp(4px, 1.4vw, 8px); }
-  body .top.top-4 nav { margin-left: auto; }
-  body .top.top-4 nav a { margin-left: clamp(4px, 1.5vw, 12px); font-size: clamp(12px, 3.1vw, 13px); }
-}
-@media (max-width: 374px) {
-  body .top { column-gap: 8px; }
-  body .top .brand { font-size: 15px; }
-  body .top .brand::before { margin-right: 7px; }
-  body .top nav a { margin-left: 8px; }
-}
-@media (max-width: 760px) {
+  body .top { flex-wrap: wrap; column-gap: 12px; row-gap: 0; padding-block: 8px 0; }
+  body .top nav a:not(:last-child) { display: inline; } /* prototyp skrýval Kauzy a Metodiku */
   body .top .brand, body .top nav a { white-space: nowrap; }
+  /* značka je odkaz domů: dotykový cíl 44 px na výšku */
+  body .top .brand { display: inline-flex; align-items: center; min-height: 44px; font-size: 18px; }
+  body .top .brand::before { flex: none; }
+  /* flex kvůli výšce cíle: řádkový odkaz má box podle písma (43 px), položka flexu podle řádku (47 px) */
+  body .top nav { display: flex; margin-left: auto; margin-right: -8px; }
+  body .top nav a, body .top nav a:first-child { margin-left: 0; padding: 12px 8px; font-size: 15px; }
+}
+@media (max-width: 520px) {
+  body .top .hlavicka-znacka { flex: 1 0 100%; }
+  body .top nav { flex: 1 0 100%; justify-content: space-between; margin: 0 -8px; }
+}
+@media (max-width: 760px) {
   /* Karty Metodiky a O projektu: na mobilu se text nevejde, celá karta proto otevírá plné znění. */
   body .v4-karta { position: relative; }
   body .v4-karta h2 { font-size: 16px; }
@@ -524,10 +520,7 @@ body .radek[data-shoda-v-textu] .nazev small::after { content: " · shoda v text
    79 px a řádek filtrů ze 119 na 158, což je vědomá cena.
    Hlídá to tests/e2e/mobil.spec.ts („velikost dotykových cílů“). */
 @media (max-width: 760px) {
-  /* Menu a značka: na výšku i na šířku — „Kauzy“ mělo 37 px široký cíl. Odsazení mezi odkazy se
-     o přibylou výplň zmenší, aby se řádek pořád vešel na 390 px i na 320 px. */
-  body .top .brand, body .top nav a { padding-block: 15px; padding-inline: 7px; }
-  body .top nav a, body .top nav a:first-child { margin-left: 2px; }
+  /* Menu a značka mají cíl 44 px z vlastního bloku „Hlavička na telefonu“ nahoře. */
 
   /* Vyhledávací pole mělo 33 px na výšku a písmo 15 px. Pod 16 px Safari na iPhonu po klepnutí do
      pole přiblíží celou stránku a zpět ji nevrátí — čtenář pak roluje po zvětšeném webu. Řeší se to
@@ -750,16 +743,6 @@ body .hl-skupina.rozbalene .hl-vice::after { content: "▴"; }
   html.js body dialog.m2 .m2-panel[data-p]:not([hidden]) { overflow: visible; columns: auto; }
 }
 
-/* ===== Hlavička se čtyřmi odkazy: zpět na jeden řádek =====
-   Dotykový cíl 44 px přidal odkazům výplň a na stránce zákonů se menu zalomilo pod značku
-   (105 px proti 79 na úvodu) — aktivní „Zákony“ je tučné, a tím širší než „Kauzy“. Užší výplň
-   a nulové odsazení to vrátí na jeden řádek, aniž by cíl klesl pod 44 px. */
-@media (max-width: 760px) {
-  body .top.top-4 nav a { padding-inline: 6px; margin-left: 0; }
-  body .top.top-4 .brand { padding-inline: 0; font-size: clamp(12px, 3.1vw, 15px); }
-  body .top.top-4 .brand::before { width: 7px; margin-right: 5px; }
-}
-
 /* Úvod stránky zákonů bez nadřádku: otázka „Komu prospívají nová pravidla?“ řekne totéž co
    „Zákony a nařízení od prosince 2025“ nad ní. Na kauzách nadřádek zůstává — je to jediná věta,
    která říká, co je ten seznam zač. Oba úvody tím přestávají být stejně vysoké (rozdíl 26 px). */
@@ -802,4 +785,27 @@ body .hl-skupina.rozbalene .hl-vice::after { content: "▴"; }
   /* Rámovaný blok má vnitřní okraj 16 px jako karty metodiky; hlasování mělo 10 px. Řádky osy
      kauz mají 14 px a zůstávají: sdílejí ho s mřížkou let a nedá se měnit bez přeměření osy. */
   body .hl-telo { padding-inline: 16px; }
+}
+
+/* ===== Záložky detailu se na telefonu neposouvají do strany =====
+   Zákon má pět až sedm záložek. S plnými názvy byly dvě ze šesti mimo obraz a třetí uříznutá —
+   mezi nimi Zdroje, na kterých stojí důvěra webu; obsah v posuvných záložkách přehlédne 27 % lidí
+   (Baymard). Zvolená varianta (díl „Záložky zákona“, D): krátké popisky jako u kauz, a co se
+   nevejde, zalomí se na druhý řádek, místo aby ujelo. Platí pro kauzy i zákony stejně — stejná
+   součást se má chovat jedním způsobem; kauze se pět krátkých záložek vejde na řádek od 360 px.
+   Cena: lišta zákona má 88 px místo 44 a je přilepená nahoře. */
+@media (max-width: 760px) {
+  html body dialog.m2 .zalozky {
+    flex-wrap: wrap; row-gap: 0; overflow: visible;
+    /* linka pod každým řádkem záložek, ne jen pod posledním: záložky jsou 44 px vysoké */
+    background-image: linear-gradient(to bottom, transparent 43px, var(--inkoust) 43px);
+    background-size: 100% 44px; background-position: left top; background-repeat: repeat-y;
+  }
+  /* Kauze se pět krátkých popisků musí vejít na jeden řádek i na 360 px (běžná šířka Androidu):
+     s výplní 9 px a mezerou 4 px přebývaly 2 px a lišta měla zbytečně dva řádky. Vpravo zůstává
+     místo pro zavírací křížek (44 px + 8 px od okraje + 4 px odstup). */
+  html body dialog.m2 .zalozky { column-gap: 2px; padding-right: 56px; }
+  html body dialog.m2 .zalozky button { padding-inline: 6px; min-width: 44px; }
+  /* odkaz na zdroj posune seznam pod přilepenou lištu, ať má jeden řádek, nebo dva */
+  html body dialog.m2 ol.zdroje li { scroll-margin-top: calc(var(--vyska-zalozek, 44px) + 20px); }
 }

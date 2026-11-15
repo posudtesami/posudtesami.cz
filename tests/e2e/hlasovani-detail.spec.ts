@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { MOBILY, overPosouvani } from './pomocne';
+import { MOBILY, overPosouvani, overNazvyZalozek, zalozkaZakona } from './pomocne';
 
 test.use({ viewport: { width: 1366, height: 768 } });
 
 test('záložka Hlasování: za Průběhem, bloky od nejnovějšího, výsledek a kluby', async ({ page }) => {
   await page.goto('/pravidla/zakon-omega/');
-  await expect(page.getByRole('tab')).toHaveText(['Komu prospívá', 'Kontrola moci', 'Průběh', 'Hlasování (2)', 'Výhrady a stanovisko', 'Zdroje (4)']);
+  await overNazvyZalozek(page, ['Komu prospívá', 'Kontrola moci', 'Průběh', 'Hlasování (2)', 'Výhrady a stanovisko', 'Zdroje (4)']);
   await page.getByRole('tab', { name: 'Hlasování (2)' }).click();
   const bloky = page.locator('.m2-panel[data-p="hlasovani"] .hl-blok');
   await expect(bloky).toHaveCount(2);
@@ -78,7 +78,7 @@ for (const v of MOBILY) {
     await page.setViewportSize(v);
     await page.goto('/pravidla/zakon-omega/');
     await page.evaluate(() => document.fonts.ready);
-    await page.getByRole('tab', { name: 'Hlasování (2)' }).click();
+    await page.getByRole('tab', { name: zalozkaZakona('Hlasování (2)', v.width) }).click();
     const panel = page.locator('.m2-panel[data-p="hlasovani"]');
     await expect(panel).toBeVisible();
     await overPosouvani(page);

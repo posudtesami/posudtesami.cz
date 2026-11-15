@@ -72,6 +72,14 @@ Když tam není, je to rozhodnutí pro uživatele, ne detail k doladění.**
 6. **Mezery z jedné stupnice:** 4 · 8 · 12 · 16 · 24 · 32 px. Platí pro vše nové a pro vše, na co
    se sahá. Starší pravidla v `upravy.css` mají i 5, 6, 10, 14 a 18 px a hromadně se nepřepisovala:
    posunulo by to desítky míst o 1–2 px bez viditelného přínosu a každé by se muselo přeměřit.
+8. **Nic se neposouvá do strany, ani lišta záložek.** Záložky detailu mají na telefonu krátké
+   popisky (kauza: Proč · Kdy · Vazby · Stav · Zdroje; zákon: Prospěch · Kontrola · Průběh · Hlasy ·
+   Výhrady · Vazby · Zdroje) a co se nevejde, **zalomí se na druhý řádek**. Kauze se pět záložek
+   vejde na jeden řádek od 360 px; zákon jich má pět až sedm a má řádky dva (88 px). Pod každým
+   řádkem je linka, aby vybraná záložka držela tvar karty.
+9. **Hlavička na telefonu má dva řádky:** značka v plné velikosti (18 px) a pod ní menu přes celou
+   šířku písmem 15 px. Stojí 102 px místo 79 — vědomá cena za to, že menu nemá 12 px. Od 521 px
+   se obojí vejde vedle sebe (58 px).
 7. **Dvě svislice, víc ne.** Obsah stránky i detailu začíná **16 px** od okraje displeje (detail měl
    18 px a rozcházel se se stránkou i s vlastní lištou listování). Obsah uvnitř rámovaného bloku
    začíná o dalších **16 px** dál (karta metodiky, blok hlasování). Výjimka: řádky osy kauz mají
@@ -200,6 +208,8 @@ jehož „po" jsi neviděl.
 | věc | stav |
 |---|---|
 | text 12–13 px na pravidlech a hlasování | na hraně, jinde 14–15 px; uživatel odložil (nejdřív rozvržení a ovladatelnost) |
+| věta dalších filtrů: podtržení výběrů stojí daleko pod textem | vzniklo zvětšením cíle na 44 px, vypadá neupraveně |
+| seznam zdrojů je u velké kauzy 7 obrazovek | nikdo zatím nenavrhl, jak ho zkrátit a nic neschovat |
 | kroky `.prubeh` na pravidlech mají 11 px | návrh byl, nevybral se |
 | přehled událostí má u kauzy se 3 událostmi stejné ovládání jako u třiceti | zatím bez prahu, kdyby vadilo, zapne se podle počtu |
 
@@ -228,9 +238,15 @@ Druhý průchod řádem (15. 11.): čipy, přepínače a filtry mají jeden řez
 a po rozbalení** (filtr zdrojů, odkazy pod seznamem zdrojů, „Ukázat na mapě“, „méně“) a výběry ve
 větě filtrů mají 16 px. Záložka Zdroje tím narostla o desetinu obrazovky; jinde se výška nezměnila.
 
-Otevřené (díly předložené 15. 11., čeká se na volbu): **písmo menu 12 px** (pod vlastní hranicí
-14 px; čtyři položky se ve 14 px na jeden řádek nevejdou) a **záložky detailu zákona**, které se
-posouvají do strany, zatímco u kauz mají krátké popisky a vejdou se.
+Z dílů vybraných 15. 11. odpoledne (volba B · D): **menu má vlastní řádek pod značkou a písmo
+15 px** — hlavička má na telefonu 102 px (dřív 79, na nejužším displeji 105), obsah stránek začíná
+o 23 px níž. **Záložky zákona mají krátké popisky a dva řádky**, žádná není mimo obraz; obal nad
+obsahem zákona je 349 px (dřív 305). Stejné pravidlo platí pro kauzy: na 360 px a výš jeden řádek
+jako dřív (kvůli tomu mají záložky užší výplň), na 320 px dva.
+
+Známá cena na nejužším displeji (320 × 568): detail kauzy má záložky ve dvou řádcích a v chronologii
+k nim přibude lišta listování — dohromady 165 px, tedy 29 % displeje, přes rozpočet 15 % z pravidla 5.
+Je to důsledek volby „zalomit, ne posouvat“; kdyby vadilo, dá se u kauz na 320 px vrátit posouvání.
 
 Nejdelší stránka webu mimo seznam zdrojů je 1,3 obrazovky a nic se nikde neposouvá do strany.
 

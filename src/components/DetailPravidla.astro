@@ -22,13 +22,16 @@ const hlasovani = p ? hlasovaniPravidla(p.udalosti, nactiHlasovani()) : [];
 const velkym = (t: string) => t.charAt(0).toLocaleUpperCase('cs') + t.slice(1);
 const chipy = (cisla: number[]) => cisla.map(c => `<a href="#zdroj-${c}" class="chip" data-zdroj="${c}" aria-label="Zdroj ${c}">${c}</a>`).join('');
 // Záložky podle toho, co záznam má. Otevřená je první zobrazená (spec kontroly moci, oddíl 7).
-const zalozky = p ? [
-  ...(p.prospech ? [{ id: 'prospech', nazev: 'Komu prospívá' }] : []),
-  ...(p.kontrolaMoci ? [{ id: 'kontrola', nazev: 'Kontrola moci' }] : []),
+// Krátký tvar (kratky) je popisek pro telefon, stejně jako u kauz: zákon má až sedm záložek
+// a s plnými názvy by na telefonu zabraly tři až čtyři řádky. Je to skutečný text tlačítka, ne
+// aria-label navíc — co čtenář vidí, to čtečka přečte a to řekne hlasové ovládání.
+const zalozky: { id: string; nazev: string; kratky?: string }[] = p ? [
+  ...(p.prospech ? [{ id: 'prospech', nazev: 'Komu prospívá', kratky: 'Prospěch' }] : []),
+  ...(p.kontrolaMoci ? [{ id: 'kontrola', nazev: 'Kontrola moci', kratky: 'Kontrola' }] : []),
   { id: 'chrono', nazev: 'Průběh' },
-  ...(hlasovani.length > 0 ? [{ id: 'hlasovani', nazev: `Hlasování (${hlasovani.length})` }] : []),
-  { id: 'vyhrady', nazev: 'Výhrady a stanovisko' },
-  ...(odstavce.length > 0 ? [{ id: 'souv', nazev: 'Souvislosti' }] : []),
+  ...(hlasovani.length > 0 ? [{ id: 'hlasovani', nazev: `Hlasování (${hlasovani.length})`, kratky: `Hlasy (${hlasovani.length})` }] : []),
+  { id: 'vyhrady', nazev: 'Výhrady a stanovisko', kratky: 'Výhrady' },
+  ...(odstavce.length > 0 ? [{ id: 'souv', nazev: 'Souvislosti', kratky: 'Vazby' }] : []),
   { id: 'zdroje', nazev: `Zdroje (${p.zdroje.length})` },
 ] : [];
 const prvni = zalozky[0]?.id;
@@ -55,7 +58,7 @@ const prvni = zalozky[0]?.id;
         {p.planovano && <p class="planovano">Stav k {datumText(p.planovano.stavK)}: {p.planovano.text}<span class="chipy" set:html={chipy(p.planovano.zdroje)}></span></p>}
       </header>
       <div class="zalozky" role="tablist">
-        {zalozky.map(z => <button role="tab" type="button" data-p={z.id} aria-selected={String(z.id === prvni)}>{z.nazev}</button>)}
+        {zalozky.map(z => <button role="tab" type="button" data-p={z.id} aria-selected={String(z.id === prvni)}>{z.kratky ? <><span class="zal-dlouhy">{z.nazev}</span><span class="zal-kratky">{z.kratky}</span></> : z.nazev}</button>)}
       </div>
       {p.prospech && (
         <div class="m2-panel" data-p="prospech" role="tabpanel" hidden={prvni !== 'prospech'}>

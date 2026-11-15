@@ -61,6 +61,9 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
 
   /** Záložky, které se nevejdou, se posouvají do strany; okraj, za kterým pokračují, se vytrácí. */
   const okrajeLisy = () => {
+    // Na telefonu se lišta zalamuje (zákon má záložek až sedm), takže může mít jeden i dva řádky.
+    // Výšku potřebují styly: odkaz na zdroj musí seznam posunout pod přilepenou lištu, ne za ni.
+    dlg.style.setProperty('--vyska-zalozek', `${lista.offsetHeight}px`);
     const max = lista.scrollWidth - lista.clientWidth;
     lista.classList.toggle('mizi-vlevo', lista.scrollLeft > 2);
     lista.classList.toggle('mizi-vpravo', lista.scrollLeft < max - 2);

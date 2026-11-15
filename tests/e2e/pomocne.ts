@@ -34,6 +34,26 @@ export function popisekZalozky(p: (typeof KLICE)[number], sirka: number): string
   return popiskyZalozek(sirka)[KLICE.indexOf(p)];
 }
 
+/** Záložka detailu zákona podle plného názvu. Na telefonu (do 760 px) má krátký tvar — zákon má
+ *  až sedm záložek a s plnými názvy by ujely mimo obraz; viz DetailPravidla.astro. Regulární výraz
+ *  (třeba /^Zdroje/) se nemění. */
+const ZALOZKY_ZAKONA_KRATKE: Record<string, string> = {
+  'Komu prospívá': 'Prospěch', 'Kontrola moci': 'Kontrola', 'Výhrady a stanovisko': 'Výhrady', 'Souvislosti': 'Vazby',
+};
+export function zalozkaZakona(nazev: string | RegExp, sirka: number): string | RegExp {
+  if (typeof nazev !== 'string' || sirka > 760) return nazev;
+  const hlasovani = nazev.match(/^Hlasování (\(\d+\))$/);
+  return hlasovani ? `Hlasy ${hlasovani[1]}` : ZALOZKY_ZAKONA_KRATKE[nazev] ?? nazev;
+}
+
+/** Ověří názvy záložek v daném pořadí. Podle jména prvku, ne podle textContent: ten nese dlouhý
+ *  i krátký tvar popisku naráz („Komu prospíváProspěch“), jméno jen ten, který je vidět. */
+export async function overNazvyZalozek(page: Page, nazvy: string[]): Promise<void> {
+  const zalozky = page.getByRole('tab');
+  await expect(zalozky).toHaveCount(nazvy.length);
+  for (const [i, nazev] of nazvy.entries()) await expect(zalozky.nth(i)).toHaveAccessibleName(nazev);
+}
+
 export async function overBezPosouvani(page: Page) {
   const { svisle, vyska } = await page.evaluate(() => ({
     svisle: document.scrollingElement!.scrollHeight,
