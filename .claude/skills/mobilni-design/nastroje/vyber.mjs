@@ -55,44 +55,159 @@ const CILE_44 = `@media (max-width:760px){
   body .v4-karta button, body .v4-karta a { min-height:44px; display:inline-flex; align-items:center; }
 }`;
 
-const MER_PRAVIDLA = () => {
+/** Obal nad obsahem detailu a rozpad hlavičky. */
+const MER_DETAIL = () => {
   const v = n => { const e = document.querySelector(n); return e && e.getClientRects().length ? Math.round(e.getBoundingClientRect().height) : 0; };
-  const obsah = document.querySelector('.pravidla-obal');
-  const vTextu = e => !!e.closest('p, li, sup, small, figcaption, .lead, .met-hlava, .legenda, .paticka-met, .s-vazba');
-  let pod44 = 0;
-  for (const e of document.querySelectorAll('a[href], button, [role="button"], input, select, summary')) {
-    if (!e.getClientRects().length || e.closest('[hidden]') || e.disabled || vTextu(e)) continue;
-    let r = e.getBoundingClientRect();
-    if (e instanceof HTMLInputElement && (e.type === 'checkbox' || e.type === 'radio')) { const l = e.closest('label'); if (l) r = l.getBoundingClientRect(); }
-    if (r.width < 2 || r.height < 2) continue;
-    if (r.width < 44 || r.height < 44) pod44++;
+  const dlg = document.querySelector('dialog#detail');
+  const panel = document.querySelector('.m2-panel[data-p]:not([hidden])');
+  return {
+    'obal nad obsahem': panel && dlg ? Math.round(panel.getBoundingClientRect().top - dlg.getBoundingClientRect().top) : 0,
+    'z toho hlavička': v('.m2-hlava'), 'řádek částek': v('.castky'), 'odkaz pod částkami': v('.castky-vice'),
+  };
+};
+
+/** Ovladatelnost mini-osy: kolik bodů leží na sobě a jak daleko od sebe jsou. */
+const MER_OSA = () => {
+  const body = [...document.querySelectorAll('.mini-osa .bod')];
+  const r = body.map(b => b.getBoundingClientRect());
+  let nejmensi = 999, prekryv = 0;
+  for (let i = 1; i < r.length; i++) {
+    nejmensi = Math.min(nejmensi, r[i].left - r[i - 1].left);
+    if (r[i].left < r[i - 1].right - 1) prekryv++;
   }
-  return { 'obal nad obsahem': obsah ? Math.round(obsah.getBoundingClientRect().top + scrollY) : 0,
-           'z toho hlavička': v('.top'), 'z toho úvod': v('.hero'), 'z toho filtry': v('.filtry'),
-           'cílů pod 44 px': pod44 };
+  return {
+    'bodů se překrývá': prekryv, 'událostí celkem': body.length,
+    'nejmenší rozestup': (nejmensi === 999 ? 0 : Math.round(nejmensi)) + ' px',
+    'cíl bodu': Math.round(r[0]?.width ?? 0) + ' px',
+  };
+};
+
+const NA_CHRONOLOGII = () => { document.querySelector('.zalozky [data-p="chrono"]')?.click(); };
+
+/** Nakreslí do stránky značky jako v designérském nástroji: co nefunguje, co je dobré a co se kam
+ *  přesouvá. Běží ve stránce těsně před vyfocením. Značka = { sel, typ, text, kam }:
+ *    typ 'spatne' červeně · 'dobre' zeleně · 'presun' fialově (kam = kam to má jít)
+ *  Když selektor sedí na víc prvků, obtáhnou se všechny, popisek dostane jen první. */
+const OZNAC = (znacky) => {
+  const BARVY = { spatne: '#DB1F2D', dobre: '#0a7b3e', presun: '#7C3AED' };
+  // Detail kauzy je modální <dialog>, který prohlížeč kreslí v horní vrstvě nad celým dokumentem —
+  // překrytí pověšené na <body> by zůstalo pod ním. Proto jde vrstva dovnitř dialogu, když je otevřený.
+  // Souřadnice se počítají position: fixed, tedy vůči oknu, což je přesně to, co snímek zachytí.
+  const hostitel = document.querySelector('dialog[open]') ?? document.body;
+  const vrstva = document.createElement('div');
+  vrstva.style.cssText = 'position:fixed;inset:0;z-index:2147483647;pointer-events:none';
+  hostitel.append(vrstva);
+  const okno = document.documentElement.clientWidth;
+
+  for (const z of znacky) {
+    const prvky = [...document.querySelectorAll(z.sel)].filter(e => e.getClientRects().length);
+    if (!prvky.length) continue;
+    const barva = BARVY[z.typ] ?? BARVY.spatne;
+    prvky.forEach((e, i) => {
+      const r = e.getBoundingClientRect();
+      const ram = document.createElement('div');
+      ram.style.cssText = `position:fixed;left:${r.left - 2}px;top:${r.top - 2}px;`
+        + `width:${r.width + 4}px;height:${r.height + 4}px;border:2px solid ${barva};border-radius:3px;`
+        + (z.typ === 'presun' ? 'border-style:dashed;' : '') + `background:${barva}1f`;
+      vrstva.append(ram);
+      if (i > 0) return;
+      const popisek = document.createElement('div');
+      const znak = z.typ === 'dobre' ? '✓' : z.typ === 'presun' ? '→' : '✕';
+      popisek.textContent = `${znak} ${z.text}`;
+      const nahore = r.top > 34;
+      popisek.style.cssText = `position:fixed;left:${Math.max(4, Math.min(r.left, okno - 280))}px;`
+        + `top:${nahore ? r.top - 30 : r.bottom + 6}px;max-width:${okno - 16}px;`
+        + `background:${barva};color:#fff;font:700 13px/1.25 system-ui,sans-serif;padding:5px 9px;`
+        + 'border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 6px #0003';
+      vrstva.append(popisek);
+    });
+  }
 };
 
 const NAVRHY = [
-  { id: 1, nazev: 'Menu zpět na jeden řádek',
-    proc: 'Hlavička má na pravidlech 105 px, na úvodu 79 — zalomila se na dva řádky. Aktivní položka „Zákony“ je tučná, a tím širší; s výplní dotykového cíle, kterou jsem přidal včera, se řádek přestal vejít. Užší výplň a menší odsazení to vrátí na jeden řádek, cíle zůstanou nad 44 px.',
-    cesta: '/pravidla/', predPopisek: 'Dnes: značka a menu pod sebou', poPopisek: 'Po úpravě: na jednom řádku', pred: {},
-    po: { css: '@media (max-width:760px){ body .top.top-4 nav a { padding-inline: 6px; margin-left: 0; } body .top.top-4 .brand { padding-inline: 0; font-size: clamp(12px,3.1vw,15px); } body .top.top-4 .brand::before { width: 7px; margin-right: 5px; } }' },
-    mer: MER_PRAVIDLA },
-  { id: 2, nazev: 'Přepínač pohledu vedle počítadla',
-    proc: 'Seznam / Časová osa zabírá celý řádek (46 px), přestože jsou to dvě slova. Vedle počítadla „4 změny“ je místa dost.',
-    cesta: '/pravidla/', predPopisek: 'Dnes: přepínač přes celou šířku', poPopisek: 'Po úpravě: na řádku s počtem', pred: {},
-    po: { css: '@media (max-width:760px){ body .filtry.f4.pr-filtry .pr-pohled { order: 4; flex: none; } body .filtry.f4.pr-filtry .pr-pohled button { flex: none; } }' },
-    mer: MER_PRAVIDLA },
-  { id: 3, nazev: '„Upřesnit výběr“ vedle čipů',
-    proc: 'Odkaz stojí na vlastním řádku, přestože je krátký. Na řádku s čipy a počítadlem bývá místo. POZOR: s návrhem 2 se to nesčítá — oba uklízejí tentýž řádek. Změřeno: 2 samotný dá 343 px, 2 i 3 dohromady taky 343 px. Má smysl jen tehdy, když si návrh 2 nevybereš.',
-    cesta: '/pravidla/', predPopisek: 'Dnes: vlastní řádek', poPopisek: 'Po úpravě: vedle čipů', pred: {},
-    po: { css: '@media (max-width:760px){ html.js body .filtry.f4.pr-filtry .f-upresnit { flex: none; order: 3; } }' },
-    mer: MER_PRAVIDLA },
-  { id: 4, nazev: 'Úvod bez nadřádku',
-    proc: 'Nad otázkou „Komu prospívají nová pravidla?“ stojí ještě „Zákony a nařízení od prosince 2025“. U kauz jsi obdobný nadřádek nechal; tady ho nabízím znovu, protože pravidla jsou nejhustší stránka webu.',
-    cesta: '/pravidla/', predPopisek: 'Dnes: nadřádek i otázka', poPopisek: 'Po úpravě: jen otázka', pred: {},
-    po: { css: '@media (max-width:760px){ body .hero.u2 .u2-nad { display:none; } }' },
-    mer: MER_PRAVIDLA },
+  { id: 1, nazev: 'Osa se posouvá do strany, každá událost 44 px',
+    proc: 'Tohle je největší nález z auditu. V chronologii Čapího hnízda leží 24 z 30 bodů na sobě — konkrétní událost se prstem trefit nedá. Rozprostřít je po displeji nestačí: 30 událostí na 390 px dá 12 px na každou, tedy hůř než dnes. Jediné řešení, které dá opravdový terč, je nechat osu posouvat do strany a dát každé události 44 px. Cena: na displeji není vidět celý rozsah naráz, osa se musí posunout.',
+    cesta: '/kauzy/capi-hnizdo/', predPopisek: 'Dnes: body se slévají do šmouhy', poPopisek: 'Po úpravě: terč 44 px, osa se posouvá',
+    pred: { uprav: NA_CHRONOLOGII, znacky: [
+      { sel: '.mini-osa', typ: 'spatne', text: '24 z 30 bodů leží na sobě, rozestup 0 px' },
+      { sel: '.listovani', typ: 'dobre', text: 'Listování funguje — dnes jediná cesta k události' },
+    ] },
+    po: { uprav: () => {
+      document.querySelector('.zalozky [data-p="chrono"]')?.click();
+      const osa = document.querySelector('.mini-osa');
+      const body = [...osa.querySelectorAll('.bod')];
+      const sirka = Math.max(body.length * 44, 340);
+      const obal = document.createElement('div');
+      obal.style.cssText = `position:relative;height:100%;width:${sirka}px`;
+      while (osa.firstChild) obal.append(osa.firstChild);
+      osa.append(obal);
+      osa.style.overflowX = 'auto';
+      // široká osa sama nestačí: události ze stejného data by na sobě ležely dál, proto i rozestup
+      // podle pořadí. Teprve obojí dohromady dá terč 44 px, který se nepřekrývá se sousedem.
+      body.forEach((b, i) => {
+        b.style.left = (22 + i * 44) / sirka * 100 + '%';
+        b.style.setProperty('--sirka', '44px');
+      });
+    }, znacky: [{ sel: '.mini-osa', typ: 'dobre', text: 'Každá událost má terč 44 px' }] },
+    mer: MER_OSA },
+
+  { id: 2, nazev: 'Osa jen jako ukazatel, listuje se šipkami',
+    proc: 'Druhá možnost místo návrhu 1 — vyber si jednu, ne obě. Osa zůstane v měřítku času, ale přestane být terčem. Událostmi se listuje tlačítky „předchozí / další“, která jsou pod ní už dnes; vybraná událost je na ose zvýrazněná.',
+    cesta: '/kauzy/capi-hnizdo/', predPopisek: 'Dnes: 30 terčů přes sebe', poPopisek: 'Po úpravě: ukazatel a větší listování',
+    pred: { uprav: NA_CHRONOLOGII, znacky: [
+      { sel: '.mini-osa', typ: 'spatne', text: '30 terčů přes sebe — klepnutí je loterie' },
+    ] },
+    po: { css: '@media (max-width:760px){ body .mini-osa .bod { pointer-events: none; } body .mini-osa .bod[aria-current="true"]::before { width: 16px; height: 16px; margin: -8px 0 0 -8px; } body .listovani button { min-height: 52px; } }',
+          uprav: NA_CHRONOLOGII, znacky: [
+      { sel: '.mini-osa', typ: 'dobre', text: 'Osa zůstává v měřítku času, už není terč' },
+      { sel: '.listovani', typ: 'presun', text: 'Ovládání se přesouvá sem, tlačítka 52 px' },
+    ] },
+    mer: () => {
+      const l = document.querySelector('.listovani');
+      const b = document.querySelector('.mini-osa .bod');
+      return { 'listovací tlačítka': l ? Math.round(l.getBoundingClientRect().height) + ' px' : 'nejsou',
+               'body jsou terčem': b && getComputedStyle(b).pointerEvents !== 'none' ? 'ano' : 'ne',
+               'událostí celkem': document.querySelectorAll('.mini-osa .bod').length };
+    } },
+
+  { id: 3, nazev: 'Odkaz k částkám na řádek s částkami',
+    proc: 'Hlavička nejhoršího detailu má 344 px a z toho 88 zaberou dva rozbalovací odkazy, každý na vlastním řádku — důsledek dotykových cílů 44 px. „K čemu částky jsou“ se vejde na řádek s částkami samotnými.',
+    cesta: '/kauzy/agrofert-1700-ha/', predPopisek: 'Dnes: odkaz na vlastním řádku', poPopisek: 'Po úpravě: na řádku s částkami',
+    pred: { znacky: [
+      { sel: '.m2-hlava > .castky-vice', typ: 'presun', text: 'Tenhle odkaz patří na řádek s částkami' },
+      { sel: '.castky', typ: 'dobre', text: 'Tady je vpravo volné místo' },
+      { sel: '.perex-vice', typ: 'spatne', text: 'Druhý odkaz, taky vlastní řádek — 44 px' },
+    ] },
+    po: { css: '@media (max-width:760px){ html.js body .m2-hlava > .castky-vice { display: none; } }',
+          uprav: () => { const u = document.querySelector('.castky'), b = document.querySelector('.castky-vice');
+            if (u && b) { const li = document.createElement('li'); li.append(b.cloneNode(true)); u.append(li); } },
+          znacky: [{ sel: '.castky', typ: 'dobre', text: 'Odkaz na řádku s částkami, o 44 px výš' }] },
+    mer: MER_DETAIL },
+
+  { id: 4, nazev: 'Vyhledávací pole na 16 px',
+    proc: 'Safari na iPhonu při klepnutí do pole menšího než 16 px přiblíží celou stránku a už ji nevrátí zpět — čtenář pak scrolluje po zvětšeném webu a rozvržení, které jsme ladili, nevidí. Týká se 39 ze 45 stránek. Vlevo je simulace toho, co se stane po klepnutí.',
+    cesta: '/', predPopisek: 'Dnes: po klepnutí do pole', poPopisek: 'S 16 px: po klepnutí se nestane nic',
+    pred: { css: 'html { zoom: 1.45; }', znacky: [
+      { sel: '.f-hledat input', typ: 'spatne', text: '15 px → iPhone přiblíží a nevrátí zpět' },
+    ] },
+    po: { css: '@media (max-width:760px){ body .filtry.f4 .f-hledat input { font-size: 16px; } }',
+          znacky: [{ sel: '.f-hledat input', typ: 'dobre', text: '16 px → stránka zůstane, jak je' }] },
+    // Jen písmo pole: výšku řádku filtrů tu měřit nejde, levý snímek je schválně přiblížený.
+    mer: () => ({ 'písmo pole': Math.round(parseFloat(getComputedStyle(document.querySelector('.f-hledat input')).fontSize)) + ' px' }) },
+
+  { id: 5, nazev: 'Kroky průběhu u pravidel čitelněji',
+    proc: 'Pět kroků (Podáno, Sněmovna, Senát, Podpis, Vyhlášeno) se mačká do pěti sloupců po 62 px a písmo kleslo na 11 px. Na dva řádky se vejdou v normální velikosti.',
+    cesta: '/pravidla/', vyrez: '.pravidla-obal', predPopisek: 'Dnes: pět sloupců, 11 px', poPopisek: 'Po úpravě: zalomené, 13 px',
+    pred: { znacky: [{ sel: '.prubeh', typ: 'spatne', text: '5 sloupců po 62 px, písmo 11 px' }] },
+    po: { css: '@media (max-width:760px){ body .prubeh { display: flex; flex-wrap: wrap; gap: 4px 10px; } body .prubeh li { flex: 1 1 30%; font-size: 13px; } }',
+          znacky: [{ sel: '.prubeh', typ: 'dobre', text: 'Zalomené do dvou řádků, písmo 13 px' }] },
+    mer: () => {
+      const pr = document.querySelector('.prubeh');
+      const li = pr?.querySelector('li');
+      return { 'výška průběhu': pr ? Math.round(pr.getBoundingClientRect().height) + ' px' : '—',
+               'písmo kroku': li ? Math.round(parseFloat(getComputedStyle(li).fontSize)) + ' px' : '—',
+               'šířka kroku': li ? Math.round(li.getBoundingClientRect().width) + ' px' : '—' };
+    } },
 ];
 
 // ───────────────────────────────────────────────────────────────────────────────────────────────
@@ -123,6 +238,8 @@ async function vyfot(prohlizec, navrh, stav, soubor) {
   if (stav.uprav) await page.evaluate(stav.uprav);
   await page.waitForTimeout(350);
   const cisla = navrh.mer ? await page.evaluate(navrh.mer) : {};
+  // značky se kreslí až po měření, ať do něj nezasahují
+  if (stav.znacky?.length) await page.evaluate(OZNAC, stav.znacky);
   const cil = navrh.vyrez ? page.locator(navrh.vyrez).first() : page;
   await cil.screenshot({ path: path.join(SLOZKA, soubor), animations: 'disabled' });
   await ctx.close();
@@ -146,10 +263,13 @@ try {
     const b = await vyfot(prohlizec, n, n.po, `navrh-${n.id}-po.png`);
     const cisla = Object.keys(a.cisla).map(k => `<tr><th>${esc(k)}</th><td class="pred">${esc(a.cisla[k])}</td><td class="po">${esc(b.cisla[k])}</td></tr>`).join('');
     // První změřená hodnota je ta hlavní: kolik návrh ušetří, patří hned k názvu.
+    const cislo = v => typeof v === 'number' ? v : (typeof v === 'string' && /^-?\d+/.test(v) ? parseInt(v, 10) : null);
     const prvni = Object.keys(a.cisla)[0];
-    const rozdil = prvni && typeof a.cisla[prvni] === 'number' ? a.cisla[prvni] - b.cisla[prvni] : 0;
-    const znacka = rozdil > 0 ? `<span class="usetri">−${rozdil} px</span>`
-      : rozdil < 0 ? `<span class="pridava">+${-rozdil} px</span>` : '<span class="nic">beze změny</span>';
+    const pa = cislo(a.cisla[prvni]), pb = cislo(b.cisla[prvni]);
+    const rozdil = pa !== null && pb !== null ? pa - pb : 0;
+    const jednotka = typeof a.cisla[prvni] === 'string' && a.cisla[prvni].includes('px') ? ' px' : '';
+    const znacka = rozdil > 0 ? `<span class="usetri">−${rozdil}${jednotka}</span>`
+      : rozdil < 0 ? `<span class="pridava">+${-rozdil}${jednotka}</span>` : '<span class="nic">beze změny</span>';
     karty.push(`<section class="navrh">
   <label class="hlava"><input type="checkbox" data-navrh="${n.id}"><span class="cislo">${n.id}</span><span class="nazev">${esc(n.nazev)}</span>${znacka}</label>
   <p class="proc">${esc(n.proc)}</p>
@@ -194,7 +314,10 @@ try {
 </style>
 <h1>Návrhy k výběru</h1>
 <p class="uvod">Zaškrtni, co ti dává smysl. Vlevo je stav dnes, vpravo po úpravě — snímky jsou ze skutečného
-obsahu, ne z kreseb. Dole se průběžně skládá soupis, který stačí zkopírovat a poslat mi.
+obsahu, ne z kreseb. Značky ve snímcích:
+<b style="color:#DB1F2D">✕ co nefunguje</b> · <b style="color:#0a7b3e">✓ co funguje a zůstává</b> ·
+<b style="color:#7C3AED">→ co se kam přesouvá</b>.
+Dole se průběžně skládá soupis, který stačí zkopírovat a poslat mi.
 Vytvořeno ${new Date().toLocaleString('cs-CZ')}.</p>
 ${karty.join('\n')}
 <div class="lista">
