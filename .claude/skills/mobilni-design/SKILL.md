@@ -36,7 +36,44 @@ staršími pravidly, která v náhledu nevadila. Při zavádění vybraných dí
 tiché chyby: `.listovani button { max-width: 48% }` z `hlavni.css` zúžilo položky nového přehledu
 tak, že se názvy lámaly do čtyř řádků, a seznam vložený jako položka pružné lišty
 (`flex: 1 0 100%` + záporné okraje) vytlačil na 320 px listovací tlačítko 2 px mimo obraz. Obojí
-se poznalo až změřením v hotovém buildu, ne z náhledu.
+se poznalo až změřením v hotovém buildu, ne z náhledu. Při zavádění řádu ovládání pak zkratka
+`font: 600 14px/1.4` změnila výšku řádku a posunula na **počítači** dva odkazy o 1–3 px, a pravidlo
+`body .f-upresnit` prohrálo s `.filtry button` z jiného souboru (stejná váha, rozhoduje pořadí
+v balíku, které není zaručené). **U pravidel se stejnou vahou se na pořadí souborů nespoléhej —
+přidej selektoru rodiče.**
+
+## Řád ovládání — jak mají prvky vypadat, aby držely pohromadě
+
+Vznikl 15. 11. z rozboru, který si vyžádal uživatel („nepřijde ti to přepálené, layout nemá jasná
+pravidla?“). Měl pravdu: web měl **šest různých tvarů pro jednu a tutéž akci** „je toho víc, klepni
+sem“ (kurzíva podtržená · 600 podtržená · 700 podtržená · 500 s rámečkem · mono s rámečkem ·
+neviditelný popisek), 11 velikostí písma a 16 hodnot mezer. Každá změna byla změřená a obhájená —
+ale vždycky jen sama proti sobě, ne proti celku. **Než přidáš ovládací prvek, najdi v řádu jeho tvar.
+Když tam není, je to rozhodnutí pro uživatele, ne detail k doladění.**
+
+1. **Rozbalení má dva tvary, podle toho, co otevírá.**
+   - **Řádek** (částky, skupina hlasování): terčem je celý řádek, vpravo `▾` / `▴`, žádná slova
+     navíc. Popisek je sám obsah řádku („Pro (86)“) nebo text jen pro čtečku.
+   - **Blok textu** (shrnutí, celé znění, další filtry): odkaz pod ním, psaný slovy.
+   - Výjimka: rozbalený řádek částek se zavírá odkazem „méně“ — jeho obsah nese odkazy na zdroje
+     a metodiku, takže přes něj nesmí ležet překryv tlačítka.
+2. **Jedna typografie ovládání:** popisek `600 14px`, číselný údaj `13px` mono. Popisek, na který
+   se klepe, není kurzívou — ta patří doprovodnému textu (datum, „← předchozí“, poznámka).
+3. **Rámeček má jen to, co něco udělá** (přepínač, krok, filtr, čip). Co jen rozbaluje, rámeček nemá.
+4. **Počet schovaných věcí se píše „+N“** a stojí u toho, co rozbaluje („+12 dalších“, „+1 ▾“).
+5. **Trvale přilepené ovládání:** nejvýš jeden pruh nahoře a jeden dole, dohromady do **15 %
+   displeje** (dnes nejvýš 121 px = 14 % v chronologii kauzy). **Žádný údaj se neopakuje** mezi
+   lištou a obsahem — pořadí události nese tlačítko přehledu, v události se proto neukazuje.
+6. **Mezery z jedné stupnice:** 4 · 8 · 12 · 16 · 24 · 32 px. Platí pro vše nové a pro vše, na co
+   se sahá. Starší pravidla v `upravy.css` mají i 5, 6, 10, 14 a 18 px a hromadně se nepřepisovala:
+   posunulo by to desítky míst o 1–2 px bez viditelného přínosu a každé by se muselo přeměřit.
+
+Vzhled rozbalovacího odkazu je v `upravy.css` na **jediném místě** (blok „Řád ovládání“); jednotlivé
+prvky si jinde řeší jen rozvržení. Hlídá to test „rozbalovací odkazy mají na celém webu jeden vzhled“.
+
+**Počítač se řádem nemění.** Tam, kde by se sdílené pravidlo dotklo i počítače, vrací původní řez
+blok `@media (min-width: 761px)` hned pod ním. Ověřuje se to porovnáním snímků
+(`nastroje/shoda-pocitace.mjs`), ne od oka.
 
 ## Čísla, která platí
 
@@ -79,6 +116,7 @@ node .claude/skills/mobilni-design/nastroje/varianty.mjs     # stupňované vari
 node .claude/skills/mobilni-design/nastroje/dily.mjs         # díly k výběru: varianty A/B/C vedle sebe
 node .claude/skills/mobilni-design/nastroje/vyber.mjs        # návrhy před/po se zaškrtávátky
 node .claude/skills/mobilni-design/nastroje/audit.mjs        # celkový audit všech stránek, i naležato
+node .claude/skills/mobilni-design/nastroje/shoda-pocitace.mjs <před> <po>   # počítač bod po bodu
 npm run e2e:mobil                                            # testy + snímek každé stránky
 ```
 
@@ -87,6 +125,10 @@ Oba skripty si samy postaví web ze **skutečného obsahu** (`obsah/`), spustí 
 `prehled.mjs` vypíše tabulku: u každé stránky kolik pixelů zabere obal nad obsahem, jak je stránka
 vysoká v obrazovkách, jestli se něco posouvá do strany, kolik je cílů pod 44 px a jaké je nejmenší
 viditelné písmo. **Tím každá práce začíná.**
+
+`shoda-pocitace.mjs` porovná dva hotové buildy v okně počítače bod po bodu a řekne, který prvek
+se pohnul. **Pouštěj ho po každé změně CSS psané mimo `@media (max-width: 760px)`** — testy takový
+posun nechytí. Jak získat build „před“ z posledního commitu, je v hlavičce skriptu.
 
 `varianty.mjs` je šablona pro **jednu obrazovku a stupňované varianty** (A, B = A + něco, C = B + něco).
 Nasadí je na skutečnou stránku, vyfotí, co je vidět bez posunutí, a vyrobí `navrhy/index.html`.
@@ -160,6 +202,11 @@ Seznam částek tím klesl ze **77 na 49 px** v průměru přes 21 kauz (na jede
 u 14 z 21 místo 5), obal nad obsahem z **359 na 331 px** v průměru, nejhorší z 392 na 344.
 Chronologie se začíná poslední událostí a shrnutí drží tři řádky — obojí zůstalo, jak bylo.
 
+Řád ovládání (15. 11.): rozbalovací odkazy mají jeden řez (14 px, 600, podtržené, bez rámečku),
+skupina hlasování je řádek-tlačítko s názvem skupiny jako popiskem, pořadí události se neopakuje
+v obsahu i na liště. Obal nad obsahem detailu je v průměru 329 px (nejhorší 342), počítač je shodný
+na pixel.
+
 Nejdelší stránka webu je 1,3 obrazovky a nic se nikde neposouvá do strany.
 
 ## Časté chyby
@@ -173,3 +220,6 @@ Nejdelší stránka webu je 1,3 obrazovky a nic se nikde neposouvá do strany.
 | Zmenšit písmo, aby se to vešlo | Pod 14 px nejdeme, u polí pod 16 px vůbec |
 | `100vh` pro výšku displeje | `100dvh` nebo `100svh` |
 | Spoléhat, že `vypadá to dobře` | Změř a ukaž číslo |
+| Vymyslet pro nový prvek vlastní vzhled, protože se sem zrovna hodí | Najdi jeho tvar v řádu ovládání; když tam není, je to otázka pro uživatele |
+| Opakovat údaj z lišty i v obsahu („30 z 30“ a „událost 30 z 30“) | Jeden údaj, jedno místo |
+| Psát sdílené pravidlo mimo `@media` a věřit, že se počítače netýká | `shoda-pocitace.mjs` před commitem |

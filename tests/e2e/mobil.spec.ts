@@ -106,17 +106,20 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
     await expect(osa, 'ani v Chronologii se osa na telefonu neukazuje').toBeHidden();
 
     const udalost = page.locator('.udalosti-seznam > li:not([hidden])');
-    const poradi = udalost.locator('time small');
+    // Kde v posloupnosti čtenář je, říká tlačítko přehledu v liště. V události samotné se to
+    // neopakuje (řád ovládání: žádný údaj není zároveň na liště i v obsahu).
+    const poradi = page.locator('dialog#detail .listovani-prehled');
     const [zpet, dal] = [page.locator('.listovani [data-krok="-1"]'), page.locator('.listovani [data-krok="1"]')];
     const celkem = await page.locator('.udalosti-seznam > li').count();
-    await expect(poradi, 'čtenář vidí, kde v posloupnosti je').toHaveText(`událost ${celkem} z ${celkem}`);
+    await expect(poradi, 'čtenář vidí, kde v posloupnosti je').toHaveText(`${celkem} z ${celkem}`);
+    await expect(udalost.locator('time small'), 'pořadí se v obsahu neopakuje').toBeHidden();
     await expect(dal, 'na poslední události není kam dál').toBeDisabled();
 
     await zpet.tap();
-    await expect(poradi).toHaveText(`událost ${celkem - 1} z ${celkem}`);
+    await expect(poradi).toHaveText(`${celkem - 1} z ${celkem}`);
     await expect(dal).toBeEnabled();
     await dal.tap();
-    await expect(poradi).toHaveText(`událost ${celkem} z ${celkem}`);
+    await expect(poradi).toHaveText(`${celkem} z ${celkem}`);
 
     // obě tlačítka jsou pohodlný terč a tlačítko říká, kam krok povede
     for (const t of [zpet, dal]) {
@@ -181,7 +184,7 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
 
     await polozky.first().tap();
     await expect(seznam, 'po skoku se přehled zavře').toBeHidden();
-    await expect(page.locator('.udalosti-seznam > li:not([hidden]) time small')).toHaveText(`událost 1 z ${celkem}`);
+    await expect(page.locator('.udalosti-seznam > li:not([hidden])'), 'ukázala se první událost').toHaveAttribute('data-i', '0');
     await expect(prehled, 'počítadlo jde s událostí').toHaveText(`1 z ${celkem}`);
 
     // jiná záložka přehled zavře, ať nezůstane viset nad obsahem
@@ -256,6 +259,31 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
     expect(await videt(), 'po rozbalení jsou vidět všechny').toBe(vsech);
   });
 
+  // Řád ovládání (upravy.css): web měl šest různých tvarů pro jednu akci „je toho víc, klepni sem“.
+  // Odkaz, který rozbaluje blok textu, má všude stejný řez — ať je to shrnutí, filtry nebo znění.
+  test('rozbalovací odkazy mají na celém webu jeden vzhled', async ({ page }) => {
+    const KDE: [string, string][] = [
+      ['/kauzy/gama-offshore/', 'dialog#detail .perex-vice'],
+      ['/', '.filtry .f-upresnit'],
+      ['/', '.filtry .f-cipy .f-vice'],
+      ['/metodika/', '.v4-karta button'],
+    ];
+    const tvary: Record<string, string> = {};
+    for (const [cesta, sel] of KDE) {
+      await otevri(page, cesta);
+      const prvek = page.locator(sel).first();
+      if (!(await prvek.isVisible())) continue; // odkaz se ukazuje jen tam, kde je co rozbalit
+      tvary[sel] = await prvek.evaluate(e => {
+        const c = getComputedStyle(e);
+        return [c.fontSize, c.fontWeight, c.fontStyle, c.textDecorationLine, c.borderTopWidth, c.color].join(' · ');
+      });
+    }
+    const ruzne = [...new Set(Object.values(tvary))];
+    expect(Object.keys(tvary).length, 'aspoň tři odkazy se musí dát změřit').toBeGreaterThanOrEqual(3);
+    expect(ruzne, `rozbalovací odkazy se liší: ${JSON.stringify(tvary, null, 1)}`).toHaveLength(1);
+    expect(ruzne[0], 'řez podle řádu: 14 px, 600, bez kurzívy, podtržené, bez rámečku').toMatch(/^14px · 600 · normal · underline · 0px · /);
+  });
+
   test('kauzy: další filtry se otevírají tlačítkem a zvolený filtr se neschová', async ({ page }) => {
     await otevri(page, '/');
     const veta = page.locator('.filtry .f-dalsi');
@@ -285,11 +313,16 @@ test.describe(`telefon ${HLAVNI.width}×${HLAVNI.height}`, () => {
     await vice.click();
     await expect(jmena, 'po klepnutí jsou jména vidět').toBeVisible();
     await expect(vice).toHaveAttribute('aria-expanded', 'true');
-    // přepínač stojí vedle nadpisu, ne pod ním — jinak by pět skupin stálo pět řádků navíc
+    // Řád ovládání, tvar „řádek“: terčem je celý nadpis skupiny, ne slova vedle něj. Tlačítko je
+    // uvnitř nadpisu a kryje jeho šířku — jinak by pět skupin stálo pět řádků navíc.
+    await expect(skupina.locator('h3 > .hl-vice'), 'tlačítko je uvnitř nadpisu skupiny').toHaveCount(1);
     const [n, t] = await Promise.all([skupina.locator('h3').boundingBox(), vice.boundingBox()]);
-    expect(t!.y, 'přepínač je na řádku nadpisu').toBeLessThan(n!.y + n!.height);
-    // a každý se pro čtečku jmenuje svou skupinou, ne pětkrát stejně
-    await expect(vice).toHaveAttribute('aria-label', /—/);
+    expect(t!.width / n!.width, 'tlačítko kryje celý řádek nadpisu').toBeGreaterThan(0.95);
+    expect(t!.height, 'a je pohodlný terč').toBeGreaterThanOrEqual(44);
+    // každé se pro čtečku jmenuje svou skupinou s počtem, ne pětkrát stejně
+    await expect(vice).toHaveAccessibleName(/\(\d+\)/);
+    const jmenaTlacitek = await page.locator('.hl-vsichni .hl-vice').evaluateAll(l => l.map(b => b.textContent!.trim()));
+    expect(new Set(jmenaTlacitek).size, 'tlačítka skupin se od sebe liší jménem').toBe(jmenaTlacitek.length);
     await vyfot(page, 'stav-hlasovani-jmena', 'Hlasování — rozbalená jména v jedné skupině');
     await overBezPosouvaniDoStrany(page);
   });

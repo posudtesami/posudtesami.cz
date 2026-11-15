@@ -132,13 +132,48 @@ body .koncepty-stitek {
 }
 body .radek .nazev strong { white-space: normal; overflow: visible; text-overflow: clip; }
 
+/* ===== Řád ovládání =====
+   Pravidla, která drží mobilní rozvržení pohromadě. Vznikla 15. 11. z rozboru: web měl šest
+   různých tvarů pro jednu a tutéž akci „je toho víc, klepni sem“ (kurzíva podtržená, 600 podtržená,
+   700 podtržená, 500 s rámečkem, mono s rámečkem, neviditelný popisek) a čtenář se tak na jedné
+   obrazovce učil dva jazyky. Celý řád je v .claude/skills/mobilni-design/SKILL.md.
+
+   1. Rozbalení má dva tvary podle toho, co otevírá:
+      — ŘÁDEK (částky, skupina hlasování): terčem je celý řádek, vpravo ▾ / ▴, žádná slova navíc.
+      — BLOK textu (shrnutí, celé znění, další filtry): odkaz pod ním, psaný slovy.
+      Výjimka: rozbalený řádek částek se zavírá odkazem „méně“ — jeho obsah nese odkazy
+      na zdroje a metodiku, takže přes něj nesmí ležet překryv tlačítka.
+   2. Jedna typografie ovládání: popisek 600 14px, číselný údaj 13px mono. Popisek, na který se
+      klepe, není kurzívou — ta zůstává doprovodnému textu (datum, „← předchozí“, poznámka).
+   3. Rámeček má jen to, co něco udělá (přepínač, krok, filtr). Co jen rozbaluje, rámeček nemá.
+   4. Počet schovaných věcí se píše „+N“ a stojí u toho, co rozbaluje.
+   5. Trvale přilepené ovládání: nejvýš jeden pruh nahoře a jeden dole, dohromady do 15 % displeje,
+      a žádný údaj se neopakuje mezi lištou a obsahem.
+   6. Mezery z jedné stupnice: 4 · 8 · 12 · 16 · 24 · 32 px.
+
+   Tenhle blok je jediné místo, kde se popisuje, jak rozbalovací odkaz vypadá. Jednotlivé prvky
+   si níž řeší jen své rozvržení (kde stojí, jak je široký), ne vzhled. */
+body .perex-vice, body .pro-vas-vice, body .castky-vice, body .filtry .f-upresnit,
+body .filtry .f-cipy .f-vice, body .v4-karta button, body .v4-karta a {
+  border: 0; background: none; cursor: pointer;
+  font: 600 14px var(--f-text); color: var(--modra);
+  text-decoration: underline; text-underline-offset: 3px;
+}
+/* Počítač se nemění (je v pořádku a měřítkem je tu telefon): tyhle odkazy tam drží původní řez.
+   Kdyby se řád měl rozšířit i na počítač, stačí tenhle blok smazat. */
+@media (min-width: 761px) {
+  body .v4-karta button, body .v4-karta a { font-weight: 700; }
+  body .perex-vice, body .pro-vas-vice { font-style: italic; font-weight: 400; }
+  body .perex-vice { margin: 2px 0 0; padding: 2px 0; }
+}
+
 /* Shrnutí v hlavičce detailu se neusekne trojtečkou: na počítači má celou šířku (320 znaků se vejde),
    na mobilu se delší shrnutí posouvá. */
 body .m2-hlava .perex { display: block; -webkit-line-clamp: none; max-width: none; overflow: visible; }
 /* Na mobilu jsou vidět tři řádky, které se dole vytrácejí, a tlačítko „celé shrnutí“ (skript ho ukáže, jen když
    text pokračuje). Bez trojtečky. Dřív to bylo okénko s posuvníkem, které na telefonu nebylo poznat, takže
    zbytek shrnutí (často se stanoviskem dotčené strany) zůstal skrytý. */
-body .perex-vice { display: inline-block; margin: 2px 0 0; padding: 2px 0; border: 0; background: none; font: italic 14px var(--f-text); color: var(--modra); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+body .perex-vice { display: inline-block; margin: 0; padding: 4px 0; }
 body .perex-vice[hidden] { display: none; }
 @media (max-width: 760px) {
   body .m2-hlava .perex { line-height: 1.5; max-height: 4.5em; overflow: hidden; }
@@ -316,10 +351,7 @@ html body:not(.nacteno) .legenda, html body:not(.nacteno) .radek .nazev { animat
 body .filtry.f4 .f-cipy { overflow: hidden; mask-image: none; flex-wrap: nowrap; }
 body .filtry.f4 .f-cipy-obal.rozbalene .f-cipy { flex-wrap: wrap; row-gap: 6px; }
 body .filtry.f4 .f-cipy button[hidden] { display: none; }
-body .filtry.f4 .f-cipy .f-vice {
-  flex: none; border: 0; background: none; padding: 5px 4px; border-radius: 0;
-  font: 600 14px var(--f-text); color: var(--modra); text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; cursor: pointer;
-}
+body .filtry.f4 .f-cipy .f-vice { flex: none; padding: 5px 4px; border-radius: 0; white-space: nowrap; }
 body .filtry.f4 .f-cipy .f-vice:hover { text-decoration-thickness: 2px; }
 @media (min-width: 761px) {
   body .filtry.f4 { align-items: flex-start; }
@@ -526,7 +558,7 @@ body .radek[data-shoda-v-textu] .nazev small::after { content: " · shoda v text
   body .strankovani button { min-width: 44px; height: 44px; }
 
   /* Tlačítka a odkazy psané jako slovo, ale stojící samostatně mimo větu. */
-  body .perex-vice, body .castky-vice, body .f-upresnit, body .hl-vice,
+  body .perex-vice, body .castky-vice, body .f-upresnit,
   body .v4-karta button, body .v4-karta a { min-height: 44px; display: inline-flex; align-items: center; }
 }
 
@@ -541,12 +573,15 @@ body .radek[data-shoda-v-textu] .nazev small::after { content: " · shoda v text
    (ani když telefon otočíme naležato a stránka přejde na rozvržení pro širší displej). */
 .listovani-prehled, .udalosti-prehled { display: none; }
 
-/* „k čemu částky jsou“ vypadá a chová se jako „celé shrnutí“ nad ním. */
-body .castky-vice { display: inline-block; margin: 6px 0 0; padding: 4px 0; border: 0; background: none; font: italic 14px var(--f-text); color: var(--modra); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+/* Rozbalený seznam částek se zavírá odkazem „méně“ (výjimka 1 v řádu ovládání). */
+body .castky-vice { display: inline-block; margin: 8px 0 0; padding: 4px 0; }
 body .castky-vice[hidden] { display: none; }
 
 /* „Upřesnit výběr“ je na místě věty dalších filtrů (stejné order, proto drží svůj řádek). */
-body .f-upresnit { display: none; flex: 1 0 100%; order: 5; margin: 0; padding: 4px 0; border: 0; background: none; text-align: left; font: 600 14px var(--f-text); color: var(--modra); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+body .f-upresnit { display: none; flex: 1 0 100%; order: 5; margin: 0; text-align: left; }
+/* Výplň musí přebít „.filtry button“ z hlavni.css (11 px do stran): bez rámečku by odkaz stál
+   odsazený od levého okraje, kde začínají čipy i vyhledávání. */
+body .filtry .f-upresnit { padding: 4px 0; }
 
 @media (max-width: 760px) {
   /* Částky: zůstane číslo s druhem, popisy a čísla zdrojů otevře tlačítko. Bez JavaScriptu se
@@ -585,7 +620,11 @@ body .f-upresnit { display: none; flex: 1 0 100%; order: 5; margin: 0; padding: 
     display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   /* Pod poslední řádek události musí zůstat místo, jinak by ji lišta překryla. */
-  html.js body dialog.m2:not(.pravidlo) .m2-panel[data-p="chrono"]:not([hidden]) { padding-bottom: 96px; }
+  html.js body dialog.m2:not(.pravidlo) .m2-panel[data-p="chrono"]:not([hidden]) { padding-bottom: 88px; }
+
+  /* Pořadí události („událost 30 z 30“) nese i tlačítko přehledu v liště. V obsahu se tím pádem
+     neopakuje — pravidlo 5 řádu ovládání. Jen tam, kde lišta to tlačítko opravdu má. */
+  html.js body dialog.m2:not(.pravidlo) .m2-panel[data-p="chrono"]:has(.listovani-prehled) .udalosti-seznam time small { display: none; }
 
   /* ===== Přehled všech událostí =====
      Bez osy vedlo k události uprostřed třicetidílné kauzy patnáct klepnutí a čtenář nevěděl, co
@@ -643,8 +682,17 @@ body .f-upresnit { display: none; flex: 1 0 100%; order: 5; margin: 0; padding: 
    Proměnná --sbalit-skupiny říká skriptu, jestli se sbaluje: zlom tak zůstává jen tady v CSS. */
 :root { --sbalit-skupiny: 0; }
 
-body .hl-vice { display: inline-block; margin: 0 0 8px; padding: 4px 0; border: 0; background: none; font: italic 14px var(--f-text); color: var(--modra); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+/* Skupina je řádek, a tím pádem je řádek i tlačítko (řád ovládání, tvar „řádek“): nadpis s počtem
+   je zároveň jeho popisek, takže pět tlačítek pod sebou se od sebe pozná bez aria-label navíc
+   a nemusí se k nim dopisovat slova „ukázat jména“. */
+body .hl-vice {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; min-height: 44px; margin: 0; padding: 4px 0;
+  border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer;
+}
 body .hl-vice[hidden] { display: none; }
+body .hl-vice::after { content: "▾"; font: 400 18px/1 var(--f-text); color: var(--modra); }
+body .hl-skupina.rozbalene .hl-vice::after { content: "▴"; }
 
 @media (max-width: 760px) {
   :root { --sbalit-skupiny: 1; }
@@ -689,9 +737,7 @@ body .hl-vice[hidden] { display: none; }
    „Ukázat jména“ stálo na vlastním řádku pětkrát pod sebou. Sbalená skupina je proto jeden řádek:
    vlevo nadpis s počtem, vpravo přepínač. Rozbalená se zalomí a jména přijdou pod to. */
 @media (max-width: 760px) {
-  html.js body .hl-skupina { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 12px; }
   html.js body .hl-skupina > h3 { margin: 0; }
-  html.js body .hl-skupina > ul { flex: 1 0 100%; }
   html.js body .hl-skupina:not(.rozbalene) { border-bottom: 1px solid var(--linka); }
 }
 
