@@ -25,214 +25,163 @@ const TELEFON = { width: 390, height: 844 };
 // Pomocné funkce, které běží uvnitř stránky
 // ───────────────────────────────────────────────────────────────────────────────────────────────
 
-const NA_CHRONOLOGII = () => { document.querySelector('.zalozky [data-p="chrono"]')?.click(); };
-
-/** Kde na displeji stojí listovací tlačítka a jestli na ně dosáhne palec. */
-const MER_LISTOVANI = () => {
-  const l = document.querySelector('.listovani');
-  if (!l || !l.getClientRects().length) return { 'tlačítka': 'nejsou vidět' };
-  const r = l.getBoundingClientRect();
-  const stred = Math.round(r.top + r.height / 2);
+/** Menu: jak velké je písmo, kolik místa hlavička bere a kde končí ovládání nad obsahem. */
+const MER_MENU = () => {
+  const top = document.querySelector('.top'), nav = top.querySelector('nav');
+  const odkazy = [...nav.querySelectorAll('a')].filter(a => a.getClientRects().length);
+  const tlacitko = document.querySelector('.nahled-menu');
+  const cile = [...odkazy, ...(tlacitko ? [tlacitko] : [])].map(e => e.getBoundingClientRect());
+  const filtry = document.querySelector('.filtry');
+  const dole = getComputedStyle(nav).position === 'fixed';
   return {
-    'tlačítka od horního okraje': stred + ' px',
-    'výška ovládání': Math.round(r.height) + ' px',
-    'vidět bez posunutí': r.bottom <= innerHeight && r.top >= 0 ? 'ano' : 'ne',
-    'v dosahu palce': stred > innerHeight * 0.55 ? 'ano' : 'ne, vysoko',
+    'písmo menu': odkazy.length ? String(Math.round(parseFloat(getComputedStyle(odkazy[0]).fontSize) * 10) / 10).replace('.', ',') + ' px' : 'menu není vidět',
+    'hlavička': Math.round(top.getBoundingClientRect().height) + ' px',
+    'obsah začíná': filtry ? Math.round(filtry.getBoundingClientRect().bottom) + ' px' : '–',
+    'nejmenší cíl': cile.length ? Math.round(Math.min(...cile.map(r => Math.min(r.width, r.height)))) + ' px' : '–',
+    'trvale na displeji': dole ? Math.round(nav.getBoundingClientRect().height) + ' px dole' : 'nic',
+    'do strany': document.documentElement.scrollWidth > innerWidth ? 'PŘETÉKÁ' : 'ne',
   };
 };
 
-/** Jak daleko je to k události uprostřed kauzy a jak je chronologie dlouhá. */
-const merSkok = (klepnuti) => `() => {
-  const dlg = document.querySelector('dialog#detail');
-  const n = document.querySelectorAll('.udalosti-seznam > li').length;
-  return { 'událostí': n, 'klepnutí na prostřední': ${JSON.stringify(klepnuti)}.replace('N', Math.round(n / 2)),
-           'délka chronologie': (dlg.scrollHeight / innerHeight).toFixed(1).replace('.', ',') + ' obrazovky' };
-}`;
-
-const MER_HLAVICKA = () => {
-  const v = n => { const e = document.querySelector(n); return e && e.getClientRects().length ? Math.round(e.getBoundingClientRect().height) : 0; };
-  const dlg = document.querySelector('dialog#detail');
-  const panel = document.querySelector('.m2-panel[data-p]:not([hidden])');
+/** Záložky detailu: kolik jich je, kolik je mimo obraz a kolik místa lišta bere. */
+const MER_ZALOZKY = () => {
+  const lista = document.querySelector('dialog#detail .zalozky');
+  const zal = [...lista.querySelectorAll('[role="tab"]')].map(b => b.getBoundingClientRect());
+  const hranice = innerWidth - 56; // vpravo nahoře stojí zavírací křížek
   return {
-    'obal nad obsahem': Math.round(panel.getBoundingClientRect().top - dlg.getBoundingClientRect().top) + ' px',
-    'z toho částky': v('.castky') + ' px', 'z toho shrnutí': (v('.perex') + v('.perex-vice')) + ' px',
+    'záložek': zal.length,
+    'mimo obraz': zal.filter(r => r.left >= innerWidth - 1).length,
+    'uříznutých': zal.filter(r => r.left < innerWidth - 1 && r.right > hranice + 1).length,
+    'řádků': new Set(zal.map(r => Math.round(r.top))).size,
+    'výška lišty': Math.round(lista.getBoundingClientRect().height) + ' px',
   };
+};
+
+/** Krátké popisky záložek zákona — jen pro náhled; v hotové věci by to byly dva <span>y jako u kauz. */
+const KRATKE_ZALOZKY = () => {
+  const KRATKE = { prospech: 'Prospěch', kontrola: 'Kontrola', chrono: 'Průběh', vyhrady: 'Výhrady', souv: 'Vazby' };
+  for (const b of document.querySelectorAll('dialog#detail .zalozky [role="tab"]')) {
+    const zavorka = (b.textContent.match(/\(\d+\)/) || [''])[0];
+    if (b.dataset.p === 'hlasovani') b.textContent = `Hlasy ${zavorka}`.trim();
+    else if (KRATKE[b.dataset.p]) b.textContent = KRATKE[b.dataset.p];
+  }
+  document.querySelector('dialog#detail .zalozky').dispatchEvent(new Event('scroll'));
+  dispatchEvent(new Event('resize'));
 };
 
 // ───────────────────────────────────────────────────────────────────────────────────────────────
 // STRANKA a DILY — tohle se přepisuje.
 //
-// Díl: { id, nazev, otazka, doporuceni, cesta, priprav?, vyrez?, varianty: [...] }
+// Díl: { id, nazev, otazka, doporuceni, cesta | pohledy, priprav?, vyrez?, mer?, varianty: [...] }
+//   pohledy … [{ cesta, popis, okno?: { width, height }, orez?: výška, priprav? }] — variantu ukáže
+//             na víc obrazovkách pod sebou, aby bylo vidět, jestli drží celý web, ne jednu stránku
 //   priprav … funkce ve stránce, která připraví výchozí stav (třeba přepne záložku)
 //   vyrez   … selektor prvku, který se vyfotí místo celé obrazovky
 // Varianta: { k, nazev, stitek, myslenka, ano: [], ne: [], css?, uprav?, znacky?, mer? }
-//   znacky  … [{ sel, typ: 'spatne' | 'dobre' | 'presun', text }] — kreslí se do snímku
+//   znacky  … [{ sel, typ: 'spatne' | 'dobre' | 'presun', text, kde?: 'pod' }] — kreslí se do snímku;
+//             popisek stojí nad prvkem, s kde: 'pod' pod ním (když by nahoře zakryl něco důležitého)
 // Položka { skupina, popis } vloží velký nadpis mezi díly.
 // ───────────────────────────────────────────────────────────────────────────────────────────────
 
 const STRANKA = {
-  klic: 'chronologie-a-hlavicka',
-  nazev: 'Detail kauzy na telefonu',
-  podtitul: 'chronologie bez osy a hlavička · varianty k výběru · skutečný obsah',
-  nadpis: 'Osa je z telefonu pryč. Teď doladit, čím se chronologií prochází.',
+  klic: 'menu-a-zalozky-zakona',
+  nazev: 'Menu a záložky zákona na telefonu',
+  podtitul: 'dvě místa, kde řád ovládání ještě neplatí · varianty k výběru · skutečný obsah',
+  nadpis: 'Dvě věci, které nejdou jen srovnat. Každé řešení něco stojí.',
   odstavce: [
-    'Rozhodl jsi, že <b>časová osa na telefonu nedává smysl</b> a událostmi se bude jen listovat tlačítky. To je hotové a v kódu. Tím se ale listování stalo <b>jediným ovládáním</b> chronologie — a to, co dřív stačilo jako doplněk pod osou, teď nese celou práci.',
-    'První tři díly jsou o něm: kde tlačítka stojí, jak se dostat k události uprostřed dlouhé kauzy a kterou událostí se začíná. Další dva se týkají hlavičky, kde po dnešku zbyly dvě nedořešené věci.',
-    '<b>Co to není:</b> nic z toho neubírá obsah. Každá událost, každá částka i celé shrnutí zůstávají dostupné ve všech variantách — liší se jen tím, kolik klepnutí k nim vede a kolik místa zabere ovládání.',
-    'Náhledy jsou skutečné snímky telefonu 390 × 844 nad kauzou Čapí hnízdo (30 událostí, dvě částky). Čísla pod nimi jsou změřená, ne odhadnutá.',
+    'Po zavedení řádu ovládání zbyla dvě místa, kde web porušuje vlastní pravidla — a kde oprava není úklid, ale rozhodnutí. <b>Menu má písmo 12 px</b>, přestože pod 14 px nechodíme; je to nejdůležitější ovládání webu. A <b>záložky v detailu zákona ujíždějí do strany</b>: u kauz jsme to vyřešili krátkými popisky, u zákonů ne, takže stejná součást se chová dvojím způsobem.',
+    'Ani jedno se nedá opravit zadarmo. Čtyři položky menu se ve 14 px vedle značky na jeden řádek nevejdou, takže menu buď dostane vlastní řádek, nebo se přestěhuje, nebo se schová. Zákon má až sedm záložek, takže ani krátké popisky se nemusí vejít.',
+    '<b>Každá varianta je vyfocená na víc obrazovkách pod sebou</b> — na úvodu, na zákonech a na nejužším displeji, u záložek na zákoně se šesti i s pěti záložkami. Vybírej podle té nejhorší, ne podle té, na které to vyšlo.',
+    '<b>Co to není:</b> nic z toho neubírá obsah ani odkazy. Liší se jen tím, kde ovládání stojí, jak je velké a kolik místa bere.',
   ],
 };
 
+const UVOD = { cesta: '/', popis: 'Úvod · 390 × 844' };
+const ZAKONY = { cesta: '/pravidla/', popis: 'Zákony (aktivní položka je tučná, tedy nejširší) · 390', orez: 300 };
+const UZKY = { cesta: '/', popis: 'Úvod na nejužším displeji · 320', okno: { width: 320, height: 568 }, orez: 300 };
+
+const ZAKON_6 = { cesta: '/pravidla/novela-stretu-zajmu-2026/', popis: 'Zákon se šesti záložkami · 390', orez: 460 };
+const ZAKON_5 = { cesta: '/pravidla/pgrlf-pojisteni-velke-podniky/', popis: 'Zákon s pěti záložkami · 390', orez: 460 };
+const ZAKON_UZKY = { cesta: '/pravidla/novela-stretu-zajmu-2026/', popis: 'Šest záložek na nejužším displeji · 320', okno: { width: 320, height: 568 }, orez: 460 };
+
 const DILY = [
-  { skupina: 'Chronologie', popis: 'Bez osy se událostmi prochází jen tlačítky „předchozí“ a „další“. Dlouhá kauza má třicet událostí.' },
+  { skupina: 'Menu', popis: 'Kauzy · Zákony · Metodika · O projektu. Dnes stojí vedle značky na jednom řádku a aby se tam vešly, mají písmo 12 px.' },
 
-  { id: 'kde', nazev: 'Kde stojí listování', otazka: 'Kam na displeji patří tlačítka předchozí / další?', doporuceni: 'C',
-    cesta: '/kauzy/capi-hnizdo/', priprav: NA_CHRONOLOGII, mer: MER_LISTOVANI, varianty: [
-    { k: 'A', nazev: 'Pod událostí', stitek: 'dnešní stav',
-      myslenka: 'Tlačítka jsou za textem události: přečteš ji a pokračuješ dál.',
-      ano: ['Přirozené pořadí čtení', 'Nic nepřekrývá obsah'],
-      ne: ['U delší události sjedou pod okraj displeje a musí se k nim dorolovat', 'Poloha se mění podle délky textu, palec je pokaždé jinde'],
-      znacky: [{ sel: '.listovani', typ: 'spatne', text: 'Poloha závisí na délce textu události' }] },
-    { k: 'B', nazev: 'Nad událostí', stitek: 'hned pod záložkami',
-      myslenka: 'Tlačítka jsou první věc v záložce, vždy na stejném místě.',
-      ano: ['Vždy vidět bez posunutí', 'Stálá poloha'],
-      ne: ['Nahoře je to palci nejdál — telefon držený jednou rukou tam nedosáhne', 'Ovládání stojí před obsahem, o který jde'],
-      css: `@media (max-width:760px){ html.js body .m2-panel[data-p="chrono"]:not([hidden]) { display:flex; flex-direction:column; }
-        html.js body .m2-panel[data-p="chrono"] .listovani { order:-1; margin:0 0 16px; padding:0 0 14px; border-top:0; border-bottom:1px dashed var(--linka); } }`,
-      znacky: [{ sel: '.listovani', typ: 'presun', text: 'Přesunuto nahoru, nad událost' }] },
-    { k: 'C', nazev: 'Přilepené dole', stitek: 'doporučuji',
-      myslenka: 'Tlačítka drží u spodního okraje displeje, ať je událost jakkoli dlouhá.',
-      ano: ['Přesně v dosahu palce', 'Vždy vidět a vždy na stejném místě', 'Dá se listovat rychle za sebou bez hledání'],
-      ne: ['Natrvalo ubere z displeje 77 px', 'Název sousední události se v liště musí zkrátit na jeden řádek, jinak by lišta měla přes 110 px', 'Pod událostí musí zůstat volné místo, aby lišta nepřekryla konec textu'],
-      css: `@media (max-width:760px){ html.js body .m2-panel[data-p="chrono"] .listovani { position:fixed; left:0; right:0; bottom:0; z-index:6; margin:0; padding:10px 18px; background:var(--plocha); border-top:1px solid var(--inkoust); }
-        html.js body .m2-panel[data-p="chrono"] .listovani button { min-width:0; }
-        html.js body .m2-panel[data-p="chrono"] .listovani button span { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        html.js body .m2-panel[data-p="chrono"]:not([hidden]) { padding-bottom:96px; } }`,
-      znacky: [{ sel: '.listovani', typ: 'dobre', text: 'U palce, vždy na stejném místě' }] },
+  { id: 'menu', nazev: 'Kde a jak velké je menu', otazka: 'Čím zaplatit za čitelné menu?', doporuceni: 'B',
+    pohledy: [UVOD, ZAKONY, UZKY], mer: MER_MENU, varianty: [
+    { k: 'A', nazev: 'Jeden řádek se značkou', stitek: 'dnešní stav',
+      myslenka: 'Značka vlevo, čtyři položky vpravo, všechno na jednom řádku.',
+      ano: ['Nejúspornější na výšku', 'Všechny položky jsou vidět hned'],
+      ne: ['Písmo menu má 12 px — pod hranicí 14 px, kterou jinde držíme', 'Na nejužším displeji se hlavička už dnes láme na dva řádky (105 px) a písmo má pořád 12 px', 'Není kam přidat pátou položku'],
+      znacky: [{ sel: '.top nav', typ: 'spatne', text: 'Písmo 12 px, pod naší hranicí 14 px', kde: 'pod' }] },
+    { k: 'B', nazev: 'Dva řádky: značka a pod ní menu', stitek: 'doporučuji',
+      myslenka: 'Značka dostane vlastní řádek v plné velikosti, menu se pod ní roztáhne přes celou šířku.',
+      ano: ['Písmo 15 px, pohodlně čitelné', 'Na nejužším displeji vyjde stejně vysoká jako dnešní stav (104 proti 105 px) — tam se hlavička láme už teď', 'Značka je zase v plné velikosti a nic se neschovává ani nepřilepuje', 'Stejná hlavička na všech šířkách telefonu'],
+      ne: ['Na běžném telefonu je hlavička o 25 px vyšší (79 → 104 px) a o tolik níž začíná obsah', 'Menu odjede s obsahem jako dnes — z konce stránky se k němu musí nahoru'],
+      css: `@media (max-width:760px){
+        body .top, body .top.top-4 { row-gap: 0; padding-bottom: 0; }
+        body .top .hlavicka-znacka { flex: 1 0 100%; }
+        body .top .brand, body .top.top-4 .brand { font-size: 18px; padding-block: 6px 2px; }
+        body .top .brand::before, body .top.top-4 .brand::before { width: 10px; margin-right: 10px; }
+        body .top nav, body .top.top-4 nav { flex: 1 0 100%; display: flex; justify-content: space-between; margin: 0 -6px; }
+        body .top nav a, body .top.top-4 nav a, body .top nav a:first-child { font-size: 15px; margin-left: 0; padding-inline: 6px; }
+      }`,
+      znacky: [{ sel: '.top nav', typ: 'dobre', text: 'Vlastní řádek, písmo 15 px', kde: 'pod' }] },
+    { k: 'C', nazev: 'Menu jako lišta dole', stitek: 'u palce',
+      myslenka: 'Nahoře zůstane jen značka, čtyři položky drží u spodního okraje displeje, ať je čtenář kdekoli.',
+      ano: ['V dosahu palce a vždy po ruce, i na konci dlouhé stránky', 'Písmo 14 px a každá položka má čtvrtinu šířky', 'Obsah začíná jen o 6 px níž než dnes'],
+      ne: ['Trvale ubere z displeje 59 px (7 %) — na každé stránce', 'Vypadá jako aplikace; web o kauzách tím mění charakter', 'Detail kauzy už dole lištu má (listování). Nepotkají se, detail lištu menu překryje, ale jsou to dvě různé spodní lišty na jednom webu'],
+      css: `@media (max-width:760px){
+        body .top nav, body .top.top-4 nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex; margin: 0;
+          padding: 4px 8px calc(4px + env(safe-area-inset-bottom, 0px)); background: var(--plocha); border-top: 1px solid var(--inkoust); }
+        body .top nav a, body .top.top-4 nav a, body .top nav a:first-child { flex: 1 1 0; text-align: center; font-size: 14px; margin: 0; padding: 14px 4px; }
+        body .top .brand, body .top.top-4 .brand { font-size: 18px; }
+        body .top .brand::before, body .top.top-4 .brand::before { width: 10px; margin-right: 10px; }
+        body #obsah { padding-bottom: 60px; }
+      }`,
+      znacky: [{ sel: '.top nav', typ: 'presun', text: 'Menu přesunuté dolů, k palci' }] },
+    { k: 'D', nazev: 'Menu pod tlačítkem', stitek: 'schované',
+      myslenka: 'Nahoře značka a tlačítko „Menu“; položky se ukážou až po klepnutí.',
+      ano: ['Hlavička je nízká a klidná', 'Položek může být kolik chce'],
+      ne: ['Čtenář nevidí, co web nabízí, dokud neklepne — o Zákonech a Metodice se nedozví', 'Každý přechod mezi oddíly stojí klepnutí navíc', 'Schované menu se podle výzkumu NN/g používá míň a hůř se v něm hledá', 'Čtyři položky nejsou tolik, aby se musely schovávat'],
+      css: `@media (max-width:760px){
+        body .top nav, body .top.top-4 nav { display: none; }
+        body .top .brand, body .top.top-4 .brand { font-size: 18px; }
+        body .top .brand::before, body .top.top-4 .brand::before { width: 10px; margin-right: 10px; }
+        .nahled-menu { min-height: 44px; padding: 0 14px; border: 1px solid var(--inkoust); background: var(--plocha); font: 600 14px var(--f-text); color: var(--inkoust); }
+      }`,
+      uprav: () => { const b = document.createElement('button'); b.className = 'nahled-menu'; b.textContent = 'Menu'; document.querySelector('.top').append(b); },
+      znacky: [{ sel: '.nahled-menu', typ: 'spatne', text: 'Čtyři oddíly schované za klepnutím' }] },
   ] },
 
-  { id: 'skok', nazev: 'Cesta k události uprostřed', otazka: 'Jak se dostat na patnáctou událost z třiceti?', doporuceni: 'B',
-    cesta: '/kauzy/capi-hnizdo/', priprav: NA_CHRONOLOGII, varianty: [
-    { k: 'A', nazev: 'Jen krok po kroku', stitek: 'dnešní stav',
-      myslenka: 'Listuje se po jedné. Jiná cesta není.',
-      ano: ['Nejjednodušší, nic nového'],
-      ne: ['K události uprostřed je to patnáct klepnutí', 'Čtenář nevidí, co v kauze vůbec je, dokud to neprolistuje'],
-      mer: merSkok('N'),
-      znacky: [{ sel: '.listovani', typ: 'spatne', text: 'Jediná cesta: 15 klepnutí doprostřed' }] },
-    { k: 'B', nazev: 'Přehled všech událostí', stitek: 'doporučuji',
-      myslenka: 'Pod listováním je odkaz „všechny události“. Rozbalí seznam dat a názvů, klepnutím se skočí.',
-      ano: ['Dvě klepnutí kamkoli', 'Čtenář vidí celý průběh kauzy naráz, což osa dřív naznačovala', 'Listování zůstává pro ty, kdo čtou postupně'],
-      ne: ['Seznam třiceti položek je sám dlouhý', 'Jedno ovládání navíc'],
-      mer: merSkok('2'),
-      uprav: () => {
-        document.querySelector('.zalozky [data-p="chrono"]')?.click();
-        const l = document.querySelector('.listovani');
-        const obal = document.createElement('div');
-        obal.className = 'nahled-prehled';
-        obal.style.cssText = 'margin-top:14px;border-top:1px dashed var(--linka);padding-top:10px';
-        const polozky = [...document.querySelectorAll('.udalosti-seznam > li')].map(li => {
-          const d = li.querySelector('time')?.firstChild?.textContent?.trim() ?? '';
-          const n = li.querySelector('h3')?.textContent?.trim() ?? '';
-          return `<li style="display:flex;gap:10px;min-height:44px;align-items:center;border-bottom:1px solid var(--linka);font-size:14px"><span style="flex:none;width:84px;font:600 12px var(--f-mono);color:var(--meta)">${d}</span><span>${n}</span></li>`;
-        });
-        obal.innerHTML = `<div style="font:italic 14px var(--f-text);color:var(--modra);text-decoration:underline;min-height:44px;display:flex;align-items:center">skrýt přehled událostí (${polozky.length})</div><ol style="list-style:none;margin:0;padding:0">${polozky.join('')}</ol>`;
-        l.after(obal);
-        obal.scrollIntoView({ block: 'start' });
-        document.querySelector('dialog#detail').scrollTop -= 250;
-      },
-      znacky: [{ sel: '.nahled-prehled', typ: 'dobre', text: 'Celý průběh naráz, klepnutím se skočí' }] },
-    { k: 'C', nazev: 'Všechny události pod sebou', stitek: 'bez listování',
-      myslenka: 'Žádné tlačítko: události jsou pod sebou jako článek a roluje se.',
-      ano: ['Žádné ovládání, nejpřirozenější pohyb na telefonu', 'Dá se hledat očima'],
-      ne: ['Chronologie Čapího hnízda má skoro 11 obrazovek', 'Jednotlivá událost ztratí váhu, splyne v dlouhém textu', 'Odkaz na konkrétní událost musí umět odrolovat'],
-      mer: merSkok('0, roluje se'),
-      css: `@media (max-width:760px){ html.js body .udalosti-seznam > li[hidden] { display:block; } html.js body .udalosti-seznam > li { padding-bottom:18px; margin-bottom:18px; border-bottom:1px solid var(--linka); }
-        html.js body .m2-panel[data-p="chrono"] .listovani { display:none; } }`,
-      znacky: [{ sel: '.udalosti-seznam > li:nth-child(2)', typ: 'presun', text: 'Další událost hned pod první' }] },
-  ] },
+  { skupina: 'Záložky v detailu zákona', popis: 'Zákon má pět až sedm záložek s dlouhými názvy. U kauz se jich pět vejde díky krátkým popiskům (Proč · Kdy · Vazby · Stav · Zdroje); zákony je dosud nemají.' },
 
-  { id: 'start', nazev: 'Kterou událostí se začíná', otazka: 'Co čtenář uvidí, když záložku otevře?', doporuceni: 'A',
-    cesta: '/kauzy/capi-hnizdo/', priprav: NA_CHRONOLOGII, varianty: [
-    { k: 'A', nazev: 'Poslední událostí', stitek: 'dnešní stav · doporučuji',
-      myslenka: 'Otevře se to nejčerstvější: kam kauza dospěla.',
-      ano: ['Odpovídá na první otázku čtenáře — jak to dopadlo', 'Kdo se vrací, vidí hned, co je nového'],
-      ne: ['Kdo kauzu nezná, začíná od konce a listuje pozpátku'],
-      mer: `() => ({ 'první vidět': document.querySelector('.udalosti-seznam > li:not([hidden]) time small')?.textContent ?? '' })`,
-      znacky: [{ sel: '.udalosti-seznam > li:not([hidden]) time', typ: 'dobre', text: 'Nejnovější: kam kauza dospěla' }] },
-    { k: 'B', nazev: 'První událostí', stitek: 'od začátku',
-      myslenka: 'Otevře se začátek a čte se popořadě.',
-      ano: ['Přirozené pro toho, kdo kauzu čte poprvé'],
-      ne: ['K dnešnímu stavu je to u Čapího hnízda 29 klepnutí', 'Nejdůležitější zpráva je nejdál'],
-      mer: `() => ({ 'první vidět': document.querySelector('.udalosti-seznam > li:not([hidden]) time small')?.textContent ?? '' })`,
-      uprav: () => {
-        document.querySelector('.zalozky [data-p="chrono"]')?.click();
-        const zpet = document.querySelector('.listovani [data-krok="-1"]');
-        for (let i = 0; i < 60 && zpet && !zpet.disabled; i++) zpet.click();
-      },
-      znacky: [{ sel: '.udalosti-seznam > li:not([hidden]) time', typ: 'presun', text: 'Začíná se rokem 2007' }] },
-    { k: 'C', nazev: 'Poslední, s odkazem na začátek', stitek: 'obojí',
-      myslenka: 'Otevře se nejnovější, ale u pořadí je odkaz „od začátku“.',
-      ano: ['Čerstvé hned, začátek na jedno klepnutí'],
-      ne: ['Další drobné ovládání u každé události'],
-      mer: `() => ({ 'první vidět': document.querySelector('.udalosti-seznam > li:not([hidden]) time small')?.firstChild?.textContent ?? '' })`,
-      uprav: () => {
-        document.querySelector('.zalozky [data-p="chrono"]')?.click();
-        const s = document.querySelector('.udalosti-seznam > li:not([hidden]) time small');
-        if (s) s.insertAdjacentHTML('beforeend', ' · <span class="nahled-zacatek" style="color:var(--modra);text-decoration:underline;font-style:italic">od začátku</span>');
-      },
-      znacky: [{ sel: '.nahled-zacatek', typ: 'dobre', text: 'Začátek na jedno klepnutí' }] },
-  ] },
-
-  { skupina: 'Hlavička detailu', popis: 'Nad textem kauzy stojí název, shrnutí a částky. Po zvětšení dotykových cílů na 44 px tu dva rozbalovací odkazy berou každý vlastní řádek.' },
-
-  { id: 'castky', nazev: 'Rozbalení částek', otazka: 'Čím se otevírají popisy částek?', doporuceni: 'C',
-    cesta: '/kauzy/capi-hnizdo/', mer: MER_HLAVICKA, varianty: [
-    // Čísla „na 21 kauzách“ v textech jsou změřená zvlášť přes všechny kauzy s částkami,
-    // tabulka pod snímkem je jen z Čapího hnízda.
-    { k: 'A', nazev: 'Textový odkaz', stitek: 'dnešní stav',
-      myslenka: '„K čemu částky jsou“ je slovy psaný odkaz v seznamu částek.',
-      ano: ['Říká slovy, co se stane'],
-      ne: ['Na řádek s částkami se vejde jen u 5 kauz z 21, jinde bere vlastních 44 px', 'Seznam částek má na 21 kauzách průměrně 77 px'],
-      znacky: [{ sel: '.castky-vice', typ: 'spatne', text: 'Nevešel se na řádek, stojí 44 px' }] },
-    { k: 'B', nazev: 'Šipka jako tlačítko', stitek: 'jen znak',
-      myslenka: 'Místo slov čtvercové tlačítko se šipkou za poslední částkou; částky o stupeň menší.',
-      ano: ['Na jeden řádek se vejde u 12 kauz z 21', 'Tlačítko vypadá jako tlačítko, je jasné, kam klepnout'],
-      ne: ['Průměr 56 px — u dlouhých částek se tlačítko stejně zalomí pod ně', 'Šipka sama neříká, co otevírá', 'Částky se zmenší z 18 na 16 px', 'Bez zalamování by u jedné kauzy přeteklo o 7 px do strany — zkoušeno'],
-      css: `@media (max-width:760px){ html.js body .m2-hlava .castky { gap:4px 10px; align-items:center; }
-        html.js body .m2-hlava .castky strong { font-size:16px; }
-        html.js body .m2-hlava .castky .castky-ovladani { margin-left:auto; }
-        html.js body .m2-hlava .castky .castky-vice { font-size:0; width:44px; min-height:44px; justify-content:center; text-decoration:none; border:1px solid var(--linka); }
-        html.js body .m2-hlava .castky .castky-vice::after { content:"▾"; font:400 20px/1 var(--f-text); color:var(--modra); } }`,
-      znacky: [{ sel: '.castky-vice', typ: 'presun', text: 'Tlačítko se šipkou místo slov' }] },
-    { k: 'C', nazev: 'Řádek částek je tlačítko', stitek: 'doporučuji',
-      myslenka: 'Klepne se rovnou na částky. Že jdou rozbalit, naznačí malá šipka za nimi.',
-      ano: ['Nejúspornější: průměr 49 px, na jeden řádek se vejde u 13 kauz z 21', 'Terč je celý řádek, ne úzké slovo', 'Částky zůstanou ve stejné velikosti'],
-      ne: ['Když jsou dvě částky dlouhé, šipka se zalomí pod ně (tady: 50 px místo 44)', 'Že je řádek klepací, říká jen šipka — objevitelnost je slabší než u slov', 'Čísla zdrojů u částek jsou klepací až po rozbalení'],
-      css: `@media (max-width:760px){ html.js body .m2-hlava .castky .castky-ovladani { display:none; }
-        html.js body .m2-hlava .castky { min-height:44px; align-items:center; cursor:pointer; }
-        html.js body .m2-hlava .castky::after { content:"▾"; margin-left:auto; font:400 18px/1 var(--f-text); color:var(--modra); } }`,
-      znacky: [{ sel: '.castky', typ: 'dobre', text: 'Celý řádek je terč' }] },
-  ] },
-
-  { id: 'shrnuti', nazev: 'Shrnutí v hlavičce', otazka: 'Kolik ze shrnutí kauzy je vidět hned?', doporuceni: 'A',
-    cesta: '/kauzy/capi-hnizdo/', mer: MER_HLAVICKA, varianty: [
-    { k: 'A', nazev: 'Tři řádky a odkaz', stitek: 'dnešní stav · doporučuji',
-      myslenka: 'Tři řádky shrnutí, třetí se vytrácí, pod ním „celé shrnutí“.',
-      ano: ['Čtenář pozná, o co jde, a vejde se toho dost', 'Vyzkoušený kompromis'],
-      ne: ['Odkaz „celé shrnutí“ bere vlastních 44 px'],
-      znacky: [{ sel: '.perex-vice', typ: 'spatne', text: 'Odkaz na vlastním řádku, 44 px' }] },
-    { k: 'B', nazev: 'Dva řádky a odkaz', stitek: 'úspornější',
-      myslenka: 'O řádek míň, jinak stejné.',
-      ano: ['Obsah začíná o 21 px výš'],
-      ne: ['Druhý řádek se už vytrácí, takže čitelný zbyde prakticky jeden', 'Ani tři řádky u Čapího hnízda nedojdou na konec první věty; dva tím spíš'],
-      css: `@media (max-width:760px){ body .m2-hlava .perex { max-height:3em; } }`,
-      znacky: [{ sel: '.perex', typ: 'spatne', text: 'Čitelný zbyde jeden řádek' }] },
-    { k: 'C', nazev: 'Celé shrnutí rovnou', stitek: 'bez rozbalování',
-      myslenka: 'Shrnutí je vidět celé, odkaz odpadá.',
-      ano: ['Nic se neschovává, jedno ovládání míň', 'Shrnutí je to nejdůležitější, co hlavička nese'],
-      ne: ['U delšího shrnutí naroste obal nad obsahem o desítky pixelů', 'Hlavičky kauz budou různě vysoké'],
-      css: `@media (max-width:760px){ body .m2-hlava .perex { max-height:none !important; overflow:visible; mask-image:none !important; -webkit-mask-image:none !important; } body .m2-hlava .perex-vice { display:none !important; } }`,
-      znacky: [{ sel: '.perex', typ: 'dobre', text: 'Celé shrnutí, žádný odkaz' }] },
+  { id: 'zalozky', nazev: 'Záložky zákona', otazka: 'Jak dostat všechny záložky do obrazu?', doporuceni: 'D',
+    pohledy: [ZAKON_6, ZAKON_5, ZAKON_UZKY], mer: MER_ZALOZKY, varianty: [
+    { k: 'A', nazev: 'Dlouhé názvy, lišta se posouvá', stitek: 'dnešní stav',
+      myslenka: 'Plné názvy v jednom řádku; co se nevejde, je za okrajem a lišta se posouvá prstem.',
+      ano: ['Názvy říkají přesně, co v záložce je'],
+      ne: ['Ze šesti záložek jsou dvě úplně mimo obraz a třetí uříznutá — mezi nimi Zdroje, to nejdůležitější pro důvěru webu', 'Baymard naměřil, že obsah v posuvných záložkách přehlédne 27 % lidí', 'Kauzy se chovají jinak: tam se všech pět záložek vejde'],
+      znacky: [{ sel: '.zalozky [role="tab"]:nth-child(4)', typ: 'spatne', text: 'Uříznuto; další záložky jsou mimo obraz' }] },
+    { k: 'B', nazev: 'Krátké popisky, jeden řádek', stitek: 'jako u kauz',
+      myslenka: 'Prospěch · Průběh · Hlasy · Výhrady · Vazby · Zdroje. Stejný postup, jaký už mají kauzy.',
+      ano: ['Stejné řešení jako u kauz, žádný nový prvek', 'Lišta zůstává 44 px vysoká'],
+      ne: ['Nevejde se ani zákon s pěti záložkami: poslední (Zdroje) je uříznutá. Popisky zákona jsou delší než u kauz — Prospěch, Průběh, Výhrady proti Proč, Kdy, Stav', 'U šesti záložek je jedna mimo obraz úplně, na nejužším displeji dvě', '„Prospěch“ a „Hlasy“ jsou chudší než „Komu prospívá“ a „Hlasování“'],
+      uprav: KRATKE_ZALOZKY,
+      znacky: [{ sel: '.zalozky [role="tab"]:last-child', typ: 'spatne', text: 'Zdroje pořád nejsou celé vidět' }] },
+    { k: 'C', nazev: 'Plné názvy, lišta se zalomí', stitek: 'nic se nekrátí',
+      myslenka: 'Lišta se neposouvá, záložky se zalomí na další řádky.',
+      ano: ['Všechny záložky jsou vidět a s plným názvem', 'Žádné posouvání do strany'],
+      ne: ['Vyjdou tři řádky: lišta má 132 px a je přilepená nahoře, takže je bere z displeje trvale', 'Na nejužším displeji čtyři řádky, 176 px — skoro třetina displeje', 'Zalomené záložky nedrží tvar „karet na lince“'],
+      css: `@media (max-width:760px){ html body dialog.m2 .zalozky { flex-wrap: wrap; overflow: visible; mask-image: none; -webkit-mask-image: none; row-gap: 0; } }`,
+      znacky: [{ sel: '.zalozky', typ: 'presun', text: 'Záložky zalomené na další řádek' }] },
+    { k: 'D', nazev: 'Krátké popisky ve dvou řádcích', stitek: 'doporučuji',
+      myslenka: 'Krátké popisky jako u kauz, a co se nevejde, zalomí se na druhý řádek, místo aby ujelo.',
+      ano: ['Žádná záložka není mimo obraz ani uříznutá — na žádném ze tří displejů', 'Vždy právě dva řádky, 88 px: stejně u pěti i šesti záložek, stejně na nejužším displeji', 'Z variant, kde je vidět všechno, bere nejmíň místa (C má 132 až 176 px)'],
+      ne: ['Lišta má 88 px místo 44 a je přilepená nahoře: trvale bere 10 % displeje', 'Dva řádky vyjdou i u zákona s pěti záložkami — do jednoho se vedle zavíracího křížku nevejdou', 'Zákon a kauza se dál liší (dva řádky proti jednomu)', 'Krátké popisky jsou chudší než plné názvy a zalomený řádek není tak čistý jako jedna řada karet'],
+      css: `@media (max-width:760px){ html body dialog.m2 .zalozky { flex-wrap: wrap; overflow: visible; mask-image: none; -webkit-mask-image: none; row-gap: 0; } }`,
+      uprav: KRATKE_ZALOZKY,
+      znacky: [{ sel: '.zalozky', typ: 'dobre', text: 'Všechny záložky v obraze' }] },
   ] },
 ];
 
@@ -265,7 +214,7 @@ const OZNAC = (znacky) => {
       vrstva.append(ram);
       const popisek = document.createElement('div');
       popisek.textContent = `${z.typ === 'dobre' ? '✓' : z.typ === 'presun' ? '→' : '✕'} ${z.text}`;
-      const nahore = top > 34;
+      const nahore = z.kde !== 'pod' && top > 34;
       popisek.style.cssText = `position:fixed;left:${Math.max(4, Math.min(r.left, okno - 290))}px;`
         + `top:${nahore ? top - 29 : Math.min(vyska - 30, bottom + 5)}px;max-width:${okno - 12}px;`
         + `background:${barva};color:#fff;font:700 12.5px/1.25 system-ui,sans-serif;padding:5px 8px;`
@@ -291,23 +240,33 @@ async function pockejNaServer(pokusu = 40) {
   throw new Error('server nenaběhl');
 }
 
+/** Vyfotí variantu na všech pohledech dílu (jedna obrazovka, nebo víc pod sebou). */
 async function vyfotVariantu(prohlizec, dil, v) {
-  const ctx = await prohlizec.newContext({ ...devices['Pixel 5'], viewport: TELEFON, reducedMotion: 'reduce', deviceScaleFactor: 2 });
-  const page = await ctx.newPage();
-  await page.goto(ADRESA + dil.cesta, { waitUntil: 'load' });
-  await page.evaluate(() => document.fonts.ready);
-  if (dil.priprav) await page.evaluate(dil.priprav);
-  if (v.css) await page.addStyleTag({ content: v.css });
-  if (v.uprav) await page.evaluate(v.uprav);
-  await page.waitForTimeout(400);
-  const mer = v.mer ?? dil.mer;
-  const cisla = mer ? await page.evaluate(fn(mer)) : {};
-  if (v.znacky?.length) await page.evaluate(OZNAC, v.znacky);
-  const soubor = `dil-${dil.id}-${v.k}.png`;
-  const cil = dil.vyrez ? page.locator(dil.vyrez).first() : page;
-  await cil.screenshot({ path: path.join(SLOZKA, soubor), animations: 'disabled' });
-  await ctx.close();
-  return { soubor, cisla };
+  const pohledy = dil.pohledy ?? [{ cesta: dil.cesta, popis: '' }];
+  const vysledky = [];
+  for (const [i, pohled] of pohledy.entries()) {
+    const okno = pohled.okno ?? TELEFON;
+    const ctx = await prohlizec.newContext({ ...devices['Pixel 5'], viewport: okno, reducedMotion: 'reduce', deviceScaleFactor: 2 });
+    const page = await ctx.newPage();
+    await page.goto(ADRESA + pohled.cesta, { waitUntil: 'load' });
+    await page.evaluate(() => document.fonts.ready);
+    const priprav = pohled.priprav ?? dil.priprav;
+    if (priprav) await page.evaluate(priprav);
+    if (v.css) await page.addStyleTag({ content: v.css });
+    if (v.uprav) await page.evaluate(v.uprav);
+    await page.waitForTimeout(400);
+    const mer = v.mer ?? dil.mer;
+    const cisla = mer ? await page.evaluate(fn(mer)) : {};
+    if (v.znacky?.length) await page.evaluate(OZNAC, v.znacky);
+    const soubor = `dil-${dil.id}-${v.k}${pohledy.length > 1 ? '-' + (i + 1) : ''}.png`;
+    const moznosti = { path: path.join(SLOZKA, soubor), animations: 'disabled' };
+    if (pohled.orez && !dil.vyrez) moznosti.clip = { x: 0, y: 0, width: okno.width, height: Math.min(okno.height, pohled.orez) };
+    const cil = dil.vyrez ? page.locator(dil.vyrez).first() : page;
+    await cil.screenshot(moznosti);
+    await ctx.close();
+    vysledky.push({ soubor, cisla, popis: pohled.popis ?? '', sirka: okno.width });
+  }
+  return vysledky;
 }
 
 let server;
@@ -327,14 +286,20 @@ try {
     if (d.skupina) { casti.push(`<div class="skupina"><h2>${esc(d.skupina)}</h2><p>${esc(d.popis)}</p></div>`); continue; }
     const sloupce = [];
     for (const v of d.varianty) {
-      const { soubor, cisla } = await vyfotVariantu(prohlizec, d, v);
-      console.log(`  ${d.id}/${v.k} ${v.nazev}: ${Object.entries(cisla).map(([k, h]) => `${k} ${h}`).join(' · ')}`);
-      const mereni = Object.entries(cisla).map(([k, h]) => `<tr><th>${esc(k)}</th><td>${esc(h)}</td></tr>`).join('');
+      const pohledy = await vyfotVariantu(prohlizec, d, v);
+      for (const ph of pohledy) console.log(`  ${d.id}/${v.k} ${v.nazev}${ph.popis ? ' [' + ph.popis + ']' : ''}: ${Object.entries(ph.cisla).map(([k, h]) => `${k} ${h}`).join(' · ')}`);
+      const obrazky = pohledy.map(ph => {
+        const mereni = Object.entries(ph.cisla).map(([k, h]) => `<tr><th>${esc(k)}</th><td>${esc(h)}</td></tr>`).join('');
+        return `<figure class="pohled">
+          ${ph.popis ? `<figcaption>${esc(ph.popis)}</figcaption>` : ''}
+          <a class="nahled" href="${ph.soubor}" target="_blank" style="max-width:${Math.round(300 * ph.sirka / TELEFON.width)}px"><img src="${ph.soubor}" alt="Varianta ${v.k}: ${esc(v.nazev)}${ph.popis ? ' — ' + esc(ph.popis) : ''}" loading="lazy"></a>
+          ${mereni ? `<table class="mereni"><caption>Změřeno</caption>${mereni}</table>` : ''}
+        </figure>`;
+      }).join('\n');
       sloupce.push(`<div class="sloupec" data-dil="${d.id}" data-v="${v.k}">
         <div class="sl-hlava"><span class="pismeno">${v.k}</span><span class="jmeno">${esc(v.nazev)}<span class="stitek${v.k === d.doporuceni ? ' dop' : ''}">${esc(v.stitek)}</span></span></div>
-        <a class="nahled" href="${soubor}" target="_blank"><img src="${soubor}" alt="Varianta ${v.k}: ${esc(v.nazev)}" loading="lazy"></a>
-        ${mereni ? `<table class="mereni"><caption>Změřeno</caption>${mereni}</table>` : ''}
         <p class="myslenka">${esc(v.myslenka)}</p>
+        ${obrazky}
         ${v.ano?.length ? `<div><span class="lab">Proč ano</span><ul>${v.ano.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : ''}
         ${v.ne?.length ? `<div><span class="lab">Proč ne</span><ul>${v.ne.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : ''}
         <label class="chci"><input type="checkbox" data-dil="${d.id}" data-v="${v.k}"> Tuhle chci</label>
@@ -389,6 +354,8 @@ body{margin:0;font:400 15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;co
 .stitek.dop{color:var(--ano);font-weight:600}
 .nahled{display:block;border-radius:10px;overflow:hidden;border:1px solid var(--linka);background:#fff;align-self:center;max-width:300px;width:100%}
 .nahled img{display:block;width:100%;height:auto}
+.pohled{margin:0;display:flex;flex-direction:column;gap:6px}
+.pohled figcaption{font-size:11.5px;font-weight:600;color:var(--ink2);border-top:1px solid var(--linka2);padding-top:8px}
 .mereni{width:100%;border-collapse:collapse;font-size:12px}
 .mereni caption{text-align:left;font-size:11.5px;color:var(--ink2);padding-bottom:2px}
 .mereni th{text-align:left;font-weight:400;color:var(--ink2);padding:3px 6px 3px 0;border-top:1px solid var(--linka2)}
@@ -424,7 +391,7 @@ body{margin:0;font:400 15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;co
     <ol>
       <li>U každého dílu zaškrtni <b>„Tuhle chci“</b>. Můžeš zaškrtnout víc variant a do poznámky napsat, jak je spojit.</li>
       <li>Díl, na kterém ti nezáleží, nech prázdný; vezmu variantu označenou <b>doporučuji</b>.</li>
-      <li>Co která varianta stojí, je v <b>„Proč ne“</b>. Čísla pod snímkem jsou změřená na téhle kauze.</li>
+      <li>Co která varianta stojí, je v <b>„Proč ne“</b>. Čísla pod každým snímkem jsou změřená na té obrazovce, kterou snímek ukazuje.</li>
       <li>Volba se ukládá v prohlížeči. Nakonec dole <b>Zkopírovat volbu</b> a vlož mi ji do chatu, nebo <b>Stáhnout volbu</b>.</li>
     </ol>
   </section>

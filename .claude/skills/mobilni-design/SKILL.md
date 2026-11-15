@@ -23,6 +23,9 @@ je jedna otázka („Kde stojí listování?“) — a u každého dej vedle seb
 změřenými čísly a seznamy „Proč ano“ / „Proč ne“. Jednu označ „doporučuji“ a řekni proč.
 **Pak se zastav a počkej na výběr.** Teprve pak se staví. Formát je převzatý z Akcionu
 (`docs/design/modely-vedle-marka-atomy.html`) a dělá ho `nastroje/dily.mjs`.
+**Variantu ukazuj na víc obrazovkách pod sebou** (`pohledy` v nastavení dílu): na dvou různých
+stránkách a na nejužším displeji. Na jedné obrazovce vyjde skoro cokoli — krátké popisky záložek
+zákona vypadaly na papíře jako hotová věc, dokud je druhý pohled neukázal uříznuté i u pěti záložek.
 
 **4. Nepředkládej variantu, jejíž snímek a číslo jsi neviděl.** Náhled je CSS nasazené na živou
 stránku a rád udělá něco jiného, než si myslíš. Za jediný den to chytilo šest návrhů:
