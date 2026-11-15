@@ -507,3 +507,43 @@ body .radek[data-shoda-v-textu] .nazev small::after { content: " · shoda v text
   body .perex-vice { padding-block: 4px; }
   body .v4-karta button, body .v4-karta a { padding-block: 4px; }
 }
+
+/* ===== Hlavička detailu a filtry na telefonu: míň obalu nad obsahem =====
+   Nad vlastním textem kauzy stálo 518 z 844 px (61 % displeje), na úvodní stránce 417 px.
+   Nic se nemaže, jen se to přestává ukazovat všechno naráz. Na počítači se nemění nic. */
+
+/* Krátký tvar popisku záložky (jako menu-kratky v hlavičce) — na počítači se nepoužije. */
+.zal-kratky { display: none; }
+
+/* „k čemu částky jsou“ vypadá a chová se jako „celé shrnutí“ nad ním. */
+body .castky-vice { display: inline-block; margin: 6px 0 0; padding: 4px 0; border: 0; background: none; font: italic 14px var(--f-text); color: var(--modra); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+body .castky-vice[hidden] { display: none; }
+
+/* „Upřesnit výběr“ je na místě věty dalších filtrů (stejné order, proto drží svůj řádek). */
+body .f-upresnit { display: none; flex: 1 0 100%; order: 5; margin: 0; padding: 4px 0; min-height: 24px; border: 0; background: none; text-align: left; font: 600 14px var(--f-text); color: var(--modra); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+@media (max-width: 760px) {
+  /* Částky: zůstane číslo s druhem, popisy a čísla zdrojů otevře tlačítko. Bez JavaScriptu se
+     neschová nic — rozbalit by to pak nešlo. */
+  html.js body .m2-hlava:not(.castky-rozbalene) .castky .popis-castky,
+  html.js body .m2-hlava:not(.castky-rozbalene) .castky .castky-metodika { display: none; }
+  body .m2-hlava .castky { gap: 4px 16px; margin-top: 10px; }
+  body .m2-hlava .castky strong { font-size: 18px; }
+
+  /* Mini-osa je ovladač událostí, ne ozdoba hlavičky: ukáže se v Chronologii, kam patří. Podmínka míří
+     na schovanou záložku chronologie, aby se detail bez ní (oblast) nepřipravil o osu úplně. */
+  html.js body dialog.m2:has(.m2-panel[data-p="chrono"][hidden]) > .mini-osa { display: none; }
+
+  /* Záložky: krátké popisky, aby se vešlo všech pět včetně Zdrojů a nic nezůstalo mimo obraz. */
+  body .zalozky .zal-dlouhy { display: none; }
+  body .zalozky .zal-kratky { display: inline; }
+  body .zalozky button { padding: 9px 9px; font-size: 13px; }
+
+  /* Věta dalších filtrů se otevírá tlačítkem; bez JavaScriptu zůstane rozepsaná. */
+  html.js body .f-upresnit { display: block; }
+  html.js body .filtry.f4:not(.upresneno) .f-dalsi { display: none; }
+
+  /* Podtitul pod heslem webu. Kauzy i pravidla mají úvod schválně stejně vysoký (přepínání mezi nimi
+     nemá poskočit), proto mizí na obou stránkách zároveň. */
+  body .hero.u2 .u2-pod { display: none; }
+}

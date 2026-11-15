@@ -51,6 +51,8 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
   const proVasObal = hlava.querySelector<HTMLElement>('.pro-vas-obal');
   const proVas = proVasObal?.querySelector<HTMLElement>('.pro-vas');
   const proVasVice = proVasObal?.querySelector<HTMLButtonElement>('.pro-vas-vice');
+  const castky = hlava.querySelector<HTMLElement>('.castky');
+  const castkyVice = hlava.querySelector<HTMLButtonElement>('.castky-vice');
   let akt = polozky.length - 1;
 
   /** Záložky, které se nevejdou, se posouvají do strany; okraj, za kterým pokračují, se vytrácí. */
@@ -67,11 +69,19 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
   const zmerProVas = () => {
     if (proVas && proVasVice && proVasObal && !proVasObal.classList.contains('rozbalene')) proVasVice.hidden = proVas.scrollHeight <= proVas.clientHeight + 1;
   };
+  /** Tlačítko „k čemu částky jsou“ jen tam, kde styly popisy částek opravdu schovaly (na telefonu).
+   *  Ptáme se přímo stylů, ne šířky okna: rozhodnutí, kdy se částky sbalí, zůstává v CSS na jednom místě. */
+  const zmerCastky = () => {
+    if (!castky || !castkyVice || hlava.classList.contains('castky-rozbalene')) return;
+    const popisCastky = castky.querySelector<HTMLElement>('.popis-castky');
+    castkyVice.hidden = !popisCastky || getComputedStyle(popisCastky).display !== 'none';
+  };
   /** Body mini-osy mají cíl široký 24 px, ale nikdy se nepřekrývají se sousedy: u blízkých dat je cíl užší
    *  (nejméně jako viditelný bod), aby klik na bod nevzal sousední událost. Viditelný bod se u hustě
    *  nahuštěných událostí (úzký mobil) zmenší, aby se body neslévaly do jedné šmouhy. */
   const sirkyBodu = () => {
     const w = (body[0]?.parentElement as HTMLElement | null)?.clientWidth ?? 0;
+    if (!w) return; // osa je schovaná (na telefonu mimo Chronologii): změří se, až bude vidět
     const x = body.map(b => (parseFloat(b.style.left) / 100) * w);
     body.forEach((b, i) => {
       const mezera = Math.min(i > 0 ? x[i] - x[i - 1] : Infinity, i < x.length - 1 ? x[i + 1] - x[i] : Infinity);
@@ -111,12 +121,17 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-skupina]');
     if (b) filtrujZdroje(b.dataset.skupina!);
   });
-  premerAktualni = () => { okrajeLisy(); zmerPerex(); zmerProVas(); sirkyBodu(); okrajeZdroju(); umistiPopis(); };
+  premerAktualni = () => { okrajeLisy(); zmerPerex(); zmerProVas(); zmerCastky(); sirkyBodu(); okrajeZdroju(); umistiPopis(); };
   lista.addEventListener('scroll', okrajeLisy, { passive: true });
   vice?.addEventListener('click', () => {
     const rozbaleno = hlava.classList.toggle('rozbalene');
     vice!.setAttribute('aria-expanded', String(rozbaleno));
     vice!.textContent = rozbaleno ? 'méně' : 'celé shrnutí';
+  });
+  castkyVice?.addEventListener('click', () => {
+    const rozbaleno = hlava.classList.toggle('castky-rozbalene');
+    castkyVice.setAttribute('aria-expanded', String(rozbaleno));
+    castkyVice.textContent = rozbaleno ? 'méně' : 'k čemu částky jsou';
   });
   proVasVice?.addEventListener('click', () => {
     const rozbaleno = proVasObal!.classList.toggle('rozbalene');
@@ -126,14 +141,16 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
   // rozměry jdou změřit až po otevření dialogu (otevírá se hned po inicializaci)
   requestAnimationFrame(() => premerAktualni?.());
 
-  const osa = dlg.querySelector<HTMLElement>('.mini-osa');
   const prepni = (p: string) => {
     dlg.querySelectorAll<HTMLElement>('.zalozky [role="tab"]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.p === p)));
     dlg.querySelectorAll<HTMLElement>('.m2-panel').forEach(x => { x.hidden = x.dataset.p !== p; });
     if (p === 'zdroje') okrajeZdroju();
+    // Chronologie je na telefonu jediná záložka, kde je mini-osa vidět; změřit ji jde teprve teď.
+    if (p === 'chrono') { sirkyBodu(); umistiPopis(); }
     // Na mobilu se celý modal posouvá dolů a lišta záložek se přilepí nahoře. Když je čtenář níž v delší
     // záložce, nová záložka začne hned pod lištou (ne uprostřed nebo za koncem kratšího obsahu).
-    const hranice = osa ? osa.offsetTop + osa.offsetHeight : 0;
+    // Hranice se bere od lišty, ne od konce osy: osa na telefonu mimo Chronologii není vidět.
+    const hranice = lista.offsetTop;
     if (getComputedStyle(dlg).overflowY === 'auto' && dlg.scrollTop > hranice) dlg.scrollTop = hranice;
     // vybraná záložka musí být celá vidět, i když se lišta posouvá do strany
     const b = lista.querySelector<HTMLElement>(`[role="tab"][data-p="${p}"]`);

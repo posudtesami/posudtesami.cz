@@ -20,6 +20,7 @@ Thumbs.db
 dist-e2e/
 dist-prazdny/
 test-results/
+snimky/
 playwright-report/
 .gstack/
 .worktrees/

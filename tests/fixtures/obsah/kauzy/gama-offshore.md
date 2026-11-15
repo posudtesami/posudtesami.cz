@@ -6,6 +6,15 @@ do: 2021
 stav: zastaveno
 stavPoznamka: Fiktivní státní zastupitelství věc zastavilo.
 stitky: [offshore]
+castky:
+  - castka: 50000000
+    druh: objem
+    popis: fiktivní kupní cena nemovitosti pořízené přes zahraniční společnosti
+    zdroje: [1]
+  - castka: 500000
+    druh: pokuta
+    popis: fiktivní pokuta uložená fiktivním úřadem
+    zdroje: [2]
 overeno: 2026-11-09
 zdroje:
   - id: 1

@@ -1,17 +1,17 @@
 import { test, expect } from '@playwright/test';
-import { VELIKOSTI, presahPanelu } from './pomocne';
+import { VELIKOSTI, presahPanelu, popiskyZalozek, popisekZalozky } from './pomocne';
 
 // Delší texty v modalu nesmí být oříznuté: buď se vejdou, nebo pokračují ve sloupcích do strany.
 for (const v of VELIKOSTI) {
   test(`${v.width}×${v.height}: v žádné záložce detailu není oříznutý obsah`, async ({ page }) => {
     await page.setViewportSize(v);
     await page.goto('/kauzy/zeta-stret/');
-    for (const zalozka of ['Proč je to kauza', 'Chronologie', 'Souvislosti', 'Stav a stanovisko', /^Zdroje/]) {
+    for (const zalozka of popiskyZalozek(v.width)) {
       await page.getByRole('tab', { name: zalozka }).click();
       const presah = await presahPanelu(page);
       expect(presah, `záložka ${zalozka}: obsah přesahuje spodek panelu o ${presah} px`).toBeLessThanOrEqual(1);
     }
-    await page.getByRole('tab', { name: 'Stav a stanovisko' }).click();
+    await page.getByRole('tab', { name: popisekZalozky('stav', v.width) }).click();
     await expect(page.locator('.opravy')).toContainText('Fiktivní oprava');
   });
 }
@@ -62,17 +62,23 @@ for (const v of VELIKOSTI) {
   });
 }
 
-// Záložky, které se na mobilu nevejdou, se posouvají a okraj, za kterým pokračují, se vytrácí.
-test('mobil: záložky detailu naznačí, že pokračují, a vybraná je celá vidět', async ({ page }) => {
+// Na telefonu mají záložky krátké popisky, aby se vešlo všech pět: lišta se nikam neposouvá a žádná
+// záložka — především Zdroje, o které tady jde — nezůstane mimo obraz ani pod zavíracím tlačítkem.
+test('mobil: lišta záložek se vejde celá a nic z ní nezbyde mimo obraz', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 700 });
   await page.goto('/kauzy/zeta-stret/');
   const lista = page.locator('#detail .zalozky');
-  await expect(lista).toHaveClass(/mizi-vpravo/);
-  await page.getByRole('tab', { name: /^Zdroje/ }).click();
-  const tab = await page.getByRole('tab', { name: /^Zdroje/ }).boundingBox();
-  const okno = await lista.boundingBox();
-  expect(tab!.x + tab!.width).toBeLessThanOrEqual(okno!.x + okno!.width + 1);
-  await expect(lista).toHaveClass(/mizi-vlevo/);
+  const m = await lista.evaluate(e => ({ sw: e.scrollWidth, cw: e.clientWidth }));
+  expect(m.sw, 'lišta záložek se nemá kam posouvat').toBeLessThanOrEqual(m.cw);
+  await expect(lista, 'co se vejde celé, nemá naznačovat pokračování').not.toHaveClass(/mizi-vpravo/);
+  const zdroje = page.getByRole('tab', { name: /^Zdroje/ });
+  await zdroje.click();
+  const tab = (await zdroje.boundingBox())!;
+  const okno = (await lista.boundingBox())!;
+  expect(tab.x + tab.width).toBeLessThanOrEqual(okno.x + okno.width + 1);
+  // vpravo drží lišta místo pod zavíracím tlačítkem, i když se posouvat nemusí
+  const zavrit = (await page.getByRole('button', { name: 'Zavřít detail' }).boundingBox())!;
+  expect(tab.x + tab.width, 'poslední záložka nesmí skončit pod křížkem').toBeLessThanOrEqual(zavrit.x + 1);
 });
 
 test('záložky detailu nemají svislý posuvník', async ({ page }) => {
@@ -90,7 +96,7 @@ for (const v of [{ width: 375, height: 667 }, { width: 320, height: 568 }]) {
     await page.goto('/kauzy/alfa-dotace/');
     const dlg = page.locator('dialog#detail');
     expect(await dlg.evaluate(d => getComputedStyle(d).overflowY)).toBe('auto');
-    for (const zalozka of ['Proč je to kauza', 'Chronologie', 'Souvislosti', 'Stav a stanovisko', /^Zdroje/]) {
+    for (const zalozka of popiskyZalozek(v.width)) {
       await page.getByRole('tab', { name: zalozka }).click();
       const panel = page.locator('#detail .m2-panel:not([hidden])');
       const p = await panel.evaluate(el => {
@@ -115,7 +121,7 @@ test('mobil: přepnutí záložky dole v dlouhém obsahu ukáže začátek nové
   await page.goto('/kauzy/alfa-dotace/');
   await page.getByRole('tab', { name: /^Zdroje/ }).click();
   await page.locator('dialog#detail').evaluate(d => { d.scrollTop = d.scrollHeight; });
-  await page.getByRole('tab', { name: 'Proč je to kauza' }).click();
+  await page.getByRole('tab', { name: popisekZalozky('proc', 320) }).click();
   await expect(page.locator('#detail .proc-text')).toBeInViewport();
 });
 
@@ -123,6 +129,8 @@ for (const v of [{ width: 390, height: 700 }, { width: 320, height: 568 }, { wid
   test(`${v.width}×${v.height}: popisek vybrané události nepřesahuje okraj detailu`, async ({ page }) => {
     await page.setViewportSize(v);
     await page.goto('/kauzy/zeta-stret/');
+    // na telefonu je mini-osa jen v Chronologii, kde se ovládá; na počítači je vidět pořád
+    await page.getByRole('tab', { name: popisekZalozky('chrono', v.width) }).click();
     const body = page.locator('#detail .mini-osa .bod');
     for (const i of [0, await body.count() - 1]) {
       await body.nth(i).click();

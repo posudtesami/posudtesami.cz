@@ -32,10 +32,16 @@ const chipy = (cisla: number[]) => cisla.map(c => `<a href="#zdroj-${c}" class="
         <p class="perex" id="detail-perex">{k.shrnuti}</p>
         <button class="perex-vice" type="button" aria-expanded="false" aria-controls="detail-perex" hidden>celé shrnutí</button>
         {k.castky.length > 0 && (
-          <ul class="castky" aria-label="Částky v kauze">
-            {k.castky.map(c => <li class={c.druh === 'objem' ? 'objem' : undefined}><strong>{castkaText(c)}</strong> <span class="druh-castky">{popisekDruhu(c.druh)}</span> <span class="popis-castky">{c.popis}<span class="chipy" set:html={chipy(c.zdroje)}></span></span></li>)}
-            <li class="castky-metodika"><a href="/metodika/#jazyk">Co částky znamenají</a></li>
-          </ul>
+          <>
+            <ul class="castky" id="detail-castky" aria-label="Částky v kauze">
+              {k.castky.map(c => <li class={c.druh === 'objem' ? 'objem' : undefined}><strong>{castkaText(c)}</strong> <span class="druh-castky">{popisekDruhu(c.druh)}</span> <span class="popis-castky">{c.popis}<span class="chipy" set:html={chipy(c.zdroje)}></span></span></li>)}
+              <li class="castky-metodika"><a href="/metodika/#jazyk">Co částky znamenají</a></li>
+            </ul>
+            {/* Na telefonu zůstanou z částek jen čísla s druhem; popisy, čísla zdrojů a odkaz na metodiku
+                otevře tohle tlačítko. Skript ho ukáže jen tam, kde se částky opravdu sbalily — bez
+                JavaScriptu i na počítači je vidět všechno rovnou a tlačítko zůstane schované. */}
+            <button class="castky-vice" type="button" aria-expanded="false" aria-controls="detail-castky" hidden>k čemu částky jsou</button>
+          </>
         )}
       </header>
       <div class="mini-osa" aria-label="Události kauzy v čase">
@@ -44,11 +50,15 @@ const chipy = (cisla: number[]) => cisla.map(c => `<a href="#zdroj-${c}" class="
         {rokyOsy.map(r => <span class="rok" style={`left:${r.p}%`}>{r.rok}</span>)}
         <span class="vybrany-popis"></span>
       </div>
+      {/* Popisky záložek mají dlouhý a krátký tvar (jako položky menu v hlavičce). Na telefonu by se pět
+          dlouhých popisků nevešlo a dvě záložky — mezi nimi Zdroje — by zůstaly mimo obraz. Krátký tvar
+          je skutečný text tlačítka, ne aria-label navíc: co čtenář vidí, to čtečka přečte a to řekne
+          hlasové ovládání. */}
       <div class="zalozky" role="tablist">
-        <button role="tab" type="button" data-p="proc" aria-selected="true">Proč je to kauza</button>
-        <button role="tab" type="button" data-p="chrono" aria-selected="false">Chronologie</button>
-        <button role="tab" type="button" data-p="souv" aria-selected="false">Souvislosti</button>
-        <button role="tab" type="button" data-p="stav" aria-selected="false">Stav a stanovisko</button>
+        <button role="tab" type="button" data-p="proc" aria-selected="true"><span class="zal-dlouhy">Proč je to kauza</span><span class="zal-kratky">Proč</span></button>
+        <button role="tab" type="button" data-p="chrono" aria-selected="false"><span class="zal-dlouhy">Chronologie</span><span class="zal-kratky">Kdy</span></button>
+        <button role="tab" type="button" data-p="souv" aria-selected="false"><span class="zal-dlouhy">Souvislosti</span><span class="zal-kratky">Vazby</span></button>
+        <button role="tab" type="button" data-p="stav" aria-selected="false"><span class="zal-dlouhy">Stav a stanovisko</span><span class="zal-kratky">Stav</span></button>
         <button role="tab" type="button" data-p="zdroje" aria-selected="false">Zdroje ({k.zdroje.length})</button>
       </div>
       <div class="m2-panel" data-p="proc" role="tabpanel">

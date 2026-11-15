@@ -20,6 +20,20 @@ export const MOBILY = [
   { width: 320, height: 568 },
 ];
 
+/** Popisky záložek detailu. Na telefonu (do 760 px) mají krátký tvar, aby se vešlo všech pět včetně
+ *  Zdrojů; krátký tvar je skutečný text tlačítka, takže je zároveň jeho jménem pro čtečku. Viz Detail.astro. */
+const ZALOZKY_DLOUHE: (string | RegExp)[] = ['Proč je to kauza', 'Chronologie', 'Souvislosti', 'Stav a stanovisko', /^Zdroje/];
+const ZALOZKY_KRATKE: (string | RegExp)[] = ['Proč', 'Kdy', 'Vazby', 'Stav', /^Zdroje/];
+const KLICE = ['proc', 'chrono', 'souv', 'stav', 'zdroje'] as const;
+
+export function popiskyZalozek(sirka: number): (string | RegExp)[] {
+  return sirka <= 760 ? ZALOZKY_KRATKE : ZALOZKY_DLOUHE;
+}
+
+export function popisekZalozky(p: (typeof KLICE)[number], sirka: number): string | RegExp {
+  return popiskyZalozek(sirka)[KLICE.indexOf(p)];
+}
+
 export async function overBezPosouvani(page: Page) {
   const { svisle, vyska } = await page.evaluate(() => ({
     svisle: document.scrollingElement!.scrollHeight,

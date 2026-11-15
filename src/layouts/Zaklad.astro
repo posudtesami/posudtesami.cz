@@ -53,5 +53,11 @@ const popisProVyhledavace = popisKratky(popis);
   </div>
   <slot name="mimo" />
   {rezimKonceptu() && <aside class="koncepty-stitek" aria-label="Režim náhledu">Koncepty · neověřeno · jen lokálně</aside>}
+  {/* Věta dalších filtrů se na telefonu sbalí za „Upřesnit výběr“. Je na kauzách i na pravidlech,
+      která mají vlastní značku, proto se to zapojuje tady a ne v jedné z nich. */}
+  <script>
+    import { inicializujUpresnit } from '../scripts/upresnit';
+    inicializujUpresnit();
+  </script>
 </body>
 </html>
