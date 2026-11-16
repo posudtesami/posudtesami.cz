@@ -371,6 +371,8 @@ body .filtry.f4 .f-cipy .f-vice:hover { text-decoration-thickness: 2px; }
 .top .hlavicka-znacka { display: flex; align-items: baseline; gap: 14px; }
 .top .hlavicka-pod { font: 400 14px var(--f-text); color: var(--text2); white-space: nowrap; }
 @media (max-width: 760px) { .top .hlavicka-pod { display: none; } }
+/* Znak před názvem je stejné P v lupě jako ikona webu (nahrazuje dva čtverce z vygenerovaných stylů). */
+body .top .brand::before { width: 24px; height: 24px; margin-right: 8px; vertical-align: -5px; background: url(/obrazky/znak.svg) center / contain no-repeat; }
 /* Aktivní položka menu: platí na všech stránkách (hlavní i textových), proto ve sdílených úpravách. */
 .top nav a[aria-current="page"] { font-weight: 700; text-decoration: underline; text-decoration-color: #DB1F2D; text-underline-offset: 6px; text-decoration-thickness: 2px; }
 /* Stránka 404: obsah uprostřed zbytku okna, ilustrace nad nadpisem. Moucha bzučí jen bez omezení pohybu. */

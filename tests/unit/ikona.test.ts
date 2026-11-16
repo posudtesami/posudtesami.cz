@@ -31,8 +31,8 @@ describe('ikony webu', () => {
 
   it('hlavička stránky nabízí SVG, ICO i ikonu pro iPhone', () => {
     const layout = readFileSync('src/layouts/Zaklad.astro', 'utf8');
-    expect(layout).toContain('href="/favicon.svg"');
-    expect(layout).toContain('href="/favicon.ico"');
-    expect(layout).toContain('rel="apple-touch-icon" href="/apple-touch-icon.png"');
+    expect(layout).toContain('href={`/favicon.svg?v=${verzeIkony}`}');
+    expect(layout).toContain('href={`/favicon.ico?v=${verzeIkony}`}');
+    expect(layout).toContain('rel="apple-touch-icon" href={`/apple-touch-icon.png?v=${verzeIkony}`}');
   });
 });
