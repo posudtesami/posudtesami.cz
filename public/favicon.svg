@@ -1,10 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="225 215 590 590">
-  <!-- Ikona webu: P v lupě. Zdroj pro favicon.ico a apple-touch-icon.png, ty z něj vyrábí npm run ikona. -->
-  <rect x="225" y="215" width="590" height="590" fill="#F5F5F8"/>
-  <circle cx="513" cy="475" r="188.5" fill="none" stroke="#DB1F2D" stroke-width="52"/>
-  <path d="M613 603L708 726" stroke="#DB1F2D" stroke-width="62"/>
-  <circle cx="708" cy="726" r="31" fill="#DB1F2D"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="218.5 225.5 632 632">
+  <!-- Ikona webu: P v lupě na světlém kotouči, rohy průhledné. Zdroj pro favicon.ico a apple-touch-icon.png, ty z něj vyrábí npm run ikona.
+       Kotouč je nejmenší kruh kolem znaku (střed 534.5, 541.5) zvětšený o desetinu, aby rukojeť nesahala k okraji. -->
+  <circle cx="534.5" cy="541.5" r="316" fill="#F5F5F8"/>
   <!-- mezera kolem P: přeruší prstenec tam, kde jím prochází dřík -->
-  <path d="M364 752L416 377L558 373C613 372 631 410 627 455C622 520 585 567 520 567L465 567L439 752Z" fill="#F5F5F8" stroke="#F5F5F8" stroke-width="26" stroke-linejoin="round"/>
+  <mask id="mezera" maskUnits="userSpaceOnUse" x="218.5" y="225.5" width="632" height="632">
+    <rect x="218.5" y="225.5" width="632" height="632" fill="#fff"/>
+    <path d="M364 752L416 377L558 373C613 372 631 410 627 455C622 520 585 567 520 567L465 567L439 752Z" fill="#000" stroke="#000" stroke-width="26" stroke-linejoin="round"/>
+  </mask>
+  <g mask="url(#mezera)" fill="#DB1F2D">
+    <circle cx="513" cy="475" r="188.5" fill="none" stroke="#DB1F2D" stroke-width="52"/>
+    <path d="M613 603L708 726" stroke="#DB1F2D" stroke-width="62"/>
+    <circle cx="708" cy="726" r="31"/>
+  </g>
   <path fill-rule="evenodd" fill="#282661" d="M364 752L416 377L558 373C613 372 631 410 627 455C622 520 585 567 520 567L465 567L439 752ZM485 422L530 422C552 422 557 445 551 466C545 495 528 518 500 518L472 518Z"/>
 </svg>
