@@ -101,7 +101,7 @@ ${sPravidly ? '<p>Zákony, nařízení a další pravidla, která předkládá n
       nadpis: "Opravy a historie změn",
       shrnuti: "Každá změna je veřejně dohledatelná. Chybu nám můžete nahlásit e-mailem nebo přes GitHub.",
       html: `<p>Celý archiv je veřejný repozitář, takže <strong>každá změna má datum a je dohledatelná</strong>. U věcné opravy přidáme ke kauze viditelnou poznámku, co a proč se změnilo.</p>
-<p>Našli jste chybu, nebo znáte kauzu, která chybí? Napište na <a href="mailto:nenechmevyhnit@gmail.com">nenechmevyhnit@gmail.com</a> nebo navrhněte úpravu přes GitHub. Každý návrh projde stejnými pravidly.</p>`,
+<p>Našli jste chybu, nebo znáte kauzu, která chybí? Napište na <a href="mailto:posudtesami@gmail.com">posudtesami@gmail.com</a> nebo navrhněte úpravu přes GitHub. Každý návrh projde stejnými pravidly.</p>`,
     },
     {
       id: "stavy",

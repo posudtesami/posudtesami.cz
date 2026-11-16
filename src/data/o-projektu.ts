@@ -45,13 +45,13 @@ export const oProjektu = (sPravidly: boolean): { sekce: SekceStranky[] } => ({
 <li><strong>poslat své stanovisko.</strong> Zveřejníme ho u záznamu, kterého se týká,</li>
 <li><strong>podat námitku proti konkrétnímu zveřejnění</strong> podle § 22 téhož zákona. Napište, o které zveřejnění jde a proč podle vás váš zájem převáží nad zájmem na tom, aby byla věc veřejně dostupná. Vždy vám odpovíme, jak jsme s námitkou naložili.</li></ul>
 <p>Na nezveřejněné koncepty a na zdroje se vztahuje ochrana zdroje a obsahu informací podle téhož zákona.</p>
-<p>Pište na <a href="mailto:nenechmevyhnit@gmail.com">nenechmevyhnit@gmail.com</a>. Dozor nad zpracováním osobních údajů vykonává <a href="https://uoou.gov.cz/">Úřad pro ochranu osobních údajů</a>.</p>`,
+<p>Pište na <a href="mailto:posudtesami@gmail.com">posudtesami@gmail.com</a>. Dozor nad zpracováním osobních údajů vykonává <a href="https://uoou.gov.cz/">Úřad pro ochranu osobních údajů</a>.</p>`,
     },
     {
       id: "prispet",
       nadpis: "Jak přispět",
       shrnuti: "Navrhněte kauzu, doplnění nebo opravu e-mailem nebo přes GitHub.",
-      html: `<ol class="kroky"><li>Pošlete návrh na <a href="mailto:nenechmevyhnit@gmail.com">nenechmevyhnit@gmail.com</a> nebo založte návrh na GitHubu.</li>
+      html: `<ol class="kroky"><li>Pošlete návrh na <a href="mailto:posudtesami@gmail.com">posudtesami@gmail.com</a> nebo založte návrh na GitHubu.</li>
 <li>Přiložte zdroje. Bez nich návrh nemůžeme přijmout.</li>
 <li>Návrh projde stejnými pravidly jako každá kauza (viz <a href="/metodika/">Metodika</a>). Když ho přijmeme, uvidíte změnu v historii.</li></ol>`,
     },
@@ -65,8 +65,8 @@ export const oProjektu = (sPravidly: boolean): { sekce: SekceStranky[] } => ({
     {
       id: "kontakt",
       nadpis: "Kontakt",
-      shrnuti: "nenechmevyhnit@gmail.com. Opravy mají přednost před vším ostatním.",
-      html: `<p>Pište na <a href="mailto:nenechmevyhnit@gmail.com">nenechmevyhnit@gmail.com</a>.</p>
+      shrnuti: "posudtesami@gmail.com. Opravy mají přednost před vším ostatním.",
+      html: `<p>Pište na <a href="mailto:posudtesami@gmail.com">posudtesami@gmail.com</a>.</p>
 <p>Upozornění na věcnou chybu řešíme přednostně. Pokud jste dotčená osoba nebo její zástupce a chcete doplnit stanovisko, ozvěte se, zveřejníme ho.</p>`,
     },
   ],
