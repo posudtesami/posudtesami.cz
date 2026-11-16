@@ -53,9 +53,10 @@ test('mnoho kauz: stránka ani seznam v ose se neposouvají, kauzy jsou na strá
   await page.addStyleTag({ content: '#graf { flex: none !important; height: 180px !important; }' });
   await expect(page.locator('.strankovani')).toBeVisible();
   await overBezPosouvani(page);
-  const { vnitrni, vyska } = await page.evaluate(() => {
+  // Stránkování se po zmenšení grafu přepočítá až v ResizeObserveru, tedy po dalším vykreslení. Jednorázové měření
+  // ho na pomalém stroji CI předběhlo (16. 11.: 158 px obsahu v 97 px, lokálně 30 z 30 prošlo), proto se čeká.
+  await expect.poll(() => page.evaluate(() => {
     const r = document.querySelector('.radky') as HTMLElement;
-    return { vnitrni: r.scrollHeight, vyska: r.clientHeight };
-  });
-  expect(vnitrni).toBeLessThanOrEqual(vyska);
+    return r.scrollHeight - r.clientHeight;
+  }), { message: 'seznam kauz v ose se nesmí posouvat' }).toBeLessThanOrEqual(0);
 });
