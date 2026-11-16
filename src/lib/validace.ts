@@ -11,6 +11,7 @@ import { STRED } from './role';
 import { rozdelOdstavce, poznamkyVOdstavci } from './souvislosti';
 import { nactiSnimky, overHlasovaniPravidel } from './validace-hlasovani';
 import type { Snimek } from './schema-hlasovani';
+import { nevysvetleneZkratky } from './slovnicek';
 
 export type Chyba = { soubor: string; zprava: string };
 export type KauzaZaznam = { slug: string; kauza: Kauza; telo: string };
@@ -20,17 +21,34 @@ export type OblastZaznam = { id: Oblast; data: OblastData };
  *  znameKauzy: slugy kauz mimo načítaný adresář (náhled konceptů nevidí zveřejněné kauzy, pravidla na ně ale odkazují). */
 export type Rezim = { koncepty?: boolean; znameKauzy?: Iterable<string> };
 
-export function overKauzu(soubor: string, data: unknown, telo: string, stitky: Set<string>, rezim: Rezim = {}): { kauza?: Kauza; chyby: Chyba[] } {
+/** Všechen text záznamu, který čtenář uvidí: hodnoty polí kromě seznamů zdrojů a adres. Názvy článků a vydavatelů
+ *  se necitují vlastními slovy archivu, proto se v nich zkratky nehlídají. */
+function textyZaznamu(data: unknown, klic = ''): string[] {
+  if (typeof data === 'string') return klic === 'url' || klic === 'archiv' || klic === 'mena' ? [] : [data];
+  if (Array.isArray(data)) return klic === 'zdroje' ? [] : data.flatMap(x => textyZaznamu(x, klic));
+  if (data && typeof data === 'object') return Object.entries(data).flatMap(([k, v]) => textyZaznamu(v, k));
+  return [];
+}
+
+/** Zkratky, které čtenáři nikdo nevysvětlí. Jen varování: nová kauza kvůli názvu firmy verzálkami nesmí zastavit web,
+ *  autor má ale vidět, že zkratku úřadu je třeba doplnit do slovníčku nebo rozepsat. */
+function overZkratky(soubor: string, data: unknown, telo: string): Chyba[] {
+  const text = [...textyZaznamu(data), telo.replace(/\[\^\d+\]/g, '')].join('\n');
+  return nevysvetleneZkratky(text).map(z => ({ soubor, zprava: `Zkratka „${z}“ není vysvětlená: doplňte ji do slovníčku (src/data/slovnicek.ts), rozepište ji v textu, nebo ji tam zapište mezi názvy psané verzálkami` }));
+}
+
+export function overKauzu(soubor: string, data: unknown, telo: string, stitky: Set<string>, rezim: Rezim = {}): { kauza?: Kauza; chyby: Chyba[]; varovani: Chyba[] } {
   const chyby: Chyba[] = [];
   const r = (rezim.koncepty ? kauzaSchemaKoncepty : kauzaSchema).safeParse(data);
   if (!r.success) {
     for (const i of r.error.issues) chyby.push({ soubor, zprava: `${i.path.join('.') || 'kauza'}: ${i.message}` });
-    return { chyby };
+    return { chyby, varovani: [] };
   }
   const k = r.data;
   for (const s of k.stitky) if (!stitky.has(s)) chyby.push({ soubor, zprava: `Neznámý štítek „${s}“ (doplňte ho do stitky.yml)` });
   chyby.push(...overSouvislosti(soubor, telo, new Set(k.zdroje.map(z => z.id))));
-  return chyby.length ? { chyby } : { kauza: k, chyby };
+  const varovani = overZkratky(soubor, k, telo);
+  return chyby.length ? { chyby, varovani } : { kauza: k, chyby, varovani };
 }
 
 function overSouvislosti(soubor: string, telo: string, ids: Set<number>): Chyba[] {
@@ -43,17 +61,18 @@ function overSouvislosti(soubor: string, telo: string, ids: Set<number>): Chyba[
   return chyby;
 }
 
-export function overPravidlo(soubor: string, data: unknown, telo: string, stitky: Set<string>, rezim: Rezim = {}): { pravidlo?: Pravidlo; chyby: Chyba[] } {
+export function overPravidlo(soubor: string, data: unknown, telo: string, stitky: Set<string>, rezim: Rezim = {}): { pravidlo?: Pravidlo; chyby: Chyba[]; varovani: Chyba[] } {
   const chyby: Chyba[] = [];
   const r = (rezim.koncepty ? pravidloSchemaKoncepty : pravidloSchema).safeParse(data);
   if (!r.success) {
     for (const i of r.error.issues) chyby.push({ soubor, zprava: `${i.path.join('.') || 'pravidlo'}: ${i.message}` });
-    return { chyby };
+    return { chyby, varovani: [] };
   }
   const p = r.data;
   for (const s of p.stitky) if (!stitky.has(s)) chyby.push({ soubor, zprava: `Neznámý štítek „${s}“ (doplňte ho do stitky.yml)` });
   chyby.push(...overSouvislosti(soubor, telo, new Set(p.zdroje.map(z => z.id))));
-  return chyby.length ? { chyby } : { pravidlo: p, chyby };
+  const varovani = overZkratky(soubor, p, telo);
+  return chyby.length ? { chyby, varovani } : { pravidlo: p, chyby, varovani };
 }
 
 /** Vazby pravidel na kauzy. Stejně jako overVazby: veřejný build neexistující kauzu vynechá s varováním,
@@ -224,10 +243,12 @@ export function overAdresar(adresar: string, rezim: Rezim = {}): { zaznamy: Kauz
   const stitky = nactiSlovnikStitku(adresar);
   const sadaStitku = new Set(stitky.keys());
   const chyby: Chyba[] = [];
+  const zkratky: Chyba[] = [];
   const nactene: KauzaZaznam[] = [];
   for (const s of nactiSlozku(adresar, 'kauzy', chyby)) {
     const r = overKauzu(s.soubor, s.data, s.content, sadaStitku, rezim);
     chyby.push(...r.chyby);
+    zkratky.push(...r.varovani);
     if (r.kauza) nactene.push({ slug: s.slug, kauza: r.kauza, telo: s.content });
   }
   const slovnik = nactiSlovnikAkteru(adresar, rezim);
@@ -241,6 +262,7 @@ export function overAdresar(adresar: string, rezim: Rezim = {}): { zaznamy: Kauz
   for (const s of nactiSlozku(adresar, 'pravidla', chyby)) {
     const r = overPravidlo(s.soubor, s.data, s.content, sadaStitku, rezim);
     chyby.push(...r.chyby);
+    zkratky.push(...r.varovani);
     if (r.pravidlo) nactenaPravidla.push({ slug: s.slug, pravidlo: r.pravidlo, telo: s.content });
   }
   const vazbyPravidel = overVazbyPravidel(adresar, nactenaPravidla, new Set(zaznamy.map(z => z.slug)), rezim);
@@ -260,6 +282,6 @@ export function overAdresar(adresar: string, rezim: Rezim = {}): { zaznamy: Kauz
     stitky,
     akteri: slovnik.akteri,
     chyby,
-    varovani: [...vazby.varovani, ...vazbyPravidel.varovani, ...ob.varovani, ...odkazy.varovani],
+    varovani: [...vazby.varovani, ...vazbyPravidel.varovani, ...ob.varovani, ...odkazy.varovani, ...zkratky],
   };
 }

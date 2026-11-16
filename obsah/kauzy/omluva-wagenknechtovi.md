@@ -2,9 +2,11 @@
 typ: kauza
 nazev: Omluva senátoru Wagenknechtovi
 shrnuti: A. Babiš v letech 2017–2019 opakovaně označil bývalého náměstka Lukáše Wagenknechta za psychopata a udavače a tvrdil, že připravil Česko o 800 mil. Kč. Krajský soud v Praze mu v březnu 2023 pravomocně uložil omluvu za „udavače“ a výrok o 800 milionech, za „psychopata“ ne. Babiš se v dubnu 2023 písemně omluvil.
+oCoJde: Babiš nazval bývalého náměstka Wagenknechta psychopatem a udavačem. Za část výroků se mu podle soudu musel omluvit.
 od: 2017
 do: 2023
 stav: jine
+stavKratce: Soud nařídil omluvu
 stavPoznamka: Občanskoprávní spor o ochranu osobnosti, nikoli trestní řízení. Okresní soud Praha-západ uložil A. Babišovi omluvu rozsudkem z 11. 6. 2021 (č. j. 5 C 104/2020-108), Krajský soud v Praze ho v prosinci 2021 zrušil. Po novém rozsudku okresního soudu z dubna 2022 Krajský soud v Praze 1. 3. 2023 pravomocně uložil omluvu jen za část výroků. Babiš omluvný dopis poslal v dubnu 2023. Pravomocný rozsudek Krajského soudu v Praze z 1. 3. 2023 má č. j. 21 Co 162/2022-202.
 stitky: [vyroky]
 overeno: 2026-11-12

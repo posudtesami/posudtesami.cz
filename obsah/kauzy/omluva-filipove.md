@@ -2,9 +2,11 @@
 typ: kauza
 nazev: Omluva demonstrantce Filipové
 shrnuti: A. Babiš jako premiér v roce 2018 tvrdil, že demonstranti proti vládě jsou zaplacení. Krajský soud v Praze mu v červenci 2022 pravomocně uložil písemně se omluvit demonstrantce Janě Filipové. První omluvu doplnil komentářem a čelil exekuci, druhou poslal bez něj. Dovolání i ústavní stížnost mu soudy odmítly.
+oCoJde: Babiš jako premiér tvrdil, že demonstranti proti vládě jsou zaplacení. Soud mu nařídil omluvit se jedné z nich.
 od: 2018
 do: 2023
 stav: jine
+stavKratce: Soud nařídil omluvu
 stavPoznamka: Občanskoprávní spor o ochranu osobnosti, nikoli trestní řízení. Rozsudek Krajského soudu v Praze z 13. 7. 2022 (č. j. 21 Co 266/2019-168), kterým byla A. Babišovi uložena písemná omluva, je pravomocný. Babiš omluvu poslal v září 2022 s vlastním komentářem a v říjnu 2022, po zahájení exekuce a uložení pokuty 30 000 Kč, znovu bez komentáře. Nejvyšší soud jeho dovolání v lednu 2023 odmítl a Ústavní soud jeho ústavní stížnost odmítl (zveřejněno v září 2023).
 stitky: [vyroky]
 overeno: 2026-11-12

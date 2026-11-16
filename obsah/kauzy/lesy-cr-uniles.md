@@ -2,9 +2,11 @@
 typ: kauza
 nazev: Zakázky Lesů ČR pro Uniles
 shrnuti: Uniles z Agrofertu opakovaně vyhrával tendry Lesů ČR. Podle Seznam Zpráv dostaly firmy Agrofertu od LČR za Babišova působení ve vládě zakázky za téměř 5,6 mld. Kč. O porušení zákona o střetu zájmů úřady nerozhodly. LČR jim zakázky po jmenování Babiše premiérem zakázaly, od 30. 4. 2026 zákaz zrušily.
+oCoJde: Firmy Agrofertu dostávaly zakázky od Lesů ČR, když byl Babiš ve vládě. Zda to bylo proti zákonu, úřady nerozhodly.
 od: 2014
 do: null
 stav: jine
+stavKratce: Bez rozhodnutí úřadů
 stavPoznamka: Žádný úřad ani soud nerozhodl, zda zakázky LČR pro firmy Agrofertu z let 2017–2021 odporovaly zákonu o střetu zájmů. ÚOHS přezkoumával jen dodržení pravidel zadávání, střet zájmů neposuzoval. Výsledek právní analýzy, kterou ministerstvo zemědělství ohlásilo v září 2025, se nepodařilo dohledat. LČR firmám Agrofertu zakázky zakázaly interním opatřením z 18. 12. 2025 a s účinností od 30. 4. 2026 zákaz zrušily. Firmy Agrofertu se o zakázky LČR znovu ucházejí (tendr 2027+).
 stitky: [stret-zajmu, verejne-zakazky]
 overeno: 2026-11-12

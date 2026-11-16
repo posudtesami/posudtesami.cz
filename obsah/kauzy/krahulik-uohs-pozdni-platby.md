@@ -2,6 +2,7 @@
 typ: kauza
 nazev: "Krahulík: pozdní platby dodavatelům"
 shrnuti: ÚOHS uložil firmě Krahulík-Masozávod Krahulčí z Agrofertu pokutu 680 000 Kč. Jako odběratel s významnou tržní silou v roce 2023 platil sedmnácti dodavatelům zemědělských a potravinářských produktů po zákonné třicetidenní lhůtě. Firma se přiznala, pokuta jí byla za narovnání snížena o pětinu. Rozhodnutí je pravomocné.
+oCoJde: Masna Krahulík z Agrofertu platila dodavatelům později, než dovoluje zákon. Dostala pokutu 680 000 korun.
 od: 2023
 do: 2024
 stav: uredni-zjisteni

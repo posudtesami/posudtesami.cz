@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { VELIKOSTI, overBezPosouvani, overPosouvani, ukazCip, sbalCipy } from './pomocne';
+import { VELIKOSTI, MOBILY, overBezPosouvani, overPosouvani, ukazCip, sbalCipy } from './pomocne';
 
 test.use({ viewport: { width: 1366, height: 768 } });
 
@@ -231,6 +231,33 @@ test.describe('mobil 390×700', () => {
     expect(await page.locator('.pr-radek .prubeh .f-nazev').first().evaluate(e => getComputedStyle(e).textOverflow)).not.toBe('ellipsis');
   });
 });
+
+// Na telefonu se názvy fází lámaly uprostřed slova („Sněmovn-a“, „Vyhlášen-o“), protože sloupec byl užší než název.
+for (const v of MOBILY) {
+  test(`mobil ${v.width}×${v.height}: názvy fází průběhu na jednom řádku, fáze v jedné řadě`, async ({ page }) => {
+    await page.setViewportSize(v);
+    await page.goto('/pravidla/?pohled=seznam');
+    await page.evaluate(() => document.fonts.ready);
+    const radky = await page.locator('.pr-radek .prubeh').evaluateAll(seznamy => seznamy.map(ol => {
+      const faze = [...ol.querySelectorAll<HTMLElement>(':scope > li:not(.konec)')];
+      const nazvy = faze.map(li => {
+        const n = li.querySelector('.f-nazev')!;
+        const r = document.createRange(); r.selectNodeContents(n);
+        const radku = new Set([...r.getClientRects()].map(x => Math.round(x.top))).size;
+        return { nazev: n.textContent, radku, pretece: n.getBoundingClientRect().right > li.getBoundingClientRect().right + 1 };
+      });
+      return { nazvy, radFazi: new Set(faze.map(li => li.offsetTop)).size };
+    }));
+    expect(radky.length).toBeGreaterThan(0);
+    for (const r of radky) {
+      expect(r.radFazi, 'fáze stojí v jedné řadě').toBe(1);
+      for (const n of r.nazvy) {
+        expect(n.radku, `${n.nazev}: na jednom řádku`).toBe(1);
+        expect(n.pretece, `${n.nazev}: nepřesahuje svůj sloupec`).toBe(false);
+      }
+    }
+  });
+}
 
 test('prázdný archiv nemá položku menu ani stránku pravidel', async ({ page }) => {
   await page.goto('http://localhost:4322/');

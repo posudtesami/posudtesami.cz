@@ -1,8 +1,10 @@
 import { odpovida, jeAktivni, seradit, normalizuj, PRAZDNY_FILTR, type Filtr, type PolozkaHledani } from '../lib/hledani';
 import { pocetNaStranku, pocetStranek, cislaStranek, NEJVIC_NA_STRANKU } from '../lib/strankovani';
 import { sklonuj } from '../lib/cestina';
+import { navaznostRoku } from '../lib/casova-osa';
 import { nastavViditelne } from './stav-filtru';
 import { inicializujCipy } from './cipy';
+import { FILTRY_ZRUSENE } from './upresnit';
 
 export function inicializujFiltry(): void {
   const panel = document.querySelector<HTMLElement>('.filtry');
@@ -113,6 +115,13 @@ export function inicializujFiltry(): void {
     const konec = isFinite(naStranku) ? od + naStranku : shoda.length;
     shoda.slice(od, konec).forEach(p => naTeto.add(p.slug));
     for (const [slug, r] of radekPodle) r.hidden = !naTeto.has(slug);
+    // svislá osa na telefonu: rok začátku jen u první kauzy toho roku na stránce (na počítači CSS značky nepoužije)
+    const naStrance = shoda.slice(od, konec);
+    navaznostRoku(naStrance.map(p => p.od)).forEach(({ stejny, pokracuje }, i) => {
+      const r = radekPodle.get(naStrance[i].slug);
+      r?.toggleAttribute('data-stejny-rok', stejny);
+      r?.toggleAttribute('data-rok-pokracuje', pokracuje);
+    });
     // hledaný text v názvu není: řádek řekne, že se shoduje text kauzy (jinak výsledek vypadá jako omyl)
     const hledane = normalizuj(filtr.text).split(/\s+/).filter(Boolean);
     for (const p of polozky) {
@@ -161,6 +170,7 @@ export function inicializujFiltry(): void {
     cipy.querySelectorAll('button[data-stitek]').forEach(b => b.setAttribute('aria-pressed', 'false'));
     prefiltruj();
     rozvrhniCipy();
+    document.dispatchEvent(new Event(FILTRY_ZRUSENE));
   };
 
   hledat.addEventListener('input', () => { filtr.text = hledat.value; prefiltruj(); });

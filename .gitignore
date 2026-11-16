@@ -20,6 +20,9 @@ Thumbs.db
 dist-e2e/
 dist-prazdny/
 test-results/
+snimky/
+navrhy/
+dist-mobil-*/
 playwright-report/
 .gstack/
 .worktrees/

@@ -2,6 +2,7 @@
 typ: kauza
 nazev: Čapí hnízdo
 shrnuti: Obžaloba viní A. Babiše z účasti na dotačním podvodu a poškození finančních zájmů EU v souvislosti s dotací 50 mil. Kč pro Farmu Čapí hnízdo. Babiš vinu popírá; trestní řízení proti němu nelze vést, protože ho Sněmovna v březnu 2026 nevydala. Spoluobžalovaná Jana Nagyová je od srpna 2026 pravomocně odsouzena.
+oCoJde: Farma Čapí hnízdo dostala 50 milionů z dotace pro menší firmy. Podle obžaloby na ni neměla nárok. Babiš vinu popírá.
 od: 2007
 do: null
 stav: obzaloba

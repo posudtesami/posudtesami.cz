@@ -66,3 +66,32 @@ describe('popisky roků na mini-ose', () => {
     expect(r).toEqual([{ p: 0, rok: '2010' }, { p: 30, rok: '2015' }]);
   });
 });
+
+import { konecText, navaznostRoku } from '../../src/lib/casova-osa';
+
+describe('svislá osa na telefonu', () => {
+  it('konecText: konec a délka bez „a dál“ (rok začátku stojí zvlášť)', () => {
+    expect(konecText(2005, 2021, DNES)).toBe('do 2021 · 16 let');
+    expect(konecText(2014, null, DNES)).toBe('dosud · 12 let');
+    expect(konecText(2024, null, DNES)).toBe('dosud · 2 roky');
+    expect(konecText(2025, null, DNES)).toBe('dosud · 1 rok');
+    expect(konecText(2026, null, DNES)).toBe('dosud · méně než rok');
+    expect(konecText(2019, 2019, DNES)).toBe('méně než rok');
+    expect(konecText(2017, 2018, DNES)).toBe('do 2018 · 1 rok');
+  });
+  it('navaznostRoku: rok se neopakuje u kauzy, která začala stejně jako ta nad ní', () => {
+    expect(navaznostRoku([2010, 2010, 2011, 2014, 2014, 2014])).toEqual([
+      { stejny: false, pokracuje: true },
+      { stejny: true, pokracuje: false },
+      { stejny: false, pokracuje: false },
+      { stejny: false, pokracuje: true },
+      { stejny: true, pokracuje: true },
+      { stejny: true, pokracuje: false },
+    ]);
+    expect(navaznostRoku([])).toEqual([]);
+    // při jiném řazení se bloky nevytvoří, ale shoda sousedů se pozná pořád
+    expect(navaznostRoku([2017, 2011, 2017])).toEqual([
+      { stejny: false, pokracuje: false }, { stejny: false, pokracuje: false }, { stejny: false, pokracuje: false },
+    ]);
+  });
+});

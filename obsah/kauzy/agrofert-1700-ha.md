@@ -2,6 +2,7 @@
 typ: kauza
 nazev: Agrofert a 1700 ha cizí půdy
 shrnuti: Radiožurnál v roce 2017 zjistil, že firmy Agrofertu hospodaří asi na 1700 ha bez jasného vlastníka, které nemají ani v nájmu, a pobírají na ně dotace. Státní pozemkový úřad a ÚZSVM pak u několika firem Agrofertu zjistily užívání státní půdy bez smlouvy a firmy státu doplatily úhrady. Agrofert nezákonnost odmítá.
+oCoJde: Podle Radiožurnálu hospodařily firmy Agrofertu na cizí půdě bez nájmu a braly na ni dotace. Za státní půdu doplatily.
 od: 2017
 do: 2019
 stav: uredni-zjisteni

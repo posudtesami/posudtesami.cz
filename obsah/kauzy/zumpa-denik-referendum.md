@@ -2,6 +2,7 @@
 typ: kauza
 nazev: "„Žumpa“: omluva Deníku Referendum"
 shrnuti: Premiér A. Babiš v listopadu 2020 ve Sněmovně označil Deník Referendum, který psal o podezření vůči Deze z Agrofertu při otravě Bečvy, za „nejhorší žumpu“, která lže. Soud v březnu 2026 nepravomocně rozhodl, že stát se má redakci omluvit a zaplatit jí 200 000 Kč. Obě strany se odvolaly.
+oCoJde: Babiš ve Sněmovně nazval Deník Referendum „nejhorší žumpou“. Podle soudu se má stát omluvit, rozsudek není konečný.
 od: 2020
 do: null
 stav: soudni-rizeni

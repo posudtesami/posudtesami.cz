@@ -100,3 +100,15 @@ describe('řazení', () => {
     expect(vstup.map(x => x.slug)).toEqual(['a', 'b', 'c']);
   });
 });
+
+describe('hledání ve větě „O co jde“', () => {
+  it('najde kauzu podle slova, které je jen ve větě obyčejnou řečí', async () => {
+    const { vytvorPolozku } = await import('../../src/lib/hledani');
+    const { kauzaSchema } = await import('../../src/lib/schema');
+    const { platnaKauza } = await import('./ukazka');
+    const kauza = kauzaSchema.parse({ ...platnaKauza(), oCoJde: 'Fiktivní firma zkrachovala kvůli fiktivní dani.' });
+    const polozka = vytvorPolozku({ slug: 'alfa', kauza, telo: '' });
+    expect(odpovida(polozka, { ...prazdny, text: 'zkrachovala' })).toBe(true);
+    expect(odpovida(polozka, { ...prazdny, text: 'nezkrachovala' })).toBe(false);
+  });
+});

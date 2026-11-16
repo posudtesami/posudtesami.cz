@@ -186,9 +186,12 @@ Režim konceptů (`NV_KONCEPTY`) čte snímky z `<NV_OBSAH>/hlasovani/` a pravid
   3. 11. 2026 · hlasování č. 311 · procedurální
   Návrh T. Malé (ANO) zařadit 1. čtení jako poslední bod jednacího dne
   Přijato 86 : 69 · pro : proti · Všichni poslanci →
-  [ANO 62 : 0] [SPD 14 : 0] [Motoristé 10 : 0] [ODS 0 : 25] [STAN 0 : 20] …
+  PRO     [ANO 62 : 0] [SPD 14 : 0] [Motoristé 10 : 0]
+  PROTI   [ODS 0 : 25] [STAN 0 : 20] …
+  ANI PRO, ANI PROTI   [Nezařazení 0 : 0]
   ```
   (Počty v ukázce jsou ilustrační.)
+  - Kluby stojí v řádcích podle toho, čeho měly víc (změna 15. 11. 2026, na telefonu i na počítači): řádek PRO, řádek PROTI a řádek „Ani pro, ani proti“ pro klub, který neměl ani jeden hlas pro nebo proti. Každý klub je aspoň v jednom řádku. Klub se stejným nenulovým počtem pro i proti stojí v obou. Rozlišuje text a pořadí, ne barva.
   - Každý klub je odkaz na `/hlasovani/<id>/#<slug-klubu>`. „Všichni poslanci“ vede na `/hlasovani/<id>/`.
   - Kluby jsou seřazené podle počtu poslanců v hlasování, nezařazení na konci.
   - Pro čtečky obrazovky má každý klub za viditelným textem skrytý rozpis, takže přístupný název začíná tím, co je vidět (WCAG 2.5.3), například „ANO 62 : 0 (62 pro, 0 proti, 3 zdrželi se nebo nehlasovali, 1 omluven)“.

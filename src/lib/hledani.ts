@@ -56,7 +56,7 @@ export function normalizuj(t: string): string {
 
 export function vytvorPolozku(z: KauzaZaznam): PolozkaHledani {
   const k = z.kauza;
-  const text = [k.nazev, k.shrnuti, k.stitky.join(' '), ...k.udalosti.map(u => `${u.nazev} ${u.popis}`)].join(' ');
+  const text = [k.nazev, k.oCoJde ?? '', k.shrnuti, k.stitky.join(' '), ...k.udalosti.map(u => `${u.nazev} ${u.popis}`)].join(' ');
   const posledni = k.udalosti.map(u => u.datum).sort().at(-1) ?? String(k.od);
   const hlavni = hlavniCastka(k.castky);
   const castka = hlavni ? castkaProRazeni(hlavni) : null;

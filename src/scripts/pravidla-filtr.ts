@@ -5,6 +5,7 @@ import { sklonuj } from '../lib/cestina';
 import type { Duvod, Cesta } from '../lib/pravidla-slovnik';
 import type { Krok } from '../lib/pravidla-stavy';
 import { inicializujCipy } from './cipy';
+import { FILTRY_ZRUSENE } from './upresnit';
 
 /** Nejvýš tolik změn pravidel na jedné stránce přehledu (řádky jsou vyšší než u kauz, víc by se četlo hůř). */
 export const NEJVIC_PRAVIDEL_NA_STRANKU = 6;
@@ -157,6 +158,7 @@ export function inicializujFiltrPravidel(): void {
     prepinaci.forEach(c => c.setAttribute('aria-pressed', 'false'));
     pouzij();
     rozvrhniCipy();
+    document.dispatchEvent(new Event(FILTRY_ZRUSENE));
   };
   hledat.addEventListener('input', pouzij);
   jen.addEventListener('change', pouzij);
