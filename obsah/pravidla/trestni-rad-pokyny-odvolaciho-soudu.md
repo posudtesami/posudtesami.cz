@@ -75,6 +75,7 @@ zdroje:
     datum: 2026-11-11
     druh: media
     url: 'https://plus.rozhlas.cz/node/9655528'
+    archiv: https://web.archive.org/web/20261116101907/https://plus.rozhlas.cz/jiri-leschtina-novely-jak-premierovi-site-na-miru-9655528
   - id: 12
     vydavatel: Český rozhlas Plus
     titulek: 'Jiří Leschtina: Tejc chystá paragraf, který má Babiše zbavit přízraku Čapího hnízda'

@@ -68,6 +68,7 @@ zdroje:
     datum: 2026-11-13
     druh: media
     url: "https://www.hlidacstatu.cz/dotace/hledat?Q=%2213.+-+Podpora+zpracov%C3%A1n%C3%AD+zem%C4%9Bd%C4%9Blsk%C3%BDch+produkt%C5%AF%22+AND+rok%3A2022&order=3"
+    archiv: https://web.archive.org/web/20261116102356/https://www.hlidacstatu.cz/dotace/hledat?Q=%2213.+-+Podpora+zpracov%C3%A1n%C3%AD+zem%C4%9Bd%C4%9Blsk%C3%BDch+produkt%C5%AF%22+AND+rok%3A2022&order=3
   - id: 11
     vydavatel: Hlídač státu
     titulek: "Hledání dotací: holding:26185610 AND „13. - Podpora zpracování zemědělských produktů“ AND rok:2023"
@@ -98,6 +99,7 @@ zdroje:
     datum: 2026-02-20
     druh: stanovisko
     url: "https://zpravy.kurzy.cz/850233-reakce-ministerstva-zemedelstvi-na-clanek-seznam-zprav-z-19-2-2026/"
+    archiv: https://web.archive.org/web/20261116102756/https://zpravy.kurzy.cz/850233-reakce-ministerstva-zemedelstvi-na-clanek-seznam-zprav-z-19-2-2026/
   - id: 16
     vydavatel: Seznam Zprávy (F. Horáček)
     titulek: "Vláda podržela dotace pro velké potravináře. Těžil z nich i Agrofert"

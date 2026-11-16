@@ -147,36 +147,42 @@ zdroje:
     datum: 2022-06-08
     druh: primarni
     url: https://eur-lex.europa.eu/legal-content/CS/TXT/?uri=CELEX:32022D0908
+    archiv: https://web.archive.org/web/20261116092543/https://eur-lex.europa.eu/legal-content/CS/TXT/?uri=CELEX:32022D0908
   - id: 24
     vydavatel: Nejvyšší správní soud
     titulek: "Rozsudek 10 Afs 157/2024-62 (Vodňanské kuře proti SZIF)"
     datum: 2025-01-15
     druh: primarni
     url: https://sbirka.nssoud.cz/cz/dotace-soulad-projektu-s-pravni-upravou-stret-zajmu.p4999.html
+    archiv: https://web.archive.org/web/20261116092610/https://sbirka.nssoud.cz/cz/dotace-soulad-projektu-s-pravni-upravou-stret-zajmu.p4999.html
   - id: 25
     vydavatel: Nejvyšší správní soud
     titulek: "Rozsudek 5 Afs 228/2024-61 (ZEAS Puclice proti SZIF)"
     datum: 2025-06-13
     druh: primarni
     url: https://vyhledavac.nssoud.cz/DokumentOriginal/Index/742483
+    archiv: https://web.archive.org/web/20261116092638/https://vyhledavac.nssoud.cz/DokumentOriginal/Index/742483
   - id: 26
     vydavatel: Vláda ČR
     titulek: "Tisková konference po jednání vlády 27. srpna 2025 (přepis)"
     datum: 2025-08-27
     druh: primarni
     url: https://vlada.gov.cz/cz/media-centrum/tiskove-konference/tiskova-konference-po-jednani-vlady--27--srpna-2025-221500/
+    archiv: https://web.archive.org/web/20261116092652/https://vlada.gov.cz/cz/media-centrum/tiskove-konference/tiskova-konference-po-jednani-vlady--27--srpna-2025-221500/
   - id: 27
     vydavatel: Nejvyšší správní soud
     titulek: "Rozsudek 5 Afs 1/2026-46 (Schrom Farms proti SZIF)"
     datum: 2026-04-10
     druh: primarni
     url: https://vyhledavac.nssoud.cz/DokumentOriginal/Index/781115
+    archiv: https://web.archive.org/web/20261116092719/https://vyhledavac.nssoud.cz/DokumentOriginal/Index/781115
   - id: 28
     vydavatel: SZIF
     titulek: "Stanovisko SZIF k otázce střetu zájmů"
     datum: 2026-04-22
     druh: primarni
     url: https://szif.gov.cz/cs/CmDocument?rid=/apa_anon/cs/zpravy/zpravy_o_fondu/tiskove_zpravy/1776844359948.pdf
+    archiv: https://web.archive.org/web/20261116092733/https://szif.gov.cz/cs/CmDocument?rid=%2Fapa_anon%2Fcs%2Fzpravy%2Fzpravy_o_fondu%2Ftiskove_zpravy%2F1776844359948.pdf
 udalosti:
   - datum: 2019-06-05
     nazev: Dokument DG AGRI k dotacím Agrofertu
