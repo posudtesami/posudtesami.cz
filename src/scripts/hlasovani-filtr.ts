@@ -14,7 +14,7 @@ export function inicializujFiltrHlasovani(): void {
     if (vsichni) vsichni.hidden = slug !== '';
     sekce.forEach(s => { s.hidden = s.id !== slug; });
     odkazy.forEach(a => a.setAttribute('aria-current', String((a.dataset.klub ?? '') === slug)));
-    if (seznam) seznam.scrollLeft = 0;
+    if (seznam) seznam.scrollTop = 0; // na počítači se seznam posouvá dolů v rámečku; jiný klub začíná nahoře
   };
   stranka.addEventListener('click', e => {
     const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-klub]');
