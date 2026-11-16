@@ -45,6 +45,12 @@ const filtr = [
       <p class="hl-vysledek"><strong>{popisekVysledku(s)}</strong> · {s.souhrn.pro} pro · {s.souhrn.proti} proti · {s.souhrn.zdrzel} zdržel se · {s.souhrn.nehlasoval} nehlasoval · {omluven} omluven · {neprihlasen} nepřihlášen · kvórum {s.kvorum}</p>
     </header>
     <div class="hl-telo">
+      {/* Čipy jsou v pořadí první: na počítači schované, na telefonu tak vysvětlivka zůstává mezi nimi a seznamem. */}
+      <nav class="hl-cipy" aria-label="Filtr klubu">
+        {filtr.map(f => <a href={f.href} data-klub={f.slug} aria-current={String(f.slug === '')}>{f.popisek}</a>)}
+      </nav>
+      {/* Levý sloupec na počítači: tabulka klubů a pod ní vysvětlivka pojmů, které tabulka i seznam používají. */}
+      <div class="hl-levy">
       <div class="hl-tabulka-obal">
         <table class="hl-tabulka">
           <caption class="jen-ctecka">Jak hlasovaly kluby</caption>
@@ -63,11 +69,9 @@ const filtr = [
           </tbody>
         </table>
       </div>
-      <nav class="hl-cipy" aria-label="Filtr klubu">
-        {filtr.map(f => <a href={f.href} data-klub={f.slug} aria-current={String(f.slug === '')}>{f.popisek}</a>)}
-      </nav>
+      <p class="hl-legenda-text">„Zdržel se nebo nehlasoval“: data PSP u jednotlivých poslanců tyto dvě možnosti nerozlišují, souhrn je uvádí zvlášť. Omluven: nepřihlášen s omluvou z jednání. Nepřihlášen: bez omluvy. <a href="/metodika/#hlasovani">Jak hlasování zapisujeme</a></p>
+      </div>
       <div class="hl-poslanci" role="region" tabindex="0" aria-label="Poslanci podle hlasu">
-        <p class="hl-legenda-text">„Zdržel se nebo nehlasoval“: data PSP u jednotlivých poslanců tyto dvě možnosti nerozlišují, souhrn je uvádí zvlášť. Omluven: nepřihlášen s omluvou z jednání. Nepřihlášen: bez omluvy. <a href="/metodika/#hlasovani">Jak hlasování zapisujeme</a></p>
         <div class="hl-vsichni">
           <h2 class="jen-ctecka">Všichni poslanci</h2>
           {skupinyPoslancu(s.poslanci).map(g => (
