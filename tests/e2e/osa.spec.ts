@@ -53,6 +53,8 @@ for (const width of [768, 900, 1024]) {
 test('mobil: všechny volby ve větě filtrů jsou vidět (věta se zalomí)', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 700 });
   await page.goto('/');
+  // na telefonu je věta sbalená za „Upřesnit výběr“; rozbalená se musí celá vejít do šířky
+  await page.locator('.filtry .f-upresnit').click();
   for (const s of await page.locator('.f-dalsi select').all()) {
     const b = (await s.boundingBox())!;
     expect(b.x + b.width).toBeLessThanOrEqual(390);

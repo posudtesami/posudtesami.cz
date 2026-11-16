@@ -1,3 +1,5 @@
+import { SLOVNICEK_STAVU } from '../lib/stavy';
+import { slovnicekHtml } from '../lib/slovnicek';
 import { KONTROLNI_INSTITUCE, popisekInstituce, DRUHY_ZNAKU, popisekDruhuZnaku, UPOZORNOVATELE, upozornovatel, OBLASTI, oblast } from '../lib/pravidla-slovnik';
 
 // Seznamy pro pododdíl Dopad na kontrolu moci se generují ze slovníků, aby nemohly zastarat.
@@ -9,9 +11,11 @@ const seznamOblasti = OBLASTI.map(o => oblast(o).nazev).join(', ');
 // Texty převzaté doslova ze schválených prototypů (design/03-detail/_metodika.py).
 export type SekceStranky = { id: string; nadpis: string; shrnuti: string; html: string };
 
-/** Sekce Zákony a nařízení a věta o ní v kritériích se zobrazí jen tehdy, když archiv nějaká pravidla má (jinak stránka ani menu neexistují). */
-export const metodika = (sPravidly: boolean): { platiOd: string; sekce: SekceStranky[] } => ({
-  platiOd: '13. 11. 2026',
+/** Sekce Zákony a nařízení a věta o ní v kritériích se zobrazí jen tehdy, když archiv nějaká pravidla má (jinak stránka ani menu neexistují).
+ *  Sekce Oblasti jen tehdy, když web pohled Oblasti opravdu ukazuje (změny mají oblasti a text „Co by to znamenalo pro vás“):
+ *  Metodika nesmí slibovat, co na webu není. */
+export const metodika = (sPravidly: boolean, sOblastmi: boolean = sPravidly): { platiOd: string; sekce: SekceStranky[] } => ({
+  platiOd: '15. 11. 2026',
   sekce: [
     {
       id: "kriteria",
@@ -44,11 +48,18 @@ ${sPravidly ? '<p>Zákony, nařízení a další pravidla, která předkládá n
     {
       id: "jazyk",
       nadpis: "Jak píšeme",
-      shrnuti: "Věcně a podle stavu řízení. Žádné hodnotící přívlastky, u neuzavřených věcí platí presumpce neviny. U částek vždy říkáme, co znamenají.",
+      shrnuti: "Věcně a podle stavu řízení, bez hodnotících přívlastků. Každá kauza začíná větou obyčejnou řečí a právní pojmy jdou v textu rozkliknout. U částek vždy říkáme, co znamenají.",
       html: `<ul><li>Používáme slovesa podle skutečného stavu řízení: <em>obviněn, obžalován, zproštěn, odsouzen nepravomocně / pravomocně</em>.</li>
 <li>Nepoužíváme hodnotící přívlastky ani spekulace o úmyslech.</li>
 <li>U každé kauzy je vidět její aktuální stav a datum, kdy jsme ho naposledy ověřili.</li>
 <li>Dokud soud pravomocně nerozhodne, platí presumpce neviny. U kauz v trestním řízení to připomínáme přímo v detailu.</li></ul>
+<h3 id="srozumitelnost">Aby tomu rozuměl každý</h3>
+<p>Archiv má číst i člověk, který nesleduje politiku a nezná právní slovník. Proto:</p>
+<ul><li>Každá kauza začíná jednou až dvěma větami <strong>obyčejnou řečí</strong> (pole <em>O co jde</em>): bez zkratek a právních pojmů, nejvýš 120 znaků. Věta nic nového netvrdí. Jen kratšími slovy říká totéž co přesné shrnutí pod ní, a kde shrnutí píše „podle obžaloby“ nebo „podle Seznam Zpráv“, píše to i ona.</li>
+<li>Právní pojmy a zkratky úřadů jsou v textu tečkovaně podtržené. Po klepnutí se ukáže vysvětlení ze <a href="#pojmy">slovníčku pojmů a zkratek</a>. Vysvětlení popisuje pojem obecně, ne konkrétní kauzu.</li>
+<li>Běžná slova, která mají právní význam jen někdy („obvinil“, „odložil“), vysvětlivku nemají nebo ji mají jen ve spojení, kde o právní význam opravdu jde. Vysvětlivka u běžného slova by naznačila řízení, které neproběhlo.</li>
+<li>Když stav kauzy nevystihuje žádný pojem ze <a href="#stavy">slovníčku stavů</a>, nepíšeme „Jiné“, ale pár slov, jak věc stojí, například <em>Soud nařídil omluvu</em> nebo <em>Bez úředního řízení</em>.</li>
+<li>Zkratku, kterou slovníček nezná, nahlásí automatická kontrola autorovi, aby ji rozepsal nebo do slovníčku doplnil.</li></ul>
 <h3 id="castky">Částky</h3>
 <p>U kauz, ve kterých jde o peníze, uvádíme v detailu nejvýš tři částky. Každá má zdroj a označení, co znamená:</p>
 <dl class="slovnicek">
@@ -97,18 +108,15 @@ ${sPravidly ? '<p>Zákony, nařízení a další pravidla, která předkládá n
       nadpis: "Slovníček stavů řízení",
       shrnuti: "Co přesně znamená „obžaloba“, „nepravomocné zproštění“ nebo „úřední zjištění“.",
       html: `<dl class="slovnicek">
-<dt>Prověřování</dt><dd>Policie zjišťuje, zda se stal trestný čin. Nikdo zatím není obviněn.</dd>
-<dt>Obvinění</dt><dd>Policie zahájila trestní stíhání konkrétní osoby.</dd>
-<dt>Obžaloba</dt><dd>Státní zástupce podal k soudu obžalobu.</dd>
-<dt>Nepravomocné odsouzení / zproštění</dt><dd>Soud rozhodl, ale proti rozhodnutí se lze odvolat.</dd>
-<dt>Pravomocné odsouzení / zproštění</dt><dd>Rozhodnutí už nelze napadnout řádným opravným prostředkem.</dd>
-<dt>Odloženo</dt><dd>Věc byla odložena bez zahájení trestního stíhání.</dd>
-<dt>Zastaveno</dt><dd>Trestní stíhání skončilo bez rozhodnutí soudu o vině.</dd>
-<dt>Promlčeno</dt><dd>Uplynula zákonná lhůta, čin už nelze stíhat.</dd>
-<dt>Soudní řízení</dt><dd>Věc projednává soud mimo trestní řízení, například v občanskoprávním sporu.</dd>
-<dt>Úřední zjištění</dt><dd>Závěr úřadu mimo trestní řízení, například audit Evropské komise nebo NKÚ.</dd>
-<dt>Jiné</dt><dd>Žádný z uvedených stavů kauzu nevystihuje, například když skončil občanskoprávní spor, řízení běží víc najednou nebo žádné. Podrobnosti jsou v poznámce u kauzy.</dd>
+${SLOVNICEK_STAVU.map(p => `<dt>${p.heslo}</dt><dd>${p.vyklad}</dd>`).join('\n')}
 </dl>`,
+    },
+    {
+      id: "pojmy",
+      nadpis: "Slovníček pojmů a zkratek",
+      shrnuti: "Právní výrazy a zkratky úřadů, které se v kauzách opakují, vysvětlené obyčejnou řečí. Tytéž výklady se ukážou po klepnutí na podtržený výraz v textu.",
+      html: `<p>Výklad říká, co pojem znamená obecně. O konkrétní kauze nic netvrdí.</p>
+${slovnicekHtml()}`,
     },
     ...(sPravidly ? [{
       id: "pravidla",
@@ -152,7 +160,8 @@ ${sPravidly ? '<p>Zákony, nařízení a další pravidla, která předkládá n
 <p>U nařízení vlády, usnesení vlády, pravidel dotačních programů a pokynů ministerstev hlasování neuvádíme: jak hlasovali jednotliví členové vlády, se nezveřejňuje, a o pravidlech programů a pokynech se nehlasuje vůbec.</p>
 <h3 id="vyhrady">Výhrady a jazyk</h3>
 <p>Uvádíme výhrady institucí, jako je Legislativní rada vlády, ÚOHS, NKÚ, Evropská komise nebo veřejný ochránce práv. Výhrady opozice patří do souvislostí a označujeme je jako politické. Dokud změna neplatí, píšeme podmiňovacím způsobem: novela <em>by zkrátila</em>, <em>umožnila by</em>. Upozornění ke znaku kontroly moci neřadíme mezi výhrady, uvádíme je v záložce Kontrola moci (oddíl Dopad na kontrolu moci).</p>`,
-    }, {
+    }] : []),
+    ...(sPravidly && sOblastmi ? [{
       id: "oblasti",
       nadpis: "Oblasti",
       shrnuti: "Změny pravidel seskupené podle oblastí státu, u každé změny co by znamenala pro vás a u oblasti citace institucí, odborníků a vlády.",

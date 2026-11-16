@@ -104,3 +104,16 @@ describe('řazení a zpětné vazby', () => {
     expect(pravidlaKauzy(r.pravidla, 'alfa-dotace')).toEqual([]);
   });
 });
+
+describe('zkratky bez výkladu v pravidle', () => {
+  it('neznámou zkratku hlásí jako varování', () => {
+    const p = platnePravidlo();
+    (p.stanovisko as { text: string }).text = 'Předkladatel odkázal na stanovisko QWX.';
+    const r = overPravidlo('p.md', p, '', STITKY);
+    expect(r.chyby).toEqual([]);
+    expect(r.varovani.map(v => v.zprava)).toEqual([expect.stringMatching(/^Zkratka „QWX“ není vysvětlená/)]);
+  });
+  it('platné pravidlo žádné varování nemá', () => {
+    expect(overPravidlo('p.md', platnePravidlo(), '', STITKY).varovani).toEqual([]);
+  });
+});

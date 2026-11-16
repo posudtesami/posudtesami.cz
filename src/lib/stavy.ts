@@ -55,3 +55,32 @@ export function volbaStavu(s: Stav): string {
  *  připomínku nechává, protože se pod ním může skrývat i trestní větev (například odložené prověřování). */
 const S_PRESUMPCI: readonly Stav[] = ['provereni', 'obvineni', 'obzaloba', 'nepravomocne-odsouzen', 'nepravomocne-zprosten', 'jine'];
 export const pripominaPresumpci = (s: Stav): boolean => S_PRESUMPCI.includes(s);
+
+/** Slovníček stavů řízení: jeden zdroj pro Metodiku i pro řádek výkladu pod stavem v detailu kauzy.
+ *  Odsouzení a zproštění mají společné heslo, liší se jen právní mocí. */
+export const SLOVNICEK_STAVU: { heslo: string; vyklad: string; stavy: readonly Stav[] }[] = [
+  { heslo: 'Prověřování', vyklad: 'Policie zjišťuje, zda se stal trestný čin. Nikdo zatím není obviněn.', stavy: ['provereni'] },
+  { heslo: 'Obvinění', vyklad: 'Policie zahájila trestní stíhání konkrétní osoby.', stavy: ['obvineni'] },
+  { heslo: 'Obžaloba', vyklad: 'Státní zástupce podal k soudu obžalobu.', stavy: ['obzaloba'] },
+  { heslo: 'Nepravomocné odsouzení / zproštění', vyklad: 'Soud rozhodl, ale proti rozhodnutí se lze odvolat.', stavy: ['nepravomocne-odsouzen', 'nepravomocne-zprosten'] },
+  { heslo: 'Pravomocné odsouzení / zproštění', vyklad: 'Rozhodnutí už nelze napadnout řádným opravným prostředkem.', stavy: ['pravomocne-odsouzen', 'pravomocne-zprosten'] },
+  { heslo: 'Odloženo', vyklad: 'Věc byla odložena bez zahájení trestního stíhání.', stavy: ['odlozeno'] },
+  { heslo: 'Zastaveno', vyklad: 'Trestní stíhání skončilo bez rozhodnutí soudu o vině.', stavy: ['zastaveno'] },
+  { heslo: 'Promlčeno', vyklad: 'Uplynula zákonná lhůta, čin už nelze stíhat.', stavy: ['promlceno'] },
+  { heslo: 'Soudní řízení', vyklad: 'Věc projednává soud mimo trestní řízení, například v občanskoprávním sporu.', stavy: ['soudni-rizeni'] },
+  { heslo: 'Úřední zjištění', vyklad: 'Závěr úřadu mimo trestní řízení, například audit Evropské komise nebo NKÚ.', stavy: ['uredni-zjisteni'] },
+  { heslo: 'Jiné', vyklad: 'Žádný z uvedených stavů kauzu nevystihuje, například když skončil občanskoprávní spor, řízení běží víc najednou nebo žádné. Místo slova „Jiné“ proto u kauzy píšeme pár slovy, jak věc stojí, a podrobnosti jsou v poznámce u kauzy.', stavy: ['jine'] },
+];
+
+/** Jedna věta, co stav znamená. Zbytkový stav „jine“ výklad nemá: co se děje, říká krátký popis a poznámka u kauzy. */
+export function vykladStavu(s: Stav): string | undefined {
+  return s === 'jine' ? undefined : SLOVNICEK_STAVU.find(p => p.stavy.includes(s))?.vyklad;
+}
+
+/** Nejvýš tolik znaků smí mít krátký popis stavu, aby se vešel do řádku osy (jako nejdelší popisek stavu). */
+export const NEJVIC_STAV_KRATCE = 24;
+
+/** Stav, jak ho čtenář uvidí: u zbytkového stavu „jine“ krátký popis kauzy („Soud nařídil omluvu“), jinak popisek stavu. */
+export function stavKauzy(k: { stav: Stav; stavKratce?: string }): string {
+  return k.stav === 'jine' && k.stavKratce ? k.stavKratce : popisekStavu(k.stav);
+}

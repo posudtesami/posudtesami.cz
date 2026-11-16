@@ -1,6 +1,7 @@
 ---
 nazev: Testovací kauza Žeta
 shrnuti: Fiktivní podezření ze střetu zájmů při rozdělování fiktivních prostředků Žeta. Shrnutí je schválně dlouhé, aby testy ověřily, že se v hlavičce detailu zobrazí celý a nic se z něj neusekne trojtečkou. Pokračuje další fiktivní větou o fiktivním úřadu, fiktivní kontrole a fiktivním výsledku řízení, který zatím není známý.
+oCoJde: Fiktivní podezření, že se o penězích Žeta rozhodovalo ve prospěch fiktivní firmy. Věta je schválně u horní hranice.
 od: 2018
 do: null
 stav: obzaloba

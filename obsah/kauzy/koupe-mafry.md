@@ -2,9 +2,11 @@
 typ: kauza
 nazev: Koupě vydavatelství MAFRA Agrofertem
 shrnuti: Agrofert koupil v roce 2013 vydavatelství MAFRA (MF DNES, Lidové noviny, iDNES.cz, Óčko) a v roce 2014 Rádio Impuls. A. Babiš slíbil nezasahovat do redakcí. Odcházející novináři i redaktoři v roce 2017 tvrdili opak. Od února 2017 byla MAFRA ve svěřenských fondech, v únoru 2024 ji Agrofert prodal skupině Kaprain.
+oCoJde: Agrofert koupil vydavatele MF DNES a Lidových novin. Babiš slíbil do redakcí nezasahovat, část novinářů tvrdila opak.
 od: 2013
 do: 2024
 stav: jine
+stavKratce: Agrofert média prodal
 stavPoznamka: Koupi MAFRA (2013) i společnosti Londa (2014) povolil ÚOHS. Zda A. Babiš ovlivňoval obsah médií, žádný úřad ani soud nerozhodoval. Přestupková řízení o ovládání médií po roce 2017 vedl Městský úřad Černošice (samostatná kauza). Agrofert MAFRA a Londa prodal skupině Kaprain Karla Pražáka, převod akcií proběhl 1. 2. 2024.
 stitky: [media, stret-zajmu]
 overeno: 2026-11-12

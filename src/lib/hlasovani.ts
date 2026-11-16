@@ -91,3 +91,20 @@ export function vybranyKlub(hash: string, slugy: readonly string[]): string {
   try { s = decodeURIComponent(hash.replace(/^#/, '')).toLowerCase(); } catch { return ''; }
   return slugy.includes(s) ? s : '';
 }
+
+/** Kluby rozdělené podle toho, čeho měly víc (volba uživatele 15. 11.): řádek PRO a řádek PROTI, aby bylo
+ *  na první pohled vidět, kdo hlasoval s kým. Rozlišuje text a pořadí, ne barva — hlas pro není hodnocení
+ *  (spec hlasování, oddíl 7). Pořadí klubů uvnitř řádku zůstává jako v souhrnKlubu.
+ *  Klub bez hlasu pro i proti (0 : 0) má třetí řádek: rozpis podle klubů musí ukázat všechny kluby (spec
+ *  hlasování), i ten, který se celý zdržel nebo chyběl. Klub se stejným nenulovým počtem pro i proti stojí
+ *  v obou řádcích — přiřadit ho jen k jedné straně by bylo zkreslení. */
+export function rozdelKluby(kluby: readonly SouhrnKlubu[]): { pro: SouhrnKlubu[]; proti: SouhrnKlubu[]; ani: SouhrnKlubu[] } {
+  return {
+    pro: kluby.filter(k => k.pro > 0 && k.pro >= k.proti),
+    proti: kluby.filter(k => k.proti > 0 && k.proti >= k.pro),
+    ani: kluby.filter(k => k.pro === 0 && k.proti === 0),
+  };
+}
+
+/** Nadpis řádku klubů v záložce Hlasování. */
+export const NADPIS_STRANY = { pro: 'Pro', proti: 'Proti', ani: 'Ani pro, ani proti' } as const;

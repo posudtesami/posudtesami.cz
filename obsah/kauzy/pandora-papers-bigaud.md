@@ -2,6 +2,7 @@
 typ: kauza
 nazev: "Pandora Papers: zámek Bigaud"
 shrnuti: Podle Pandora Papers financoval A. Babiš v letech 2009–2010 přes offshorové firmy nákup nemovitostí na Azurovém pobřeží včetně panství Bigaud u Cannes. Francouzská prokuratura vede předběžné vyšetřování pro podezření z praní peněz, česká policie trestný čin neshledala. Nikdo nebyl obviněn, Babiš to popírá.
+oCoJde: Podle uniklých dokumentů koupil Babiš přes zahraniční firmy zámek ve Francii. Popírá to, Francie věc prověřuje.
 od: 2009
 do: null
 stav: provereni

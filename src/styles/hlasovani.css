@@ -13,7 +13,11 @@
 .hl-vysledek { margin: 0 0 6px; font-size: 15px; }
 .hl-blok .hl-vysledek .hl-legenda { font-size: 13px; color: var(--meta); }
 .hl-blok .hl-vysledek a { font-size: 13px; }
-.hl-kluby { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0 0 6px; padding: 0; }
+.hl-kluby { list-style: none; margin: 0 0 6px; padding: 0; }
+/* řádek PRO / PROTI: nadpis řádku a pod ním čipy klubů */
+.hl-strana { margin: 0 0 6px; }
+.hl-strana-nazev { display: block; margin: 0 0 4px; font: 600 13px/1.4 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--inkoust); }
+.hl-strana > ul { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
 .hl-kluby a { display: inline-block; border: 1px solid var(--linka); background: var(--plocha); padding: 2px 8px; font-size: 13px; color: var(--inkoust); text-decoration: none; }
 .hl-kluby a:hover { border-color: var(--modra); }
 .hl-cisla { font-family: var(--f-mono); }

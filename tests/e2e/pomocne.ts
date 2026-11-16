@@ -20,6 +20,40 @@ export const MOBILY = [
   { width: 320, height: 568 },
 ];
 
+/** Popisky záložek detailu. Na telefonu (do 760 px) mají krátký tvar, aby se vešlo všech pět včetně
+ *  Zdrojů; krátký tvar je skutečný text tlačítka, takže je zároveň jeho jménem pro čtečku. Viz Detail.astro. */
+const ZALOZKY_DLOUHE: (string | RegExp)[] = ['Proč je to kauza', 'Chronologie', 'Souvislosti', 'Stav a stanovisko', /^Zdroje/];
+const ZALOZKY_KRATKE: (string | RegExp)[] = ['Proč', 'Kdy', 'Vazby', 'Stav', /^Zdroje/];
+const KLICE = ['proc', 'chrono', 'souv', 'stav', 'zdroje'] as const;
+
+export function popiskyZalozek(sirka: number): (string | RegExp)[] {
+  return sirka <= 760 ? ZALOZKY_KRATKE : ZALOZKY_DLOUHE;
+}
+
+export function popisekZalozky(p: (typeof KLICE)[number], sirka: number): string | RegExp {
+  return popiskyZalozek(sirka)[KLICE.indexOf(p)];
+}
+
+/** Záložka detailu zákona podle plného názvu. Na telefonu (do 760 px) má krátký tvar — zákon má
+ *  až sedm záložek a s plnými názvy by ujely mimo obraz; viz DetailPravidla.astro. Regulární výraz
+ *  (třeba /^Zdroje/) se nemění. */
+const ZALOZKY_ZAKONA_KRATKE: Record<string, string> = {
+  'Komu prospívá': 'Prospěch', 'Kontrola moci': 'Kontrola', 'Výhrady a stanovisko': 'Výhrady', 'Souvislosti': 'Vazby',
+};
+export function zalozkaZakona(nazev: string | RegExp, sirka: number): string | RegExp {
+  if (typeof nazev !== 'string' || sirka > 760) return nazev;
+  const hlasovani = nazev.match(/^Hlasování (\(\d+\))$/);
+  return hlasovani ? `Hlasy ${hlasovani[1]}` : ZALOZKY_ZAKONA_KRATKE[nazev] ?? nazev;
+}
+
+/** Ověří názvy záložek v daném pořadí. Podle jména prvku, ne podle textContent: ten nese dlouhý
+ *  i krátký tvar popisku naráz („Komu prospíváProspěch“), jméno jen ten, který je vidět. */
+export async function overNazvyZalozek(page: Page, nazvy: string[]): Promise<void> {
+  const zalozky = page.getByRole('tab');
+  await expect(zalozky).toHaveCount(nazvy.length);
+  for (const [i, nazev] of nazvy.entries()) await expect(zalozky.nth(i)).toHaveAccessibleName(nazev);
+}
+
 export async function overBezPosouvani(page: Page) {
   const { svisle, vyska } = await page.evaluate(() => ({
     svisle: document.scrollingElement!.scrollHeight,

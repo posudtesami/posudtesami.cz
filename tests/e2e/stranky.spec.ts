@@ -3,7 +3,7 @@ import { overBezPosouvani, overBezPosouvaniDoStrany } from './pomocne';
 
 test.use({ viewport: { width: 1366, height: 768 } });
 
-for (const [cesta, nadpis, karet] of [['/metodika/', 'Jak archiv vedeme', 9], ['/o-projektu/', 'Kdo, proč a jak', 8]] as const) {
+for (const [cesta, nadpis, karet] of [['/metodika/', 'Jak archiv vedeme', 10], ['/o-projektu/', 'Kdo, proč a jak', 8]] as const) {
   test(`${cesta}: karty, modal s plným zněním, bez posouvání`, async ({ page }) => {
     await page.goto(cesta);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(nadpis);
@@ -80,7 +80,8 @@ test('Metodika a O projektu mluví o prospěchu neutrálně, jako o výsledku ro
 
 test('bez pravidel Metodika ani O projektu o oddílu Zákony a nařízení nemluví', async ({ page }) => {
   await page.goto('http://localhost:4322/metodika/');
-  await expect(page.locator('.v4-karta:not(.v4-cta)')).toHaveCount(7);
+  await expect(page.locator('.v4-karta:not(.v4-cta)')).toHaveCount(8);
+  await expect(page.locator('[data-sekce="oblasti"]')).toHaveCount(0);
   await expect(page.locator('[data-sekce="pravidla"]')).toHaveCount(0);
   await page.locator('.v4-karta button[data-sekce="kriteria"]').click();
   const panel = page.locator('.v4-dlg-panel[data-sekce="kriteria"]');
@@ -208,14 +209,22 @@ test('kolečko myši posouvá delší oddíl modalu do strany', async ({ page })
 test.describe('mobil 390×700', () => {
   test.use({ viewport: { width: 390, height: 700 } });
 
-  test('menu ukazuje všechny odkazy na jednom řádku', async ({ page }) => {
+  // Na telefonu má značka vlastní řádek a menu stojí pod ní přes celou šířku (díl „Kde a jak velké
+  // je menu“, varianta B). Všechny čtyři odkazy jsou v jedné řadě a žádný se neláme.
+  test('menu ukazuje všechny odkazy v jedné řadě pod značkou', async ({ page }) => {
     for (const cesta of ['/', '/metodika/']) {
       await page.goto(cesta);
       const odkazy = page.getByRole('navigation', { name: 'Hlavní' }).getByRole('link');
       await expect(odkazy).toHaveCount(4);
       for (const o of await odkazy.all()) await expect(o).toBeVisible();
-      const vysky = await odkazy.evaluateAll(a => a.map(x => x.getBoundingClientRect().height));
-      expect(Math.max(...vysky), 'odkaz se nesmí zalomit').toBeLessThan(30);
+      // Zalomení se pozná podle počtu řádkových boxů, ne podle výšky: odkazy mají kvůli dotykovému
+      // cíli výplň nahoře i dole, takže jsou vysoké přes 44 px i na jednom řádku.
+      const radky = await odkazy.evaluateAll(a => a.map(x => x.getClientRects().length));
+      expect(Math.max(...radky), 'odkaz se nesmí zalomit na dva řádky').toBe(1);
+      const vysky = await odkazy.evaluateAll(a => a.map(x => Math.round(x.getBoundingClientRect().top)));
+      expect(new Set(vysky).size, 'odkazy menu stojí v jedné řadě').toBe(1);
+      const znacka = (await page.locator('.top .brand').boundingBox())!;
+      expect(vysky[0], 'menu je pod značkou, ne vedle ní').toBeGreaterThanOrEqual(Math.round(znacka.y + znacka.height) - 1);
     }
   });
 
@@ -229,7 +238,9 @@ test.describe('mobil 390×700', () => {
           iw: window.innerWidth,
           odkazy: [...document.querySelectorAll('nav[aria-label="Hlavní"] a')].map(a => {
             const r = a.getBoundingClientRect();
-            return { levy: r.left, prave: r.right, vyska: r.height, pismo: parseFloat(getComputedStyle(a).fontSize) };
+            // radky: počet řádkových boxů. Výška sama o sobě zalomení neprozradí, odkazy mají
+            // kvůli dotykovému cíli výplň 15 px nahoře i dole.
+            return { levy: r.left, prave: r.right, radky: a.getClientRects().length, pismo: parseFloat(getComputedStyle(a).fontSize) };
           }),
         }));
         expect(sw, `${cesta} ${sirka}: stránka se posouvá do strany`).toBeLessThanOrEqual(iw);
@@ -237,25 +248,25 @@ test.describe('mobil 390×700', () => {
         for (const o of odkazy) {
           expect(o.levy, `${cesta} ${sirka}: odkaz menu začíná mimo okno`).toBeGreaterThanOrEqual(0);
           expect(o.prave, `${cesta} ${sirka}: odkaz menu přesahuje okno`).toBeLessThanOrEqual(iw);
-          expect(o.vyska, `${cesta} ${sirka}: odkaz se zalomil`).toBeLessThan(30);
-          expect(o.pismo, `${cesta} ${sirka}: písmo odkazu je příliš malé`).toBeGreaterThanOrEqual(12);
+          expect(o.radky, `${cesta} ${sirka}: odkaz se zalomil`).toBe(1);
+          expect(o.pismo, `${cesta} ${sirka}: písmo odkazu je příliš malé`).toBeGreaterThanOrEqual(14);
         }
       }
     }
   });
 
-  test('tříodkazová hlavička (bez pravidel) má na 390 px značku 16 px', async ({ page }) => {
+  test('tříodkazová hlavička (bez pravidel) má na 390 px značku v plné velikosti', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 700 });
     await page.goto('http://localhost:4322/');
     await expect(page.getByRole('navigation', { name: 'Hlavní' }).getByRole('link')).toHaveCount(3);
-    expect(await page.locator('.top .brand').evaluate(b => getComputedStyle(b).fontSize)).toBe('16px');
+    expect(await page.locator('.top .brand').evaluate(b => getComputedStyle(b).fontSize)).toBe('18px');
   });
 
   test('každou kartu Metodiky jde otevřít', async ({ page }) => {
     await page.goto('/metodika/');
     const karty = page.locator('.v4-karta:not(.v4-cta)');
     const pocet = await karty.count();
-    expect(pocet).toBe(9);
+    expect(pocet).toBe(10);
     for (let i = 0; i < pocet; i++) {
       await karty.nth(i).click({ position: { x: 20, y: 20 } });
       await expect(page.locator('dialog.v4-dlg')).toBeVisible();
@@ -268,14 +279,16 @@ test.describe('mobil 390×700', () => {
 test.describe('mobil 390×700: hlavní stránka', () => {
   test.use({ viewport: { width: 390, height: 700 } });
 
-  test('osa je zúžená: všechny pruhy jsou vidět bez posouvání do strany', async ({ page }) => {
+  test('seznam kauz se neposouvá do strany; místo pruhů má rok začátku a konec', async ({ page }) => {
     await page.goto('/');
     const graf = (await page.locator('#graf').boundingBox())!;
-    for (const pruh of await page.locator('.radek:not([hidden]) .pruh').all()) {
-      const b = (await pruh.boundingBox())!;
+    for (const cas of await page.locator('.radek:not([hidden]) .r-cas').all()) {
+      const b = (await cas.boundingBox())!;
       expect(b.x).toBeGreaterThanOrEqual(graf.x - 1);
       expect(b.x + b.width).toBeLessThanOrEqual(graf.x + graf.width + 1);
     }
+    await expect(page.locator('.radek:not([hidden]) .pruh').first()).toBeHidden();
+    await overBezPosouvaniDoStrany(page);
   });
 
   test('přepínač „jen neuzavřené“, počítadlo a Zrušit filtry jsou dostupné', async ({ page }) => {

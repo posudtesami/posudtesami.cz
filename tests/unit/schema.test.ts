@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { kauzaSchema, rokZData } from '../../src/lib/schema';
-import { popisekStavu, volbaStavu, pripominaPresumpci, STAVY } from '../../src/lib/stavy';
+import { kauzaSchema, kauzaSchemaKoncepty, rokZData } from '../../src/lib/schema';
+import { popisekStavu, volbaStavu, pripominaPresumpci, stavKauzy, vykladStavu, SLOVNICEK_STAVU, STAVY } from '../../src/lib/stavy';
 import { platnaKauza } from './ukazka';
 
 const chyby = (data: unknown) => {
@@ -200,5 +200,66 @@ describe('druh zdroje „stanovisko“ (vyjádření dotčené strany)', () => {
   it('stanovisko dotčené strany se nepočítá mezi dvě redakce', () => {
     const k = sStanoviskem({ ...platnaKauza(), kriterium: 'dve-redakce' });
     expect(chyby({ ...k, proc: { text: 'Důvod.', zdroje: [2, 9] } }).join(' ')).toMatch(/dva mediální zdroje/);
+  });
+});
+
+describe('věta „O co jde“ obyčejnou řečí', () => {
+  it('zveřejněná kauza ji musí mít', () => {
+    const k = platnaKauza(); delete k.oCoJde;
+    expect(chyby(k).join(' ')).toMatch(/O co jde/);
+  });
+  it('koncept ji mít nemusí', () => {
+    const k = platnaKauza(); delete k.oCoJde;
+    expect(kauzaSchemaKoncepty.safeParse(k).success).toBe(true);
+  });
+  it('je krátká: nejvýš 120 znaků', () => {
+    expect(chyby({ ...platnaKauza(), oCoJde: 'Fiktivní věta. '.repeat(9).trim() }).join(' ')).toMatch(/nejvýš 120 znaků/);
+    expect(chyby({ ...platnaKauza(), oCoJde: 'x'.repeat(120) })).toEqual([]);
+  });
+  it('odmítne zkratku úřadu, i když ji slovníček zná', () => {
+    expect(chyby({ ...platnaKauza(), oCoJde: 'Pokutu uložil ÚOHS.' }).join(' ')).toMatch(/„O co jde“ má být bez zkratek: rozepište „ÚOHS“/);
+  });
+  it('obecně známé zkratky a vlastní jména smí obsahovat', () => {
+    expect(chyby({ ...platnaKauza(), oCoJde: 'Firma FAU dlužila na DPH a peníze šly z EU.' })).toEqual([]);
+  });
+});
+
+describe('krátký popis stavu místo slova „Jiné“', () => {
+  const jina = () => ({ ...platnaKauza(), stav: 'jine', stavPoznamka: 'Fiktivní spor skončil.' });
+  it('zveřejněná kauza ve stavu „jine“ ho musí mít', () => {
+    expect(chyby(jina()).join(' ')).toMatch(/krátký popis stavu \(stavKratce\)/);
+    expect(chyby({ ...jina(), stavKratce: 'Soud nařídil omluvu' })).toEqual([]);
+  });
+  it('koncept ho mít nemusí', () => {
+    expect(kauzaSchemaKoncepty.safeParse(jina()).success).toBe(true);
+  });
+  it('u ostatních stavů být nesmí: stav říká popisek ze slovníčku', () => {
+    expect(chyby({ ...platnaKauza(), stavKratce: 'Něco jiného' }).join(' ')).toMatch(/stavKratce patří jen ke stavu „jine“/);
+  });
+  it('je krátký: nejvýš 24 znaků, aby se vešel do řádku osy', () => {
+    expect(chyby({ ...jina(), stavKratce: 'Tohle je příliš dlouhý popis stavu' }).join(' ')).toMatch(/nejvýš 24 znaků/);
+  });
+  it('stavKauzy ukáže krátký popis, jinak popisek stavu', () => {
+    expect(stavKauzy({ stav: 'jine', stavKratce: 'Soud nařídil omluvu' })).toBe('Soud nařídil omluvu');
+    expect(stavKauzy({ stav: 'jine' })).toBe('Jiné');
+    expect(stavKauzy({ stav: 'obzaloba' })).toBe('Obžaloba');
+  });
+});
+
+describe('výklad stavu', () => {
+  it('každý stav kromě „jine“ má jednu větu výkladu', () => {
+    for (const s of STAVY) {
+      if (s === 'jine') expect(vykladStavu(s)).toBeUndefined();
+      else expect(vykladStavu(s)).toMatch(/\.$/);
+    }
+  });
+  it('odsouzení a zproštění sdílejí výklad podle právní moci', () => {
+    expect(vykladStavu('nepravomocne-odsouzen')).toBe(vykladStavu('nepravomocne-zprosten'));
+    expect(vykladStavu('pravomocne-odsouzen')).toBe('Rozhodnutí už nelze napadnout řádným opravným prostředkem.');
+  });
+  it('slovníček stavů pro Metodiku má jedenáct hesel a vysvětluje i „Jiné“', () => {
+    expect(SLOVNICEK_STAVU).toHaveLength(11);
+    expect(SLOVNICEK_STAVU.map(p => p.heslo)).toContain('Nepravomocné odsouzení / zproštění');
+    expect(SLOVNICEK_STAVU.at(-1)?.heslo).toBe('Jiné');
   });
 });

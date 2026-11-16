@@ -2,6 +2,7 @@
 typ: kauza
 nazev: Střet zájmů a audit Evropské komise
 shrnuti: Auditoři Evropské komise dospěli k závěru, že A. Babiš byl jako člen vlády ve střetu zájmů, protože i po vložení Agrofertu do svěřenských fondů (2017) holding fakticky ovládal. České soudy tento závěr v letech 2025 a 2026 potvrdily ve sporech o odebrané dotace a veřejné zakázky. Babiš i Agrofert střet zájmů popírají.
+oCoJde: Podle auditorů Evropské komise Babiš ve vládě dál ovládal Agrofert, i když ho dal do fondů. Soudy to potvrdily.
 od: 2017
 do: null
 stav: uredni-zjisteni

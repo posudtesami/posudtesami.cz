@@ -1,6 +1,6 @@
 ---
 import type { HlasovaniPravidla } from '../lib/hlasovani';
-import { souhrnKlubu, rozpisKlubu, popisekTypu, popisekVysledku, VETA_PROCEDURALNI } from '../lib/hlasovani';
+import { souhrnKlubu, rozdelKluby, NADPIS_STRANY, rozpisKlubu, popisekTypu, popisekVysledku, VETA_PROCEDURALNI } from '../lib/hlasovani';
 import { datumText } from '../lib/casova-osa';
 import '../styles/hlasovani.css';
 
@@ -14,9 +14,18 @@ const { hlasovani } = Astro.props;
       <p class="hl-meta">{datumText(h.snimek.datum)} · hlasování č. {h.snimek.cislo} · <span class="hl-typ">{popisekTypu(h.typ)}</span></p>
       <p class="hl-co">{h.co}</p>
       <p class="hl-vysledek"><strong>{popisekVysledku(h.snimek)} {h.snimek.souhrn.pro} : {h.snimek.souhrn.proti}</strong> <span class="hl-legenda">· pro : proti ·</span> <a href={`/hlasovani/${h.id}/`}>Všichni poslanci →</a></p>
+      {/* Kluby v řádcích PRO a PROTI podle toho, čeho měly víc: kdo hlasoval s kým, je vidět naráz a slovy.
+          Barvy ne — hlas pro není hodnocení (spec hlasování, oddíl 7). Klub bez hlasu pro i proti má třetí řádek. */}
       <ul class="hl-kluby" aria-label="Jak hlasovaly kluby">
-        {souhrnKlubu(h.snimek).map(k => (
-          <li><a href={`/hlasovani/${h.id}/#${k.slug}`}>{k.popisek} <span class="hl-cisla">{k.pro} : {k.proti}</span><span class="jen-ctecka"> ({rozpisKlubu(k)})</span></a></li>
+        {Object.entries(rozdelKluby(souhrnKlubu(h.snimek))).filter(([, kluby]) => kluby.length > 0).map(([strana, kluby]) => (
+          <li class="hl-strana">
+            <span class="hl-strana-nazev" id={`${h.id}-${strana}`}>{NADPIS_STRANY[strana as keyof typeof NADPIS_STRANY]}</span>
+            <ul aria-labelledby={`${h.id}-${strana}`}>
+              {kluby.map(k => (
+                <li><a href={`/hlasovani/${h.id}/#${k.slug}`}>{k.popisek} <span class="hl-cisla">{k.pro} : {k.proti}</span><span class="jen-ctecka"> ({rozpisKlubu(k)})</span></a></li>
+              ))}
+            </ul>
+          </li>
         ))}
       </ul>
       {h.typ === 'proceduralni' && <p class="hl-proc">{VETA_PROCEDURALNI}</p>}

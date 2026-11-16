@@ -2,6 +2,7 @@
 typ: kauza
 nazev: Střet zájmů po roce 2025
 shrnuti: Po jmenování premiérem (9. 12. 2025) vložil A. Babiš Agrofert do svěřenského fondu RSVP Trust a střet zájmů považuje za vyřešený. Evropská komise v září 2026 uvedla, že je v potenciálním střetu zájmů, a část plateb pozastavila. EPPO vede od května 2026 řízení kvůli vyplácení dotací, nikoho neobvinilo.
+oCoJde: Babiš jako premiér převedl Agrofert do fondu a střet zájmů má za vyřešený. Podle Evropské komise může trvat dál.
 od: 2025
 do: null
 stav: provereni

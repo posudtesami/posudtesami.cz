@@ -2,6 +2,7 @@
 typ: kauza
 nazev: Agrotec a zakázky České pošty
 shrnuti: Policie v roce 2014 obvinila Agrotec z Agrofertu ze sjednání výhody při zakázkách České pošty na pneumatiky. Soud stíhání firmy v roce 2017 zastavil kvůli jejímu etickému kodexu, Vrchní soud to zrušil. Agrotec byl dvakrát zproštěn, pravomocně v dubnu 2021. Stát mu v roce 2023 uhradil 620 tis. Kč za obhajobu.
+oCoJde: Firma Agrotec z Agrofertu byla obviněna kvůli zakázkám České pošty na pneumatiky. Soud nakonec rozhodl, že vinna není.
 od: 2014
 do: 2023
 stav: pravomocne-zprosten

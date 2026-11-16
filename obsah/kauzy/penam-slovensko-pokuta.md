@@ -2,6 +2,7 @@
 typ: kauza
 nazev: Slovenská pokuta za pekárny Penamu
 shrnuti: Slovenský Protimonopolný úrad uložil v roce 2023 Agrofertu pokutu 21 mil. eur. Podle úřadu v roce 2013 bez ohlášení získal kontrolu nad pekárnami v Bratislavě a Žilině, jejichž koupi mu úřad v roce 2012 zakázal. Rada úřadu pokutu v září 2024 potvrdila. Agrofert rozhodnutí považuje za nezákonné a ohlásil žalobu.
+oCoJde: Slovenský úřad dal Agrofertu pokutu 21 milionů eur. Podle něj ovládl pekárny, které koupit nesměl. Agrofert se brání.
 od: 2011
 do: null
 stav: uredni-zjisteni

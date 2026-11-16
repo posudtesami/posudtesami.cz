@@ -99,3 +99,32 @@ describe('popisky', () => {
     expect(VETA_PROCEDURALNI).toBe('Procedurální hlasování rozhoduje o pořadu nebo způsobu projednání, ne o obsahu návrhu.');
   });
 });
+
+import { rozdelKluby, type SouhrnKlubu } from '../../src/lib/hlasovani';
+
+describe('kluby rozdělené na PRO a PROTI', () => {
+  const k = (popisek: string, pro: number, proti: number): SouhrnKlubu =>
+    ({ zkratka: popisek, popisek, slug: popisek.toLowerCase(), celkem: pro + proti, pro, proti, zdrzelNehlasoval: 0, omluven: 0, neprihlasen: 0 });
+  it('klub patří tam, čeho měl víc; pořadí klubů zůstává', () => {
+    const r = rozdelKluby([k('ANO', 0, 62), k('ODS', 14, 0), k('STAN', 8, 3), k('SPD', 0, 11)]);
+    expect(r.pro.map(x => x.popisek)).toEqual(['ODS', 'STAN']);
+    expect(r.proti.map(x => x.popisek)).toEqual(['ANO', 'SPD']);
+  });
+  it('klub, který nehlasoval pro ani proti, má vlastní řádek: rozpis ukáže všechny kluby', () => {
+    const r = rozdelKluby([k('ODS', 3, 0), k('Nezařazení', 0, 0)]);
+    expect(r.pro.map(x => x.popisek)).toEqual(['ODS']);
+    expect(r.proti).toEqual([]);
+    expect(r.ani.map(x => x.popisek)).toEqual(['Nezařazení']);
+  });
+  it('každý klub je aspoň v jednom řádku', () => {
+    const kluby = [k('ANO', 0, 62), k('ODS', 14, 0), k('Piráti', 2, 2), k('Nezařazení', 0, 0)];
+    const r = rozdelKluby(kluby);
+    const videne = new Set([...r.pro, ...r.proti, ...r.ani].map(x => x.popisek));
+    expect([...videne].sort()).toEqual(kluby.map(x => x.popisek).sort());
+  });
+  it('nerozhodný klub stojí v obou řádcích: hlasoval stejně pro i proti, žádná strana mu nepatří víc', () => {
+    const r = rozdelKluby([k('Piráti', 2, 2)]);
+    expect(r.pro.map(x => x.popisek)).toEqual(['Piráti']);
+    expect(r.proti.map(x => x.popisek)).toEqual(['Piráti']);
+  });
+});
