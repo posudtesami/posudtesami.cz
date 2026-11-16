@@ -25,7 +25,8 @@
 .hl-proc { margin: 6px 0 0; font-size: 13px; font-style: italic; color: var(--text2); }
 .hl-odkazy { margin-top: 6px; font-size: 14px; }
 
-/* stránka /hlasovani/<id>/: na počítači vyplní výšku okna, seznam poslanců pokračuje do sloupců a posouvá se do strany */
+/* stránka /hlasovani/<id>/: na počítači vyplní výšku okna; vlevo tabulka klubů s vysvětlivkou, vpravo seznam poslanců,
+   který se posouvá dolů uvnitř rámečku (volba 16. 11.: do strany pokračující sloupce ukázaly z 200 jmen jen 53) */
 .hl-stranka { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; padding: 10px 0 6px; }
 .hl-drobky { flex: none; font: 12px var(--f-mono); color: var(--meta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hl-drobky a { color: var(--modra); }
@@ -36,7 +37,6 @@
 .hl-o-cem a { color: var(--modra); }
 .hl-hlava .hl-vysledek { margin: 4px 0 0; font-size: 14px; }
 .hl-telo { flex: 1; min-height: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0 24px; padding: 10px 14px; background: var(--plocha); border: 1px solid var(--linka); }
-.hl-tabulka-obal { min-height: 0; overflow-y: auto; }
 .hl-tabulka { border-collapse: collapse; font-size: 13px; }
 .hl-tabulka th, .hl-tabulka td { padding: 3px 8px; border-bottom: 1px solid var(--linka); text-align: right; font: 13px var(--f-mono); }
 .hl-tabulka thead th { color: var(--meta); font-size: 11px; vertical-align: bottom; }
@@ -47,8 +47,8 @@
 .hl-tabulka tbody tr:hover, .hl-tabulka tbody tr:has(a[aria-current="true"]) { background: color-mix(in srgb, var(--modra) 8%, var(--plocha)); }
 .hl-tabulka a[aria-current="true"] { font-weight: 700; }
 .hl-cipy { display: none; }
-.hl-poslanci { min-height: 0; overflow-x: auto; overflow-y: hidden; column-width: 190px; column-gap: 24px; column-fill: auto; font-size: 14px; }
-.hl-legenda-text { margin: 0 0 8px; font-size: 12px; color: var(--meta); break-inside: avoid; }
+.hl-poslanci { min-height: 0; overflow-x: hidden; overflow-y: auto; font-size: 14px; }
+.hl-legenda-text { margin: 0 0 8px; font-size: 12px; color: var(--meta); }
 .hl-legenda-text a { color: var(--modra); }
 .hl-poslanci h2 { margin: 0 0 4px; font: 700 15px var(--f-nadpis); break-after: avoid; }
 .hl-skupina h3 { margin: 6px 0 2px; font: 600 12px var(--f-mono); color: var(--meta); break-after: avoid; }
@@ -58,11 +58,23 @@
 /* bez JavaScriptu: oddíly všech klubů pod sebou (kotva #ano na ně posune), přehled „Všichni“ se nezobrazí */
 html:not(.js) .hl-klub[hidden] { display: block; }
 html:not(.js) .hl-vsichni { display: none; }
+/* Počítač: skupiny (Pro, Proti…) jdou pod sebou jako pruhy přes celou šířku seznamu, jména v nich do sloupců.
+   Nadpis skupiny s linkou ukazuje, kde jedna končí a druhá začíná. Vysvětlivka stojí pod tabulkou v její šířce
+   (width: 0 + min-width: 100 % — šířku sloupce určí tabulka, ne text), hlavička čtvrtého sloupce se zalomí. */
+@media (min-width: 761px) {
+  .hl-levy { min-height: 0; overflow-y: auto; }
+  .hl-levy .hl-legenda-text { width: 0; min-width: 100%; margin: 16px 0 0; }
+  .hl-tabulka thead th:nth-child(4) { width: 8em; }
+  .hl-poslanci { padding-right: 8px; }
+  .hl-skupina ul { columns: 190px; column-gap: 24px; }
+  .hl-skupina + .hl-skupina { margin-top: 16px; }
+  .hl-poslanci .hl-skupina h3 { margin: 0 0 4px; padding-bottom: 4px; border-bottom: 1px solid var(--linka); font-size: 13px; color: var(--inkoust); }
+}
 .hl-zdroj { flex: none; margin: 0; font-size: 12px; color: var(--meta); }
 .hl-zdroj a { color: var(--modra); }
 /* Mobil (do 760 px): stránka má přirozenou výšku a posouvá se dolů jako ostatní stránky (upravy.css, Mobil),
    do strany se neposouvá nic. Místo tabulky jsou čipy klubů, které se zalamují do více řádků, a seznam poslanců
-   jde pod sebou bez sloupců (legenda zůstává na jeho začátku). */
+   jde pod sebou bez sloupců (vysvětlivka stojí mezi čipy a seznamem: tabulka nad ní je schovaná). */
 @media (max-width: 760px) {
   .hl-stranka { flex: none; gap: 6px; padding-top: 6px; }
   .hl-hlava h1 { font-size: 20px; }

@@ -124,6 +124,41 @@ for (const v of POCITACE) {
   });
 }
 
+// Volba 16. 11.: seznam do strany pokračujících sloupců ukázal v okně 1327 × 733 z 200 jmen 53, zbytek byl napravo,
+// kam kolečko myši nedosáhne. Skupiny jdou proto pod sebou, seznam se posouvá dolů v rámečku a vysvětlivka je pod tabulkou.
+for (const v of POCITACE) {
+  test(`${v.width}×${v.height}: seznam poslanců se neposouvá do strany, skupiny jsou pod sebou, vysvětlivka pod tabulkou`, async ({ page }) => {
+    await page.setViewportSize(v);
+    await page.goto('/hlasovani/psp-10-5-12/');
+    await page.evaluate(() => document.fonts.ready);
+    const seznam = page.locator('.hl-poslanci');
+    const m = await seznam.evaluate(e => ({ sw: e.scrollWidth, cw: e.clientWidth, y: getComputedStyle(e).overflowY }));
+    expect(m.sw, 'seznam poslanců se nesmí posouvat do strany').toBeLessThanOrEqual(m.cw + 1);
+    expect(m.y, 'dlouhý seznam se posouvá dolů uvnitř rámečku').toBe('auto');
+    const skupiny = await page.locator('.hl-vsichni .hl-skupina').evaluateAll(l => l.map(e => { const r = e.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left }; }));
+    expect(skupiny.length).toBeGreaterThan(1);
+    for (let i = 1; i < skupiny.length; i++) {
+      expect(skupiny[i].top, `skupina ${i + 1} začíná pod předchozí`).toBeGreaterThanOrEqual(skupiny[i - 1].bottom - 1);
+      expect(skupiny[i].left, `skupina ${i + 1} začíná u levého okraje seznamu`).toBe(skupiny[0].left);
+    }
+    const [tabulka, legenda, seznamBox] = await Promise.all(['.hl-tabulka', '.hl-legenda-text', '.hl-poslanci'].map(s => page.locator(s).boundingBox()));
+    expect(legenda!.y, 'vysvětlivka je pod tabulkou klubů').toBeGreaterThanOrEqual(tabulka!.y + tabulka!.height);
+    expect(Math.abs(legenda!.width - tabulka!.width), 'vysvětlivka má šířku tabulky').toBeLessThanOrEqual(1);
+    expect(legenda!.x + legenda!.width, 'vysvětlivka je vlevo od seznamu').toBeLessThanOrEqual(seznamBox!.x);
+    await overBezPosouvani(page);
+  });
+}
+
+test('přepnutí klubu vrátí seznam poslanců na začátek', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 480 });
+  await page.goto('/hlasovani/psp-10-5-12/');
+  const seznam = page.locator('.hl-poslanci');
+  expect(await seznam.evaluate(e => { e.scrollTop = 1e4; return e.scrollTop; }), 'na nízkém okně se seznam posouvá').toBeGreaterThan(0);
+  await page.locator('.hl-tabulka a[data-klub="ano"]').click();
+  await expect(page.locator('section#ano')).toBeVisible();
+  expect(await seznam.evaluate(e => e.scrollTop)).toBe(0);
+});
+
 // Na mobilu se stránka posouvá dolů (spec hlasování, oddíl 7), do strany nic: čipy se zalamují, seznam jde pod sebou.
 for (const v of MOBILY) {
   test(`mobil ${v.width}×${v.height}: stránka hlasování se neposouvá do strany, čipy klubů se zalamují`, async ({ page }) => {
@@ -144,7 +179,11 @@ for (const v of MOBILY) {
       expect(seznam.sloupce, `${adresa}: seznam poslanců bez sloupců`).toBe('auto');
       expect(seznam.sw, `${adresa}: seznam poslanců se nesmí posouvat do strany`).toBeLessThanOrEqual(seznam.cw + 1);
       expect(seznam.sh, `${adresa}: seznam poslanců bez vnitřního posuvníku`).toBeLessThanOrEqual(seznam.ch + 1);
-      await expect(page.locator('.hl-poslanci > :first-child')).toHaveClass('hl-legenda-text');
+      // vysvětlivka stojí mezi čipy klubů a seznamem jmen, jako když bývala první položkou seznamu
+      const [cipyBox, legenda, seznamBox] = await Promise.all(['.hl-cipy', '.hl-legenda-text', '.hl-poslanci'].map(s => page.locator(s).boundingBox()));
+      expect(legenda, `${adresa}: vysvětlivka je vidět`).not.toBeNull();
+      expect(legenda!.y, `${adresa}: vysvětlivka je pod čipy`).toBeGreaterThanOrEqual(cipyBox!.y + cipyBox!.height);
+      expect(legenda!.y + legenda!.height, `${adresa}: vysvětlivka je nad seznamem`).toBeLessThanOrEqual(seznamBox!.y + 1);
     }
   });
 }
