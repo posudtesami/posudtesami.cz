@@ -1,11 +1,25 @@
 ---
 nazev: Testovací kauza Gama
 shrnuti: Fiktivní nákup nemovitosti přes fiktivní zahraniční společnosti Gama.
+oCoJde: Fiktivní nemovitost koupená přes fiktivní firmy v zahraničí.
 od: 2009
 do: 2021
 stav: zastaveno
 stavPoznamka: Fiktivní státní zastupitelství věc zastavilo.
 stitky: [offshore]
+castky:
+  - castka: 50000000
+    druh: objem
+    popis: fiktivní kupní cena nemovitosti pořízené přes zahraniční společnosti
+    zdroje: [1]
+  - castka: 500000
+    druh: pokuta
+    popis: fiktivní pokuta uložená fiktivním úřadem
+    zdroje: [2]
+  - castka: 2500000
+    druh: dotace
+    popis: fiktivní daňový doměrek za fiktivní zdaňovací období
+    zdroje: [1]
 overeno: 2026-11-09
 zdroje:
   - id: 1

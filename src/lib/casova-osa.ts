@@ -59,3 +59,20 @@ export function popiskyRoku(body: { datum: string; p: number }[], odstup = 9): {
   }
   return vysledek;
 }
+
+/** Konec a délka kauzy pro řádek na telefonu. Rok začátku tam stojí zvlášť v levém sloupci (svislá
+ *  osa), proto se tu neopakuje: „do 2021 · 16 let“, „dosud · 12 let“. Bez „a dál“ — „dosud“ už říká,
+ *  že kauza trvá (přání uživatele 15. 11.). Na počítači zůstává popisek pruhu s rozsahText/delkaText. */
+export function konecText(od: number, doRok: number | null, dnes: Date = new Date()): string {
+  const n = (doRok ?? rokDo(dnes)) - od;
+  const delka = n <= 0 ? 'méně než rok' : sklonuj(n, ['rok', 'roky', 'let']);
+  if (doRok === null) return `dosud · ${delka}`;
+  return doRok === od ? delka : `do ${doRok} · ${delka}`;
+}
+
+/** Svislá osa na telefonu: rok začátku se ukáže jen u první kauzy daného roku. `stejny` = začala ve stejném
+ *  roce jako kauza nad ní (rok se neukáže), `pokracuje` = kauza pod ní začala ve stejném roce (čára mezi
+ *  nimi vede jen pod textem, ne přes sloupec let). Počítá se z kauz, jak právě stojí na stránce. */
+export function navaznostRoku(od: readonly number[]): { stejny: boolean; pokracuje: boolean }[] {
+  return od.map((rok, i) => ({ stejny: i > 0 && od[i - 1] === rok, pokracuje: i < od.length - 1 && od[i + 1] === rok }));
+}

@@ -1,0 +1,20 @@
+---
+import type { Pojem } from '../data/slovnicek';
+import { nadpisPojmu } from '../lib/slovnicek';
+
+/** Výklady pojmů, které jsou v textu detailu označené (tlačítko .pojem je otevírá přes popovertarget).
+ *  Musí ležet uvnitř <dialog> detailu: prvky mimo modální dialog jsou neaktivní a s obsahem dialogu
+ *  se výklady přenášejí i na titulní stránku, kam skript detail vkládá. */
+interface Props { pojmy: Pojem[] }
+const { pojmy } = Astro.props;
+---
+{pojmy.map(p => (
+  <div class="pojem-vyklad" id={`pojem-${p.id}`} popover role="note" aria-labelledby={`pojem-${p.id}-heslo`}>
+    <strong class="pojem-heslo" id={`pojem-${p.id}-heslo`}>{nadpisPojmu(p)}</strong>
+    <p>{p.vyklad}</p>
+    <div class="pojem-dal">
+      <a href={`/metodika/#pojem-${p.id}`}>Celý slovníček</a>
+      <button type="button" popovertarget={`pojem-${p.id}`} popovertargetaction="hide">Zavřít</button>
+    </div>
+  </div>
+))}

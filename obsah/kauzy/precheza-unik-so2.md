@@ -2,6 +2,7 @@
 typ: kauza
 nazev: Únik oxidu siřičitého z Prechezy
 shrnuti: Při najíždění výroby kyseliny sírové v Precheze z Agrofertu unikl v říjnu 2014 nad Přerov oxid siřičitý. ČIŽP firmě uložila pokutu 7 mil. Kč, ministerstvo za ministra Brabce ji snížilo na 0,5 mil. Kč. Po zrušení rozsudkem NSS se řízení opakovalo a MŽP ho v roce 2024 zastavilo pro uplynutí lhůty. Precheza vinu popírala.
+oCoJde: Z chemičky Precheza z Agrofertu unikl nad Přerov oxid siřičitý. Pokutu 7 milionů ministerstvo snížilo a řízení skončilo.
 od: 2014
 do: 2024
 stav: promlceno

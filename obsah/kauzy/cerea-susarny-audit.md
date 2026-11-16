@@ -2,6 +2,7 @@
 typ: kauza
 nazev: "Cerea: dotace na sušárny osiv"
 shrnuti: Auditoři Evropské komise zpochybnili pět dotací MPO pro Cereu z Agrofertu na sušárny obilí. Sušárny dodala firma, kterou vedl bratr člena vedení Cerey, a dotace přišly v době, kdy byl A. Babiš ve vládě. Stát je EU nevyúčtoval a zaplatil z národního rozpočtu. MPO je od března 2026 vymáhá. Agrofert vracení odmítá.
+oCoJde: Firma Cerea z Agrofertu dostala dotace na sušárny obilí. Evropští auditoři je zpochybnili a stát je teď vymáhá zpět.
 od: 2018
 do: null
 stav: uredni-zjisteni

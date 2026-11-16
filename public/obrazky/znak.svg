@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="268 258 502 502">
+  <!-- Znak v hlavičce webu: stejné P v lupě jako public/favicon.svg, jen bez podkladu.
+       Mezeru kolem dříku P (tam, kde prochází prstencem) dělá maska, takže znak sedí na jakémkoli pozadí. -->
+  <mask id="mezera" maskUnits="userSpaceOnUse" x="268" y="258" width="502" height="502">
+    <rect x="268" y="258" width="502" height="502" fill="#fff"/>
+    <path d="M364 752L416 377L558 373C613 372 631 410 627 455C622 520 585 567 520 567L465 567L439 752Z" fill="#000" stroke="#000" stroke-width="26" stroke-linejoin="round"/>
+  </mask>
+  <g mask="url(#mezera)" fill="#DB1F2D">
+    <circle cx="513" cy="475" r="188.5" fill="none" stroke="#DB1F2D" stroke-width="52"/>
+    <path d="M613 603L708 726" stroke="#DB1F2D" stroke-width="62"/>
+    <circle cx="708" cy="726" r="31"/>
+  </g>
+  <path fill-rule="evenodd" fill="#282661" d="M364 752L416 377L558 373C613 372 631 410 627 455C622 520 585 567 520 567L465 567L439 752ZM485 422L530 422C552 422 557 445 551 466C545 495 528 518 500 518L472 518Z"/>
+</svg>

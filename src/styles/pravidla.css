@@ -72,10 +72,20 @@
   .pr-nazev small { font-size: 12px; line-height: 1.35; }
   .pr-nazev .pr-cesta { display: none; }
   .pr-nazev .pr-proc-radek { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; white-space: normal; }
-  /* názvy fází se zalamují, nezkracují; ukončení (zamítnuto, staženo) má vlastní řádek */
+  /* Názvy fází se nezkracují ani nelámou uvnitř slova („Sněmovn-a“, „Vyhlášen-o“): sloupec je aspoň tak
+     široký jako název. Datum se smí zalomit na mezeře („30. 10. / 2026“), aby se pět fází vešlo i na 320 px.
+     Ukončení (zamítnuto, staženo) má vlastní řádek. */
   .prubeh { flex-wrap: wrap; font-size: 11px; }
-  .prubeh .f-nazev { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+  .prubeh li:not(.konec) { min-width: min-content; }
+  .prubeh .f-nazev { overflow: visible; text-overflow: clip; }
+  .prubeh time { white-space: normal; }
   .prubeh li.konec { flex: 1 1 100%; align-self: auto; }
+}
+/* Na nejužších telefonech by se pět názvů fází v 14 px nevešlo (součet 263 px na 258 px místa, v prohlížeči
+   s klasickým posuvníkem jen 243 px). Ve 12 px a s mezerami 2 px se vejde i s posuvníkem, rezerva je asi 10 px. */
+@media (max-width: 359px) {
+  body .prubeh { gap: 2px; }
+  body .prubeh .f-nazev { font-size: 12px; }
 }
 
 /* detail pravidla: bez svislého posouvání, delší obsah pokračuje ve sloupcích do strany (jako Souvislosti a Zdroje kauzy) */
@@ -142,12 +152,16 @@
 .pr-pohled[hidden] { display: none; }
 .pr-pohled button { font: 500 12px var(--f-text); border: 0; background: var(--plocha); color: var(--inkoust); padding: 2px 9px; cursor: pointer; }
 .pr-pohled button[aria-pressed="true"] { background: var(--modra); color: #fff; }
-/* Mobil: časová osa tu není (na úzkém displeji se nedá číst, je jen na počítači). Přepínač pohledů má vlastní
-   řádek nad hledáním a tlačítka jsou rozdělená po celé šířce, aby se dobře trefovala prstem. Bez Oblastí
-   by zbyl jen Seznam, takže se přepínač skryje celý. */
+/* Mobil: časová osa tu není (na úzkém displeji se nedá číst, je jen na počítači). Bez Oblastí by zbyl
+   jen Seznam, takže se přepínač skryje celý.
+   Přepínač pohledů stál na vlastním řádku přes celou šířku, což stálo 48 px z 391, které zabral obal
+   nad obsahem. Teď stojí vedle počítadla změn, kde je místa dost; tlačítka mají dotykový cíl
+   z upravy.css, takže se prstem trefí i bez roztažení na celou šířku.
+   Ze stejného důvodu stojí vedle čipů i odkaz „Upřesnit výběr“. */
 @media (max-width: 760px) {
-  body .filtry.f4.pr-filtry .pr-pohled { order: 0; flex: 1 0 100%; }
-  .pr-pohled button { flex: 1; padding: 6px 9px; }
+  body .filtry.f4.pr-filtry .pr-pohled { order: 4; flex: none; }
+  body .filtry.f4.pr-filtry .pr-pohled button { flex: none; padding: 6px 9px; }
+  html.js body .filtry.f4.pr-filtry .f-upresnit { flex: none; order: 3; }
   .pr-pohled [data-pohled="osa"] { display: none; }
   body .filtry.f4.pr-filtry .pr-pohled:not(:has([data-pohled="oblasti"])) { display: none; }
 }
@@ -245,7 +259,8 @@ html:not(.js) body .pr-filtry { display: none; }
    (skript ho ukáže, jen když text pokračuje) ho rozbalí. */
 .m2-hlava .pro-vas-obal { display: flex; align-items: flex-start; gap: 10px; max-width: 720px; margin: 8px 0 0; }
 .m2-hlava .pro-vas { flex: 1 1 auto; min-width: 0; margin: 0; font-size: 14px; }
-.m2-hlava .pro-vas-vice { flex: none; margin: 0; padding: 4px 0; border: 0; background: none; font: italic 14px var(--f-text); color: var(--modra); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; white-space: nowrap; }
+/* vzhled má společný s ostatními rozbalovacími odkazy (řád ovládání v upravy.css) */
+.m2-hlava .pro-vas-vice { flex: none; margin: 0; padding: 4px 0; white-space: nowrap; }
 .m2-hlava .pro-vas-vice[hidden] { display: none; }
 .m2-hlava .pr-oblasti a { color: var(--modra); }
 @media (max-height: 700px) {

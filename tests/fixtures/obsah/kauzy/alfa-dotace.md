@@ -1,6 +1,7 @@
 ---
 nazev: Testovací kauza Alfa
 shrnuti: Fiktivní firma Alfa získala fiktivní dotaci 50 milionů pro malé podniky.
+oCoJde: Fiktivní firma Alfa dostala fiktivní dotaci pro malé podniky. Fiktivní soud řeší, jestli na ni měla nárok.
 od: 2007
 do: null
 stav: soudni-rizeni

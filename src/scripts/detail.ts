@@ -1,3 +1,5 @@
+import { vytvorPrehled, type Prehled } from './udalosti-prehled';
+
 /** Rozměry závislé na šířce okna (tlačítko „celé shrnutí“, vytrácení záložek) přepočítá naposledy otevřená kauza. */
 let premerAktualni: (() => void) | null = null;
 const sPosluchaci = new WeakSet<HTMLDialogElement>();
@@ -51,10 +53,17 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
   const proVasObal = hlava.querySelector<HTMLElement>('.pro-vas-obal');
   const proVas = proVasObal?.querySelector<HTMLElement>('.pro-vas');
   const proVasVice = proVasObal?.querySelector<HTMLButtonElement>('.pro-vas-vice');
+  const castky = hlava.querySelector<HTMLElement>('.castky');
+  const castkyVice = hlava.querySelector<HTMLButtonElement>('.castky-vice');
+  const listovani = dlg.querySelector<HTMLElement>('.listovani');
+  let prehled: Prehled | null = null;
   let akt = polozky.length - 1;
 
   /** Záložky, které se nevejdou, se posouvají do strany; okraj, za kterým pokračují, se vytrácí. */
   const okrajeLisy = () => {
+    // Na telefonu se lišta zalamuje (zákon má záložek až sedm), takže může mít jeden i dva řádky.
+    // Výšku potřebují styly: odkaz na zdroj musí seznam posunout pod přilepenou lištu, ne za ni.
+    dlg.style.setProperty('--vyska-zalozek', `${lista.offsetHeight}px`);
     const max = lista.scrollWidth - lista.clientWidth;
     lista.classList.toggle('mizi-vlevo', lista.scrollLeft > 2);
     lista.classList.toggle('mizi-vpravo', lista.scrollLeft < max - 2);
@@ -67,11 +76,46 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
   const zmerProVas = () => {
     if (proVas && proVasVice && proVasObal && !proVasObal.classList.contains('rozbalene')) proVasVice.hidden = proVas.scrollHeight <= proVas.clientHeight + 1;
   };
+  /** Tlačítko „k čemu částky jsou“ jen tam, kde styly popisy částek opravdu schovaly (na telefonu).
+   *  Ptáme se přímo stylů, ne šířky okna: rozhodnutí, kdy se částky sbalí, zůstává v CSS na jednom místě. */
+  /** Popisek tlačítka částek je uvnitř <span>: na telefonu se jen ořízne pro čtečku, protože terčem
+   *  je celý řádek částek a slova by v něm zabrala řádek navíc. */
+  const popisekCastek = (text: string) => {
+    const span = castkyVice?.querySelector<HTMLElement>('.castky-popisek');
+    if (span) span.textContent = text; else if (castkyVice) castkyVice.textContent = text;
+  };
+  const dalsiCastky = (n: number) => n === 1 ? 'další částka' : n < 5 ? `další ${n} částky` : `dalších ${n} částek`;
+  const zmerCastky = () => {
+    if (!castky || !castkyVice) return;
+    const popisCastky = castky.querySelector<HTMLElement>('.popis-castky');
+    if (hlava.classList.contains('castky-rozbalene')) {
+      // Rozbalené částky po změně šířky (otočení tabletu): když by je styly už nesbalily, rozbalení
+      // nemá smysl a tlačítko „méně“ by viselo na počítači. Změří se to bez třídy rozbalení.
+      hlava.classList.remove('castky-rozbalene');
+      const sbalilyBy = !!popisCastky && getComputedStyle(popisCastky).display === 'none';
+      if (sbalilyBy) { hlava.classList.add('castky-rozbalene'); return; }
+      castkyVice.setAttribute('aria-expanded', 'false');
+    }
+    castkyVice.hidden = !popisCastky || getComputedStyle(popisCastky).display !== 'none';
+    // Sbalený seznam částek je na telefonu sám tlačítkem: styly to poznají podle data-sbalene
+    // a dokreslí šipku. Bez JavaScriptu a na počítači atribut nevznikne a nic se nemění.
+    if (castkyVice.hidden) { delete castky.dataset.sbalene; delete castky.dataset.skryte; return; }
+    castky.dataset.sbalene = '';
+    // Na úzkém displeji se ukážou jen dvě částky. Kolik jich styly schovaly, musí být vidět
+    // na tlačítku — jinak čtenář neví, že tam ještě něco je.
+    const skryte = [...castky.querySelectorAll<HTMLElement>('li:not(.castky-metodika):not(.castky-ovladani)')]
+      .filter(li => getComputedStyle(li).display === 'none').length;
+    // Že jsou další částky schované, musí být vidět i bez čtení popisku tlačítka (to je na telefonu
+    // jen pro čtečku) — proto se počet dokresluje k šipce za částkami.
+    if (skryte > 0) castky.dataset.skryte = String(skryte); else delete castky.dataset.skryte;
+    popisekCastek(skryte > 0 ? `${dalsiCastky(skryte)} a k čemu jsou` : 'k čemu částky jsou');
+  };
   /** Body mini-osy mají cíl široký 24 px, ale nikdy se nepřekrývají se sousedy: u blízkých dat je cíl užší
    *  (nejméně jako viditelný bod), aby klik na bod nevzal sousední událost. Viditelný bod se u hustě
    *  nahuštěných událostí (úzký mobil) zmenší, aby se body neslévaly do jedné šmouhy. */
   const sirkyBodu = () => {
     const w = (body[0]?.parentElement as HTMLElement | null)?.clientWidth ?? 0;
+    if (!w) return; // osa je schovaná (na telefonu mimo Chronologii): změří se, až bude vidět
     const x = body.map(b => (parseFloat(b.style.left) / 100) * w);
     body.forEach((b, i) => {
       const mezera = Math.min(i > 0 ? x[i] - x[i - 1] : Infinity, i < x.length - 1 ? x[i + 1] - x[i] : Infinity);
@@ -111,12 +155,18 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-skupina]');
     if (b) filtrujZdroje(b.dataset.skupina!);
   });
-  premerAktualni = () => { okrajeLisy(); zmerPerex(); zmerProVas(); sirkyBodu(); okrajeZdroju(); umistiPopis(); };
+  premerAktualni = () => { okrajeLisy(); zmerPerex(); zmerProVas(); zmerCastky(); sirkyBodu(); okrajeZdroju(); umistiPopis(); };
   lista.addEventListener('scroll', okrajeLisy, { passive: true });
   vice?.addEventListener('click', () => {
     const rozbaleno = hlava.classList.toggle('rozbalene');
     vice!.setAttribute('aria-expanded', String(rozbaleno));
     vice!.textContent = rozbaleno ? 'méně' : 'celé shrnutí';
+  });
+  castkyVice?.addEventListener('click', () => {
+    const rozbaleno = hlava.classList.toggle('castky-rozbalene');
+    castkyVice.setAttribute('aria-expanded', String(rozbaleno));
+    if (rozbaleno) popisekCastek('méně');
+    else zmerCastky(); // popisek zase nese počet schovaných částek
   });
   proVasVice?.addEventListener('click', () => {
     const rozbaleno = proVasObal!.classList.toggle('rozbalene');
@@ -126,14 +176,17 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
   // rozměry jdou změřit až po otevření dialogu (otevírá se hned po inicializaci)
   requestAnimationFrame(() => premerAktualni?.());
 
-  const osa = dlg.querySelector<HTMLElement>('.mini-osa');
   const prepni = (p: string) => {
     dlg.querySelectorAll<HTMLElement>('.zalozky [role="tab"]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.p === p)));
     dlg.querySelectorAll<HTMLElement>('.m2-panel').forEach(x => { x.hidden = x.dataset.p !== p; });
     if (p === 'zdroje') okrajeZdroju();
+    if (p !== 'chrono') prehled?.zavri();
+    // Chronologie je na telefonu jediná záložka, kde je mini-osa vidět; změřit ji jde teprve teď.
+    if (p === 'chrono') { sirkyBodu(); umistiPopis(); }
     // Na mobilu se celý modal posouvá dolů a lišta záložek se přilepí nahoře. Když je čtenář níž v delší
     // záložce, nová záložka začne hned pod lištou (ne uprostřed nebo za koncem kratšího obsahu).
-    const hranice = osa ? osa.offsetTop + osa.offsetHeight : 0;
+    // Hranice se bere od lišty, ne od konce osy: osa na telefonu mimo Chronologii není vidět.
+    const hranice = lista.offsetTop;
     if (getComputedStyle(dlg).overflowY === 'auto' && dlg.scrollTop > hranice) dlg.scrollTop = hranice;
     // vybraná záložka musí být celá vidět, i když se lišta posouvá do strany
     const b = lista.querySelector<HTMLElement>(`[role="tab"][data-p="${p}"]`);
@@ -159,10 +212,15 @@ export function inicializujDetail(dlg: HTMLDialogElement): void {
       umistiPopis();
     }
     const nazev = (j: number) => polozky[j]?.querySelector('h3')?.textContent ?? '';
+    prehled?.obnov(akt);
     zpet.disabled = akt === 0; dal.disabled = akt === polozky.length - 1;
     zpet.querySelector('span')!.textContent = akt > 0 ? nazev(akt - 1) : '';
     dal.querySelector('span')!.textContent = akt < polozky.length - 1 ? nazev(akt + 1) : '';
   };
+
+  // Přehled všech událostí: bez osy je to jediné místo, kde je celý průběh kauzy vidět naráz,
+  // a jediná cesta doprostřed dlouhé kauzy kratší než patnáct klepnutí.
+  prehled = vytvorPrehled(listovani, polozky, i => ukaz(i, false));
 
   lista.addEventListener('click', e => {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[role="tab"]');

@@ -4,6 +4,7 @@ export function platnaKauza(): Record<string, unknown> {
     typ: 'kauza',
     nazev: 'Testovací kauza Alfa',
     shrnuti: 'Fiktivní firma Alfa získala fiktivní dotaci.',
+    oCoJde: 'Fiktivní firma dostala fiktivní dotaci, o které rozhoduje fiktivní soud.',
     od: 2010,
     do: null,
     stav: 'soudni-rizeni',

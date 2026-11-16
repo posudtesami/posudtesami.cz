@@ -2,9 +2,11 @@
 typ: kauza
 nazev: Omluva novinářce Holcové
 shrnuti: A. Babiš v dubnu 2022 sdílel na Facebooku koláž s fotografií novinářky Pavly Holcové a smyšleným výrokem o dohodě se Sorosem. Krajský soud v Praze mu v květnu 2023 pravomocně uložil příspěvek odstranit a omluvit se. Babiš se v srpnu 2023 omluvil, Nejvyšší soud jeho dovolání v roce 2025 odmítl.
+oCoJde: Babiš sdílel koláž s fotkou novinářky a vymyšleným výrokem. Soud mu nařídil příspěvek smazat a omluvit se.
 od: 2022
 do: 2025
 stav: jine
+stavKratce: Soud nařídil omluvu
 stavPoznamka: Občanskoprávní spor o ochranu osobnosti, nikoli trestní řízení. Okresní soud Praha-západ rozsudkem z 21. 12. 2022 (č. j. 5 C 103/2022-185) uložil A. Babišovi příspěvek odstranit, omluvu zamítl. Krajský soud v Praze rozsudkem z 25. 5. 2023 (č. j. 27 Co 66/2023-291) odstranění potvrdil a pravomocně uložil omluvu. Babiš se omluvil v srpnu 2023. Nejvyšší soud jeho dovolání odmítl (sp. zn. 25 Cdo 3851/2023, zveřejněno 30. 5. 2025).
 stitky: [vyroky]
 overeno: 2026-11-12

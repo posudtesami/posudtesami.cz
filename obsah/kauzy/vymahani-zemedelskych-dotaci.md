@@ -2,6 +2,7 @@
 typ: kauza
 nazev: Vymáhání zemědělských dotací
 shrnuti: Audit Evropské komise (DG AGRI) zpochybnil v roce 2019 kvůli střetu zájmů A. Babiše zemědělské dotace Agrofertu. Ministr Výborný v roce 2025 oznámil vymáhání dotací z let 2017–2021 za 5,1, později přes 7 mld. Kč. SZIF v dubnu 2026 rozhodl, že evropské nárokové dotace vymáhat nebude. Babiš i Agrofert vrácení odmítají.
+oCoJde: Stát oznámil, že bude po Agrofertu vymáhat přes 7 miliard zemědělských dotací. Evropské dotace nakonec vymáhat nebude.
 od: 2017
 do: null
 stav: uredni-zjisteni

@@ -2,9 +2,11 @@
 typ: kauza
 nazev: Švýcarská OFI a převzetí Agrofertu
 shrnuti: Agrofert, do té doby celý ve vlastnictví slovenského podniku Petrimex, v roce 1995 navýšil kapitál. Většinu získala švýcarská firma OFI s nezveřejněnými vlastníky, Petrimexu zbylo 25 %. A. Babiš vedl Agrofert a zasedal v představenstvu Petrimexu. Ten ho odvolal a změny napadl žalobou; soud ji zamítl pro opožděnost.
+oCoJde: V roce 1995 získala většinu Agrofertu švýcarská firma, jejíž vlastníci nejsou známi. Agrofert tehdy vedl Babiš.
 od: 1994
 do: null
 stav: jine
+stavKratce: Bez úředního řízení
 stavPoznamka: Kauza je zařazena podle kritéria doložení nezávislými redakcemi (Respekt 2002, Česká televize 2017, Seznam Zprávy 2023). Žádné trestní ani jiné úřední řízení o převzetí Agrofertu ani o původu kapitálu není známo. Jediné doložené řízení je žaloba Petrimexu proti změnám v Agrofertu, kterou soud v prosinci 1997 zamítl pro zmeškání lhůty, aniž by věc posoudil. Vlastníci OFI nejsou známi.
 stitky: [offshore]
 overeno: 2026-11-12

@@ -1,9 +1,10 @@
 import { z } from 'astro/zod';
-import { STAVY } from './stavy';
+import { STAVY, NEJVIC_STAV_KRATCE } from './stavy';
 import { KRITERIA } from './kriteria';
 import { DRUHY_ZDROJU } from './zdroje';
 import { ROLE_VZTAHU, ROLE_V_KAUZE, ROLE_NAVAZNOSTI, DRUHY_AKTERU } from './role';
 import { DRUHY_CASTEK, MENY, PRESNOSTI } from './castky';
+import { zkratkyVeVete } from './slovnicek';
 
 export const naText = (v: unknown) =>
   v instanceof Date ? v.toISOString().slice(0, 10) : typeof v === 'number' ? String(v) : v;
@@ -86,16 +87,28 @@ export function rokZData(d: string): number {
   return Number(d.slice(0, 4));
 }
 
-/** koncepty = true: lokální náhled neověřených konceptů, smí chybět datum ověření (overeno: null). */
+/** Nejvýš tolik znaků smí mít věta „O co jde“: na telefonu zabere v seznamu kauz dva až tři řádky a v hlavičce
+ *  detailu nejvýš čtyři. Delší věta už není „jednou větou“ a hlavička by ubírala místo vlastnímu textu. */
+export const NEJVIC_O_CO_JDE = 120;
+const oCoJde = z.string({ error: 'Chybí věta „O co jde“ (oCoJde): jedna až dvě věty obyčejnou řečí, bez zkratek a právních pojmů' })
+  .trim().min(1, 'Věta „O co jde“ nesmí být prázdná')
+  .max(NEJVIC_O_CO_JDE, `Věta „O co jde“ smí mít nejvýš ${NEJVIC_O_CO_JDE} znaků (podrobnosti patří do shrnutí)`);
+
+/** koncepty = true: lokální náhled neověřených konceptů, smí chybět datum ověření (overeno: null),
+ *  věta „O co jde“ i krátký popis stavu. */
 const vytvorKauzaSchema = (koncepty: boolean) => z
   .object({
     typ: z.enum(['kauza']).default('kauza'),
     nazev: text().max(36, 'Název smí mít nejvýš 36 znaků, aby byl na ose celý vidět (podrobnosti patří do shrnutí)'),
     shrnuti: text().max(320),
+    /** Totéž co shrnutí, jen obyčejnou řečí a kratší. Nic nového netvrdí. Na telefonu je vidět už v seznamu kauz. */
+    oCoJde: koncepty ? oCoJde.optional() : oCoJde,
     od: z.number().int().min(1950).max(2100),
     do: z.number().int().min(1950).max(2100).nullable(),
     stav: z.enum(STAVY),
     stavPoznamka: z.string().optional(),
+    /** Jen u stavu „jine“: pár slov místo nic neříkajícího „Jiné“ (např. „Soud nařídil omluvu“). */
+    stavKratce: text().max(NEJVIC_STAV_KRATCE, `Krátký popis stavu smí mít nejvýš ${NEJVIC_STAV_KRATCE} znaků, aby se vešel do řádku osy`).optional(),
     stitky: z.array(z.string().regex(/^[a-z0-9-]+$/)).min(1),
     overeno: koncepty ? datumPresne.nullable().default(null) : datumPresne,
     zdroje: z.array(zdrojSchema).min(1, 'Kauza musí mít aspoň jeden zdroj'),
@@ -138,6 +151,9 @@ const vytvorKauzaSchema = (koncepty: boolean) => z
       ctx.addIssue({ code: 'custom', message: 'Kritérium dvě redakce vyžaduje u „Proč je to kauza“ dva mediální zdroje od různých vydavatelů' });
     if (k.do !== null && k.do < k.od) ctx.addIssue({ code: 'custom', message: `Rok konce ${k.do} je dřív než rok začátku ${k.od}` });
     if (k.stav === 'jine' && !k.stavPoznamka) ctx.addIssue({ code: 'custom', message: 'Stav "jine" vyžaduje vyplněnou poznámku ke stavu (stavPoznamka)' });
+    if (k.stav === 'jine' && !k.stavKratce && !koncepty) ctx.addIssue({ code: 'custom', message: 'Stav „jine“ vyžaduje krátký popis stavu (stavKratce), aby čtenář nečetl jen „Jiné“' });
+    if (k.stav !== 'jine' && k.stavKratce) ctx.addIssue({ code: 'custom', message: 'stavKratce patří jen ke stavu „jine“; u ostatních stavů říká stav popisek ze slovníčku' });
+    for (const zk of zkratkyVeVete(k.oCoJde ?? '')) ctx.addIssue({ code: 'custom', message: `Věta „O co jde“ má být bez zkratek: rozepište „${zk}“` });
     const konec = k.do ?? new Date().getFullYear();
     // Chronologie počítá s událostmi od nejstarší po nejnovější
     for (let i = 1; i < k.udalosti.length; i++) {

@@ -2,6 +2,7 @@
 typ: kauza
 nazev: Korunové dluhopisy Agrofertu
 shrnuti: Agrofert koncem roku 2012 vydal korunové dluhopisy, jejichž výnos byl osvobozen od daně, a A. Babiš je nakoupil za zhruba 1,5 mld. Kč. Policie prověřovala trestní oznámení a v srpnu 2018 věc odložila, protože nezjistila skutečnosti nasvědčující spáchání trestného činu.
+oCoJde: Babiš koupil dluhopisy svého Agrofertu asi za 1,5 miliardy. Z výnosu se neplatila daň. Policie trestný čin nenašla.
 od: 2012
 do: 2018
 stav: odlozeno

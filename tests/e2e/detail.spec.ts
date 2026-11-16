@@ -18,7 +18,9 @@ test('přímá adresa otevře detail s vlastním náhledem', async ({ page }) =>
 test('detail začíná záložkou Proč je to kauza s kritériem zařazení', async ({ page }) => {
   await page.goto('/kauzy/alfa-dotace/');
   const tab = page.getByRole('tab').first();
-  await expect(tab).toHaveText('Proč je to kauza');
+  // Popisek má dlouhý i krátký tvar (na telefonu se vejde jen krátký), proto se ptáme na jméno prvku,
+  // ne na jeho textContent — ten nese oba tvary najednou, i ten právě schovaný.
+  await expect(tab).toHaveAccessibleName('Proč je to kauza');
   await expect(tab).toHaveAttribute('aria-selected', 'true');
   const panel = page.locator('.m2-panel[data-p="proc"]');
   await expect(panel).toBeVisible();

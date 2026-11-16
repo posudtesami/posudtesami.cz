@@ -2,9 +2,11 @@
 typ: kauza
 nazev: Nahrávky Babiš–Přibil
 shrnuti: V květnu 2017 zveřejnil anonymní účet „Julius Šuman“ nahrávky, které podle Seznam Zpráv zachycují ministra financí A. Babiše, jak s redaktorem MF DNES Markem Přibilem probírá načasování článků o soupeřích a materiály z policejního spisu. Autenticitu se nepodařilo ověřit. MAFRA Přibila propustila, nikdo nebyl obviněn.
+oCoJde: Podle Seznam Zpráv má Babiš na anonymních nahrávkách probírat s novinářem články o soupeřích. Pravost neověřena.
 od: 2017
 do: 2017
 stav: jine
+stavKratce: Nikdo nebyl obviněn
 stavPoznamka: Babišovo trestní oznámení kvůli pořízení nahrávek policie v červenci 2017 odložila. Podle státního zástupce Martina Černého samotné nahrání bez souhlasu nezakládá trestní odpovědnost. Policie a státní zastupitelství prověřovaly, zda a jak se část spisu z kauzy Beretta dostala mimo policii; výsledek uvedené zdroje neuvádějí. Babiš ani Přibil obviněni nebyli. M. Přibil se k nahrávkám podle uvedených zdrojů veřejně nevyjádřil.
 stitky: [media]
 overeno: 2026-11-12

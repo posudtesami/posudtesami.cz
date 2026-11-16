@@ -26,7 +26,7 @@ Web je úspěšný, když:
 - Web běží na vlastní doméně **`https://posudtesami.cz`** (GitHub Pages s vlastní doménou; `www.posudtesami.cz` přesměrovává na hlavní adresu). Doména musí být v GitHubu ověřená (Settings → Pages → Verified domains), aby ji nikdo nemohl převzít, a HTTPS je vynucené. Do buildu patří soubor `CNAME` s doménou.
 - GitHub účet `posudtesami` (do 13. 11. 2026 `nenechmevyhnit`). Název repozitáře nemá s vlastní doménou na adresu vliv. Repozitář se jmenuje `posudtesami.cz` (do 13. 11. 2026 `nenechmevyhnit.cz`).
 - Doménu si provozovatel registruje sám. Při registraci zvolí skrytí osobních údajů ve veřejném WHOIS. Registrátor a CZ.NIC jeho identitu znají, takže anonymita vůči úřadům ani soudům není absolutní.
-- Kontakt `nenechmevyhnit@gmail.com`.
+- Kontakt `posudtesami@gmail.com` (do 16. 11. 2026 `nenechmevyhnit@gmail.com`).
 - Lokální git identita jen pro tento repozitář: jméno „Posuďte sami“ a noreply e-mail GitHubu. Nastaví se před prvním commitem.
 - Push přes samostatný SSH klíč s aliasem hostitele `github-nenechme`, nikdy přes uložené přihlášení osobního účtu.
 - Repozitář je samostatný, mimo nadřazený osobní repozitář `Projects`.
@@ -141,6 +141,8 @@ Obsah modalu:
 - **Písma:** Redaction 10 (nadpisy i text, latin-ext) a JetBrains Mono (data, roky, popisky). Obě se hostují ve vlastním repozitáři, žádné Google Fonts za běhu.
 - **Portrét (P4):** černobílá fotografie A. Babiše (Wikimedia Commons, Vox España, CC0). Je vyříznutá bez pozadí (`design/nastroje/vyrez_portretu.py`), pevně za obsahem v pravé části okna a měkce se ztrácí vlevo a dole. Horní pás s menu zůstává čistý. Osa má lehce průsvitné pozadí (84 %) a texty nad portrétem světlou auru. Kredit fotky je v řádku patičky. Před spuštěním se postava vyřízne ručně a pečlivěji (vlasy).
 - **Na počítači žádné svislé posouvání stránky.** Rozvržení vyplní výšku okna (`100dvh`). Do strany se smí posouvat jen osa a delší texty v modalech. Celá osa musí být vidět bez posouvání na těchto velikostech okna (vnitřní rozměr): 1256×528, 1342×565, 1342×676 a 1896×868.
+  - **Výjimka: detail kauzy v nízkém okně** (změna 15. 11. 2026). Při výšce okna do 620 px se detail kauzy (modal) smí posouvat svisle uvnitř sebe. Stránka pod ním se dál neposouvá. Bez toho se konec záložky na 1256×528 a 1342×565 usekl (o 105 px) a text nebyl vidět celý.
+  - **Shrnutí v nízkém okně** (změna 15. 11. 2026): při výšce okna do 800 px (i běžný notebook 1366×657) ukazuje hlavička detailu větu „O co jde“ a přesné shrnutí je za tlačítkem „celé shrnutí“. Ve vyšším okně jsou vidět obě.
 - **Na mobilu (do 760 px) se stránka posouvá dolů, do strany nikdy** (změna 13. 11. 2026). Na výšku telefonu se pevné rozvržení nevešlo: osa ukázala dvě až tři kauzy a v detailu zbylo na záložku pár řádků, takže zdroje nebyly vidět a text byl useknutý. Osa je zúžená, název kauzy je nad pruhem a na stránce je 10 kauz. Detail kauzy se posouvá jako celek, záložky mají přirozenou výšku, lišta záložek se přilepí nahoře a zavírací tlačítko zůstává v rohu. Plné znění v modalech Metodiky a O projektu se posouvá dolů. Ověřuje se na 390×700, 375×667, 360×640 a 320×568.
 - **Animace:**
   - načtení: úvod vyjede, názvy naskočí a pruhy postupně dorostou zleva,
@@ -176,7 +178,7 @@ Obsah modalu:
 - **Playwright:**
   - osa vykreslí všechny kauzy seřazené podle začátku, filtry (hledání bez diakritiky, čipy NEBO, jen neuzavřené, zrušení, prázdný stav),
   - otevření detailu z řádku i přímou adresou, listování událostmi, přepnutí na zdroj, zavření a zrušení výběru,
-  - **žádné svislé posouvání na počítači:** `document.scrollingElement.scrollHeight <= innerHeight` na počítačových velikostech z oddílu 7, a celá osa je ve viewportu,
+  - **žádné svislé posouvání na počítači:** `document.scrollingElement.scrollHeight <= innerHeight` na počítačových velikostech z oddílu 7, a celá osa je ve viewportu (detail kauzy v okně do 620 px na výšku se smí posouvat uvnitř sebe, viz výjimka v oddílu 7),
   - **mobil:** na mobilních velikostech z oddílu 7 se nic neposouvá do strany a žádná záložka detailu ani karta není oříznutá,
   - axe bez závažných chyb přístupnosti.
 - **lychee:** kontrola odkazů v CI.

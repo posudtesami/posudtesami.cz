@@ -1,6 +1,7 @@
 ---
 import '../styles/fonty.css';
 import '../styles/upravy.css';
+import '../styles/citelnost.css';
 import Hlavicka from '../components/Hlavicka.astro';
 import StrukturovanaData from '../components/StrukturovanaData.astro';
 import { rezimKonceptu, maPravidla } from '../lib/kauzy';
@@ -21,6 +22,9 @@ const url = new URL(cesta, Astro.site).toString();
 const nahled = new URL(nahledSoubor ?? '/obrazky/nahled.png', Astro.site).toString();
 // vstupní popis zůstává celý pro ostatní použití; vyhledávačům jde zkrácený na hranici slova
 const popisProVyhledavace = popisKratky(popis);
+// Prohlížeče drží faviconu v mezipaměti týdny a obnovení stránky ji nevymění.
+// Při změně ikony zvyš verzi: nová adresa donutí prohlížeč stáhnout ji znovu.
+const verzeIkony = 2;
 ---
 <!doctype html>
 <html lang="cs">
@@ -41,7 +45,9 @@ const popisProVyhledavace = popisKratky(popis);
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content={titulek}>
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href={`/favicon.ico?v=${verzeIkony}`} sizes="48x48">
+  <link rel="icon" href={`/favicon.svg?v=${verzeIkony}`} type="image/svg+xml">
+  <link rel="apple-touch-icon" href={`/apple-touch-icon.png?v=${verzeIkony}`}>
   <!-- třída js: styly pro návštěvníky bez JavaScriptu (html:not(.js)) se použijí jen tehdy, když skripty neběží -->
   <script is:inline>document.documentElement.classList.add('js')</script>
   {jsonLd && <StrukturovanaData data={jsonLd} />}
@@ -53,5 +59,11 @@ const popisProVyhledavace = popisKratky(popis);
   </div>
   <slot name="mimo" />
   {rezimKonceptu() && <aside class="koncepty-stitek" aria-label="Režim náhledu">Koncepty · neověřeno · jen lokálně</aside>}
+  {/* Věta dalších filtrů se na telefonu sbalí za „Upřesnit výběr“. Je na kauzách i na pravidlech,
+      která mají vlastní značku, proto se to zapojuje tady a ne v jedné z nich. */}
+  <script>
+    import { inicializujUpresnit } from '../scripts/upresnit';
+    inicializujUpresnit();
+  </script>
 </body>
 </html>
