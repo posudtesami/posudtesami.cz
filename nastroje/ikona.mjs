@@ -1,6 +1,7 @@
 // Ikony webu z jediného zdroje public/favicon.svg:
-//   public/favicon.ico          16, 32 a 48 px (Seznam, Bing a starší prohlížeče se ptají právě na /favicon.ico)
-//   public/apple-touch-icon.png 180 px (iPhone a iPad na plochu SVG nevezmou)
+//   public/favicon.ico          16, 32 a 48 px s průhlednými rohy (Seznam, Bing a starší prohlížeče se ptají právě na /favicon.ico)
+//   public/apple-touch-icon.png 180 px na plném čtverci (iPhone a iPad na plochu SVG nevezmou,
+//                               průhledná místa vyplní černou a rohy si zaoblí samy)
 // Rastruje Chromium z Playwrightu, který už je v devDependencies, takže žádná nová závislost.
 // Spuštění: npm run ikona. Výstup se commituje, nasazení nic negeneruje.
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -9,6 +10,7 @@ import { chromium } from '@playwright/test';
 const ZDROJ = 'public/favicon.svg';
 const VELIKOSTI_ICO = [16, 32, 48];
 const VELIKOST_APPLE = 180;
+const PODKLAD_APPLE = '#F5F5F8'; // stejná barva jako kotouč, takže kotouč splyne se čtvercem
 
 const svg = readFileSync(ZDROJ, 'utf8');
 const dataUri = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
@@ -16,12 +18,13 @@ const dataUri = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')
 const prohlizec = await chromium.launch();
 const list = await prohlizec.newPage({ deviceScaleFactor: 1 });
 
-/** Vykreslí SVG přímo v cílové velikosti (ne zmenšením velkého obrázku), aby malé ikony byly ostré. */
-async function png(velikost) {
+/** Vykreslí SVG přímo v cílové velikosti (ne zmenšením velkého obrázku), aby malé ikony byly ostré.
+ *  Bez podkladu zůstanou místa mimo kotouč průhledná. */
+async function png(velikost, podklad = null) {
   await list.setViewportSize({ width: velikost, height: velikost });
-  await list.setContent(`<!doctype html><style>*{margin:0}img{display:block}</style><img src="${dataUri}" width="${velikost}" height="${velikost}">`);
+  await list.setContent(`<!doctype html><style>*{margin:0}html{background:${podklad ?? 'transparent'}}img{display:block}</style><img src="${dataUri}" width="${velikost}" height="${velikost}">`);
   await list.locator('img').evaluate((img) => img.decode());
-  return list.screenshot({ clip: { x: 0, y: 0, width: velikost, height: velikost } });
+  return list.screenshot({ clip: { x: 0, y: 0, width: velikost, height: velikost }, omitBackground: !podklad });
 }
 
 /** Soubor ICO s vloženými PNG (formát podporují všechny prohlížeče od Windows Vista). */
@@ -50,6 +53,6 @@ function ico(obrazky) {
 const obrazky = [];
 for (const velikost of VELIKOSTI_ICO) obrazky.push({ velikost, data: await png(velikost) });
 writeFileSync('public/favicon.ico', ico(obrazky));
-writeFileSync('public/apple-touch-icon.png', await png(VELIKOST_APPLE));
+writeFileSync('public/apple-touch-icon.png', await png(VELIKOST_APPLE, PODKLAD_APPLE));
 await prohlizec.close();
 console.log(`Hotovo: favicon.ico (${VELIKOSTI_ICO.join(', ')} px), apple-touch-icon.png (${VELIKOST_APPLE} px)`);
