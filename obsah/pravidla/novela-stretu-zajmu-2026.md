@@ -51,6 +51,7 @@ zdroje:
     datum: 2026-08-26
     druh: stanovisko
     url: 'https://www.psp.cz/sqw/text/orig2.sqw?idd=279346'
+    archiv: https://web.archive.org/web/20261116103409/https://www.psp.cz/sqw/text/orig2.sqw?idd=279346
   - id: 8
     vydavatel: Evropská komise (předávací nóta Rady EU 11674/26 ADD 4)
     titulek: '2026 Rule of Law Report Country Chapter on the rule of law situation in Czechia (SWD(2026) 903 final)'
