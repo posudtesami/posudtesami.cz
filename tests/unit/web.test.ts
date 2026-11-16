@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { WEB, titulek, MAX_TITULEK, MAX_POPIS, titulekKauzy, popisKratky } from '../../src/lib/web';
+import { WEB, TITULEK_UVODU, titulek, MAX_TITULEK, MAX_POPIS, titulekKauzy, popisKratky } from '../../src/lib/web';
 import { nactiKauzy, nactiPravidla, nactiOblasti, nactiHlasovani } from '../../src/lib/kauzy';
 import { nadpisHlasovani } from '../../src/lib/hlasovani';
 
@@ -13,6 +13,11 @@ describe('web', () => {
     expect(titulek('Metodika')).toBe('Metodika — Posuďte sami');
   });
 
+  it('úvodní stránka má jméno webu na začátku titulku', () => {
+    // značkový dotaz „posuďte sami“ má najít úvod, ne podstránku
+    expect(TITULEK_UVODU).toBe('Posuďte sami — archiv kauz Andreje Babiše');
+  });
+
   it('u dlouhého názvu obětuje příponu, ne obsah titulku', () => {
     // název pravidla smí mít 60 znaků, s příponou by titulek přetekl limit;
     // v takovém případě je užitečnější celý název než jméno webu
@@ -24,7 +29,7 @@ describe('web', () => {
 
 describe('délka titulků skutečného obsahu', () => {
   const vsechny = (): string[] => [
-    titulek('Archiv kauz Andreje Babiše'),
+    TITULEK_UVODU,
     titulek('Metodika'),
     titulek('O projektu'),
     titulek('Zákony a nařízení'),
