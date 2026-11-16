@@ -13,6 +13,11 @@ export const MAX_TITULEK = 65;
 /** Delší popis Google ve výsledku zkrátí sám, a to i uprostřed slova. */
 export const MAX_POPIS = 155;
 
+/** Titulek úvodní stránky začíná jménem webu, ne popisem: kdo hledá „posuďte sami“,
+ *  hledá tenhle web, a Google podle začátku titulku pozná, která stránka je jeho úvod.
+ *  Podstránky mají jméno na konci (viz titulek()). */
+export const TITULEK_UVODU = `${WEB.nazev} — archiv kauz Andreje Babiše`;
+
 /** Titulek stránky: „<co> — Posuďte sami“. Když by se s příponou nevešel do limitu,
  *  obětuje se přípona: celý název stránky je pro hledajícího užitečnější než jméno webu
  *  (názvy pravidel smějí mít 60 znaků, samotná přípona bere 15). */
