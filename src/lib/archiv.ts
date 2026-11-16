@@ -24,7 +24,9 @@ export function doplnArchiv(text: string, url: string, archiv: string): string {
 export async function ziskejArchiv(url: string, fetchFn: typeof fetch = fetch): Promise<string | null> {
   try {
     const o = await fetchFn(`https://web.archive.org/save/${url}`, { redirect: 'follow' });
-    if (!o.ok) return null;
+    // Wayback přehrává snímek s původním stavovým kódem. Jen 200 je zachycený dokument: 202 bývá stránka, na které
+    // web ověřuje prohlížeč (eur-lex 16. 11. 2026, 1 879 B místo dokumentu), a `ok` by ji jako úspěch propustilo.
+    if (o.status !== 200) return null;
     if (o.url.includes('/web/')) return o.url;
     const umisteni = o.headers.get('content-location');
     return umisteni ? `https://web.archive.org${umisteni}` : null;

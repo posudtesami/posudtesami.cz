@@ -30,8 +30,12 @@ describe('doplnArchiv', () => {
 
 describe('ziskejArchiv', () => {
   it('vrátí adresu snímku z odpovědi Save Page Now', async () => {
-    const f = vi.fn().mockResolvedValue({ ok: true, url: 'https://web.archive.org/web/20261110120000/https://example.com/a', headers: new Headers() });
+    const f = vi.fn().mockResolvedValue({ ok: true, status: 200, url: 'https://web.archive.org/web/20261110120000/https://example.com/a', headers: new Headers() });
     expect(await ziskejArchiv('https://example.com/a', f as any)).toBe('https://web.archive.org/web/20261110120000/https://example.com/a');
+  });
+  it('snímek s jiným stavem než 200 (třeba 202 ověření prohlížeče) nebere', async () => {
+    const f = vi.fn().mockResolvedValue({ ok: true, status: 202, url: 'https://web.archive.org/web/20261116092543/https://eur-lex.europa.eu/x', headers: new Headers() });
+    expect(await ziskejArchiv('https://eur-lex.europa.eu/x', f as any)).toBeNull();
   });
   it('při chybě vrátí null', async () => {
     const f = vi.fn().mockRejectedValue(new Error('síť'));
