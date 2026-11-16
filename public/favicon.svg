@@ -1,1 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="8" height="8" x="4" y="0" fill="#282661"/><rect width="8" height="8" x="4" y="8" fill="#DB1F2D"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="225 215 590 590">
+  <!-- Ikona webu: P v lupě. Zdroj pro favicon.ico a apple-touch-icon.png, ty z něj vyrábí npm run ikona. -->
+  <rect x="225" y="215" width="590" height="590" fill="#F5F5F8"/>
+  <circle cx="513" cy="475" r="188.5" fill="none" stroke="#DB1F2D" stroke-width="52"/>
+  <path d="M613 603L708 726" stroke="#DB1F2D" stroke-width="62"/>
+  <circle cx="708" cy="726" r="31" fill="#DB1F2D"/>
+  <!-- mezera kolem P: přeruší prstenec tam, kde jím prochází dřík -->
+  <path d="M364 752L416 377L558 373C613 372 631 410 627 455C622 520 585 567 520 567L465 567L439 752Z" fill="#F5F5F8" stroke="#F5F5F8" stroke-width="26" stroke-linejoin="round"/>
+  <path fill-rule="evenodd" fill="#282661" d="M364 752L416 377L558 373C613 372 631 410 627 455C622 520 585 567 520 567L465 567L439 752ZM485 422L530 422C552 422 557 445 551 466C545 495 528 518 500 518L472 518Z"/>
+</svg>
